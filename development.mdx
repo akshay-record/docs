@@ -1,0 +1,122 @@
+---
+title: Development
+description: "Everything you need to know to work on the codebase day-to-day."
+---
+
+## Dependencies
+
+```bash
+npm install
+```
+
+Here's what you're actually pulling in and why:
+
+| Package | What it does |
+|---|---|
+| `express` | The HTTP server. Handles routing, middleware, all of that. |
+| `mongoose` | Talks to MongoDB. Defines schemas and gives you a nice query API. |
+| `joi` | Validates incoming request bodies before they touch the database. |
+| `uuid` | Generates the `selected_skill_id` UUID on every new selection. |
+| `express-rate-limit` | Limits how often a single IP can hit the search endpoint and globally. |
+| `swagger-jsdoc` + `swagger-ui-express` | Turns the JSDoc comments above your routes into live `/api-docs`. |
+| `dotenv` | Loads your `.env` file into `process.env`. |
+| `helmet` *(recommended)* | Sets sensible HTTP security headers. Worth adding before you deploy. |
+| `cors` *(recommended)* | Controls which origins can call the API. You'll want this in production. |
+
+## Environment variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `MONGO_URI` | ✅ | Full MongoDB connection string |
+| `ADMIN_API_KEY` | ✅ | The secret key for all `/api/admin/*` routes |
+| `PORT` | ❌ | Which port to listen on. Defaults to `5000`. |
+
+## Running the server
+
+```bash
+# With auto-restart on file changes (recommended for dev)
+npm run dev
+
+# Normal start
+npm start
+```
+
+## Swagger UI
+
+While the server is running, you can browse and test every endpoint at:
+
+```
+http://localhost:5000/api-docs
+```
+
+This is generated automatically — the JSDoc comments sitting above each route handler in the `routes/` files are what power it. If you add a new route, document it there and it'll show up here.
+
+## Rate limits at a glance
+
+There are three layers of rate limiting. Here's what each one does:
+
+| Layer | Limit | Window | Where it's applied |
+|---|---|---|---|
+| Global limiter | 100 req / IP | 15 minutes | Every route |
+| Search limiter | 15 req / IP | 1 minute | `GET /api/skills/search` only |
+| Scraping detection | 30 req / IP | 5-min rolling | `GET /api/skills/*` |
+
+The scraping detector lives in `middleware/detectScraping.js`. It uses an in-memory `Map` right now — if you're running multiple Node processes or pods, swap it for Redis.
+
+## Adding a new route
+
+It's pretty straightforward. Here's the pattern:
+
+**1. Create your route file**
+
+```bash
+touch routes/yourFeature.routes.js
+```
+
+**2. Register it in `app.js`**
+
+```js
+app.use("/api/your-feature", require("./routes/yourFeature.routes"));
+```
+
+**3. Add a Joi schema if the route accepts a body**
+
+```js
+// validations/yourFeature.validation.js
+const Joi = require("joi");
+
+exports.yourSchema = Joi.object({
+  some_field: Joi.string().required(),
+});
+```
+
+**4. Wire up the validate middleware**
+
+```js
+const validate = require("../middleware/validate");
+const { yourSchema } = require("../validations/yourFeature.validation");
+
+router.post("/", validate(yourSchema), async (req, res) => {
+  // req.body is already validated by the time you get here
+});
+```
+
+**5. Add JSDoc above the route for Swagger**
+
+```js
+/**
+ * @swagger
+ * /api/your-feature:
+ *   post:
+ *     summary: Does something useful
+ *     tags: [YourFeature]
+ */
+```
+
+## Linting
+
+```bash
+npm run lint
+```
+
+Uses [ESLint](https://eslint.org/). Fix anything it flags before opening a PR — the CI will catch it anyway.

@@ -1,0 +1,257 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "theme": "mint",
+  "name": "Skills & Verification API",
+  "description": "Unified documentation for Skills management and Record Skills Verification APIs.",
+  "colors": {
+    "primary": "#7C6AF7",
+    "light": "#A78BFA",
+    "dark": "#5A4FCF"
+  },
+  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.png",
+    "dark": "/logo/dark.png"
+  },
+  "navigation": {
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Swagger UI",
+          "icon": "brackets-curly",
+          "href": "https://api.example.com/api-docs"
+        },
+        {
+          "anchor": "GitHub",
+          "icon": "github",
+          "href": "https://github.com/your-org/skills-api"
+        }
+      ]
+    },
+    "tabs": [
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "guides/introduction",
+              "guides/authentication",
+              "guides/environments"
+            ]
+          },
+          {
+            "group": "SDK",
+            "pages": [
+              "guides/sdk-installation",
+              "guides/sdk-initialization",
+              "guides/sdk-vault-popup",
+              "guides/sdk-source-configuration"
+            ]
+          },
+          {
+            "group": "API",
+            "pages": [
+              "guides/api-verification",
+              "guides/api-skills",
+              "guides/api-vault",
+              "guides/api-webhooks"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": ["guides/edge-cases", "guides/touchpoints"]
+          },
+          {
+            "group": "Support",
+            "pages": ["guides/sandbox", "guides/faq"]
+          },
+          {
+            "group": "Legals",
+            "pages": ["guides/terms-of-service", "guides/privacy-policy"]
+          }
+        ]
+      },
+      {
+        "tab": "Skills Verification",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": ["api-reference/introduction"]
+          },
+          {
+            "group": "Skills",
+            "pages": ["api-reference/endpoint/search"]
+          },
+          {
+            "group": "Selected Skills",
+            "pages": [
+              "api-reference/endpoint/get",
+              "api-reference/endpoint/create",
+              "api-reference/endpoint/delete"
+            ]
+          },
+          {
+            "group": "Admin",
+            "pages": ["api-reference/endpoint/counts"]
+          },
+          {
+            "group": "Skill Verification",
+            "pages": [
+              "api-reference/verification/introduction",
+              "api-reference/verification/init"
+            ]
+          },
+          {
+            "group": "Step 1 — Skills",
+            "pages": [
+              "api-reference/verification/step1-store-skills",
+              "api-reference/verification/step1-get-skills",
+              "api-reference/verification/step1-verify-url"
+            ]
+          },
+          {
+            "group": "Step 2 — Verification Method",
+            "pages": ["api-reference/verification/step2-method"]
+          },
+          {
+            "group": "Step 3 — Source Items",
+            "pages": [
+              "api-reference/verification/step3-store-items",
+              "api-reference/verification/step3-get-items",
+              "api-reference/verification/step3-session-data",
+              "api-reference/verification/step3-session-email",
+              "api-reference/verification/step3-update-email"
+            ]
+          },
+          {
+            "group": "Reviewer Details",
+            "pages": [
+              "api-reference/verification/reviewer-store",
+              "api-reference/verification/reviewer-get",
+              "api-reference/verification/reviewer-company-name",
+              "api-reference/verification/reviewer-email-suggestions"
+            ]
+          },
+          {
+            "group": "Human Verification",
+            "pages": [
+              "api-reference/verification/human-send-email",
+              "api-reference/verification/human-get-skills",
+              "api-reference/verification/human-verify",
+              "api-reference/verification/human-verify-page",
+              "api-reference/verification/human-status"
+            ]
+          },
+          {
+            "group": "Assessment Verification",
+            "pages": [
+              "api-reference/verification/assessment-generate",
+              "api-reference/verification/assessment-get",
+              "api-reference/verification/assessment-submit",
+              "api-reference/verification/assessment-retake"
+            ]
+          },
+          {
+            "group": "Metadata",
+            "pages": ["api-reference/verification/metadata-user-skills"]
+          }
+        ]
+      },
+      {
+        "tab": "Skills Issuance",
+        "groups": [
+          {
+            "group": "Issuance API",
+            "pages": [
+              "api-reference/issuance/introduction",
+              "api-reference/issuance/list-programs",
+              "api-reference/issuance/get-program",
+              "api-reference/issuance/issue-credentials",
+              "api-reference/issuance/list-batches",
+              "api-reference/issuance/get-batch"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "WhiteCollar Assessments",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": ["whitecollar/introduction"]
+          },
+          {
+            "group": "API Keys",
+            "pages": [
+              "whitecollar/api-keys/introduction",
+              "whitecollar/api-keys/list-api-keys",
+              "whitecollar/api-keys/create-api-key",
+              "whitecollar/api-keys/delete-api-key",
+              "whitecollar/api-keys/request-signing"
+            ]
+          },
+          {
+            "group": "Assessment Creation",
+            "pages": [
+              "whitecollar/assessments/introduction",
+              "whitecollar/assessments/create-assessment",
+              "whitecollar/assessments/get-assessment",
+              "whitecollar/assessments/list-assessments",
+              "whitecollar/assessments/update-assessment",
+              "whitecollar/assessments/toggle-assessment",
+              "whitecollar/assessments/knowledge-sections",
+              "whitecollar/assessments/coding-problems",
+              "whitecollar/assessments/builder-flow"
+            ]
+          },
+          {
+            "group": "Assignment Management",
+            "pages": [
+              "whitecollar/assignments/introduction",
+              "whitecollar/assignments/check-duplicates",
+              "whitecollar/assignments/create-assignment",
+              "whitecollar/assignments/list-assessment-assignments",
+              "whitecollar/assignments/list-all-assignments",
+              "whitecollar/assignments/session-lifecycle",
+              "whitecollar/assignments/overview-dashboard"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "api": {
+    "mdx": {
+      "server": "https://api.example.com/v1",
+      "auth": {
+        "method": "key",
+        "name": "x-api-key"
+      }
+    }
+  },
+  "navbar": {
+    "links": [
+      { "label": "Guides", "href": "/quickstart" },
+      { "label": "API Reference", "href": "/api-reference/introduction" }
+    ]
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/your-org/skills-api"
+    }
+  }
+}
+

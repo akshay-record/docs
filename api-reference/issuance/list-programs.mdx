@@ -1,0 +1,73 @@
+---
+title: "List Programs"
+api: "GET /api/external/issuance/programs"
+description: "Retrieve all programmes belonging to your organisation."
+---
+
+## Overview
+
+Returns a list of all programmes created under your organisation. Use the `programId` from this response when issuing credentials.
+
+<Note>
+  No query parameters or request body required. Authentication via `Authorization` or `X-Api-Key` header.
+</Note>
+
+---
+
+## Response Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `programId` | string | Unique programme identifier |
+| `name` | string | Programme name |
+| `description` | string | Programme description |
+| `orgId` | string | Organisation the programme belongs to |
+| `mode` | string | `"live"` or `"test"` |
+| `createdAt` | string | ISO 8601 creation timestamp |
+| `updatedAt` | string | ISO 8601 last-updated timestamp |
+
+---
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `UNAUTHORIZED` | 401 | Token missing, malformed, or revoked |
+| `FORBIDDEN` | 403 | Token's organisation not found or access denied |
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url https://api.getrecord.in/api/external/issuance/programs \
+  --header 'Authorization: Bearer sk_test_your_token_here'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "message": "Programs fetched successfully",
+  "data": [
+    {
+      "programId": "prog_1779175802952_zlymqs",
+      "name": "Cyber Security",
+      "description": "Cyber Security Program",
+      "orgId": "org_1779085658651_hmhfv5",
+      "mode": "test",
+      "createdAt": "2025-05-19T13:30:02.952Z",
+      "updatedAt": "2025-05-19T13:30:02.952Z"
+    },
+    {
+      "programId": "prog_1779172339924_j3pr93",
+      "name": "MongoDB",
+      "description": "MongoDB Program",
+      "orgId": "org_1779085658651_hmhfv5",
+      "mode": "test",
+      "createdAt": "2025-05-19T12:12:19.924Z",
+      "updatedAt": "2025-05-19T12:12:19.924Z"
+    }
+  ]
+}
+```
+</ResponseExample>

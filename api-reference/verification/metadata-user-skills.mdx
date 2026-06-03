@@ -1,0 +1,126 @@
+---
+title: "Get User Skills"
+api: "GET /metadata/user/{recordUserId}"
+description: "Return all skill verification records for a student, sorted by most recently created."
+---
+
+## Overview
+
+A read-only aggregated view across all verifications for the student — including both verified and rejected skills across all sessions. Results are sorted by `createdAt` descending.
+
+<Warning>
+  This endpoint uses **signature-based authentication** via the `verifySignature` middleware — not a session token. Your server must sign the request using your API secret key.
+
+  **Designed for backend-to-backend use only.** Do not call from a browser or mobile client.
+</Warning>
+
+---
+
+## Path Parameters
+
+<ParamField path="recordUserId" type="string" required>
+  The internal user ID of the student, returned from `POST /verify`.
+</ParamField>
+
+---
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  `true` on success.
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  Array of skill verification records, sorted most-recent first.
+
+  <Expandable title="Record fields">
+    <ResponseField name="skillId" type="string">
+      Unique identifier of the skill.
+    </ResponseField>
+    <ResponseField name="skillName" type="string | null">
+      Human-readable skill name. `null` if the skill record no longer exists.
+    </ResponseField>
+    <ResponseField name="recordVerificationId" type="string">
+      The verification session this skill record belongs to.
+    </ResponseField>
+    <ResponseField name="verified" type="boolean">
+      `true` if the skill was verified, `false` if rejected or pending.
+    </ResponseField>
+    <ResponseField name="status" type="string">
+      `verified`, `rejected`, or `pending`.
+    </ResponseField>
+    <ResponseField name="proofUrls" type="string[]">
+      Public URLs submitted as proof for this skill.
+    </ResponseField>
+    <ResponseField name="createdAt" type="string">
+      ISO 8601 timestamp of when this record was created.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## Skill Status Values
+
+| Status | `verified` | Description |
+|---|---|---|
+| `verified` | `true` | Endorsed by reviewer or passed assessment |
+| `rejected` | `false` | Declined by reviewer or assessment failed |
+| `pending` | `false` | Verification initiated but not yet completed |
+
+---
+
+## Error Codes
+
+| Condition | HTTP | Description |
+|---|---|---|
+| `recordUserId` missing | 400 | `{ "success": false, "message": "recordUserId is required" }` |
+| Signature verification fails | 401 / 403 | Handled by `verifySignature` middleware |
+| Unexpected server error | 500 | `{ "success": false, "message": "..." }` |
+
+<Note>
+  If the student has no skill verification records, an empty array is returned — this is not an error.
+</Note>
+
+<RequestExample>
+```bash cURL
+curl https://api.yourservice.com/api/v1/metadata/user/usr_live_xyz789 \
+  -H "x-api-key: your_api_key_here" \
+  -H "x-signature: your_signed_request_signature"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": [
+    {
+      "skillId": "skill_001",
+      "skillName": "React",
+      "recordVerificationId": "ver_live_abc123",
+      "verified": true,
+      "status": "verified",
+      "proofUrls": ["https://github.com/user/project"],
+      "createdAt": "2025-04-01T10:00:00.000Z"
+    },
+    {
+      "skillId": "skill_002",
+      "skillName": "Node.js",
+      "recordVerificationId": "ver_live_abc123",
+      "verified": false,
+      "status": "rejected",
+      "proofUrls": [],
+      "createdAt": "2025-04-01T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+```json 200 OK (No Records)
+{
+  "success": true,
+  "data": []
+}
+```
+</ResponseExample>

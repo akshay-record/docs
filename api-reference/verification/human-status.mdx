@@ -1,0 +1,49 @@
+---
+title: "Check Verification Status"
+api: "GET /humanverification/status/{recordVerificationId}"
+description: "Return the current reviewer session status for a verification."
+---
+
+If the session is still pending but the expiry time has passed, it is automatically transitioned to `expired` before responding.
+
+<Note>No authentication required. Useful for polling on the student's side.</Note>
+
+## Path Parameters
+
+<ParamField path="recordVerificationId" type="string" required>
+  The verification session ID.
+</ParamField>
+
+## Status Values
+
+| `status` | `alreadySubmitted` | `expired` | Meaning |
+|---|---|---|---|
+| `pending` | false | false | Awaiting reviewer action |
+| `completed` | true | false | Reviewer has submitted their decision |
+| `expired` | false | true | Link expired — student must resend |
+
+<RequestExample>
+```bash cURL
+curl https://api.yourservice.com/api/v1/humanverification/status/ver_live_abc123
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK (Pending)
+{
+  "success": true,
+  "alreadySubmitted": false,
+  "expired": false,
+  "status": "pending"
+}
+```
+
+```json 200 OK (Completed)
+{
+  "success": true,
+  "alreadySubmitted": true,
+  "expired": false,
+  "status": "completed"
+}
+```
+</ResponseExample>

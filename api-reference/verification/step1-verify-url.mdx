@@ -1,0 +1,97 @@
+---
+title: "Verify Proof URL"
+api: "POST /step1/storeskills/verify-url"
+description: "Check whether a URL is publicly accessible before storing it as proof."
+---
+
+## Overview
+
+Performs a HEAD request to the given URL with a 5-second timeout and returns whether it is publicly reachable. Useful for validating proof URLs before submission.
+
+<Warning>
+  This endpoint **always returns HTTP 200**. Use the `accessible` boolean in the response body to determine the actual result.
+</Warning>
+
+<Note>No authentication required for this endpoint.</Note>
+
+---
+
+## Request Body
+
+<ParamField body="url" type="string" required>
+  The URL to check. Must start with `http://` or `https://`.
+</ParamField>
+
+---
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Always `true` (HTTP errors are expressed via the `accessible` field).
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="Response fields">
+    <ResponseField name="accessible" type="boolean">
+      `true` if the URL is publicly reachable, `false` otherwise.
+    </ResponseField>
+    <ResponseField name="message" type="string">
+      Human-readable description of the result.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## HTTP Status Code Mappings
+
+| Status | Message |
+|---|---|
+| 2xx | Link is publicly accessible |
+| 401 | Link requires login — not publicly accessible |
+| 403 | Link is restricted — not publicly accessible |
+| 404 | Link not found |
+| 410 | Link no longer exists |
+| 429 | Too many requests — try again later |
+| 5xx | Link server error |
+| Timeout (5s) | Link took too long to respond |
+| Unreachable | Link is not reachable |
+
+---
+
+## Error Codes
+
+| Condition | HTTP | Description |
+|---|---|---|
+| `url` missing or blank | 400 | `{ "success": false, "message": "URL is required" }` |
+| Unexpected error | 500 | `{ "success": false, "message": "..." }` |
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.yourservice.com/api/v1/step1/storeskills/verify-url \
+  -H "Content-Type: application/json" \
+  -d '{ "url": "https://github.com/user/my-project" }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK (Accessible)
+{
+  "success": true,
+  "data": {
+    "accessible": true,
+    "message": "Link is publicly accessible"
+  }
+}
+```
+
+```json 200 OK (Not Accessible)
+{
+  "success": true,
+  "data": {
+    "accessible": false,
+    "message": "Link requires login — not publicly accessible"
+  }
+}
+```
+</ResponseExample>

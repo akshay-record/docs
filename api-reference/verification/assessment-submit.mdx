@@ -1,0 +1,132 @@
+---
+title: "Submit Assessment"
+api: "POST /assessment/submit"
+description: "Submit answers, score the assessment, and update skill verification statuses."
+---
+
+## Overview
+
+All answers must be submitted in a single call. The number of answers must exactly match the number of questions generated.
+
+- Skills are set to **verified** if the student passes.
+- Skills are set to **rejected** if the student fails.
+- A `verification.completed` webhook is fired with full results.
+- A result email is sent to the student.
+- A passed assessment is **locked** — `isLocked: true` — blocking all future attempts.
+
+<Note>
+  Requires a valid session token via the `x-api-key` session middleware.
+</Note>
+
+---
+
+## Scoring Rules
+
+| Metric | Detail |
+|---|---|
+| Pass threshold | 60% |
+| Score formula | `round((correctAnswers / totalQuestions) × 100)` |
+| Lock on pass | `isLocked: true` — blocks all future attempts |
+
+---
+
+## Request Body
+
+<ParamField body="answers" type="array" required>
+  Array of answer objects. Length must match the total number of questions.
+
+  <Expandable title="Answer object fields">
+    <ParamField body="questionId" type="string" required>
+      The `questionId` of the question being answered.
+    </ParamField>
+    <ParamField body="selectedAnswer" type="number" required>
+      Zero-based index of the selected option (0–3).
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+---
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `MISSING_VERIFICATION_ID` | 400 | No `recordVerificationId` in session |
+| `MISSING_ANSWERS` | 400 | `answers` is missing or empty |
+| `NO_QUESTIONS` | 404 | No questions found — generate must be called first |
+| `INCOMPLETE_ANSWERS` | 400 | Number of answers does not match total questions |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.yourservice.com/api/v1/assessment/submit \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your_api_key_here" \
+  -d '{
+    "answers": [
+      { "questionId": "uuid-q-1", "selectedAnswer": 1 },
+      { "questionId": "uuid-q-2", "selectedAnswer": 0 }
+    ]
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK (Passed)
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "result": {
+      "score": 80,
+      "passed": true,
+      "attemptNumber": 1,
+      "correctAnswers": 8,
+      "totalQuestions": 10,
+      "message": "You have successfully passed the assessment and earned the Verified skill."
+    },
+    "verifiedSkills": [
+      {
+        "skillId": "skill_001",
+        "name": "React",
+        "verified": true,
+        "status": "verified",
+        "verifiedAt": "2025-04-09T10:05:00.000Z",
+        "verifiedBy": "assessment"
+      }
+    ],
+    "skillsUpdated": 1,
+    "webhook": { "sent": true }
+  },
+  "message": "Assessment submitted successfully"
+}
+```
+
+```json 200 OK (Failed)
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "result": {
+      "score": 40,
+      "passed": false,
+      "attemptNumber": 1,
+      "correctAnswers": 4,
+      "totalQuestions": 10,
+      "message": "Unfortunately, you did not pass. Minimum required: 60%"
+    },
+    "verifiedSkills": [
+      {
+        "skillId": "skill_001",
+        "name": "React",
+        "verified": false,
+        "status": "rejected"
+      }
+    ],
+    "skillsUpdated": 1,
+    "webhook": { "sent": true }
+  },
+  "message": "Assessment submitted successfully"
+}
+```
+</ResponseExample>

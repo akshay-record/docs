@@ -1,0 +1,129 @@
+---
+title: Search Skills
+api: GET /api/skills/search
+description: "Search the skill catalogue by keyword. No auth needed."
+---
+
+This is probably the endpoint you'll use most. Type a keyword, get back a list of matching skills. Simple.
+
+Results are paginated — you get up to 10 per page, and you can go up to page 5. If you need to go deeper than that, you might want to use a more specific keyword instead.
+
+---
+
+## Query Parameters
+
+<ParamField query="keyword" type="string" required>
+  What you're searching for. Has to be at least 3 characters — single letters and two-character queries are rejected. Also can't be entirely made up of special characters like `***` or `???`.
+</ParamField>
+
+<ParamField query="page" type="integer" default="1">
+  Which page you want. Must be between 1 and 5. Defaults to 1 if you leave it out.
+</ParamField>
+
+---
+
+## Response
+
+<ResponseField name="data" type="array">
+  The matching skills. Empty array if nothing matched — not a 404.
+
+  <Expandable title="Each skill looks like this">
+    <ResponseField name="skill_id" type="string">The skill's unique ID</ResponseField>
+    <ResponseField name="Skill" type="string">The name of the skill (yes, capital S — it's from the schema)</ResponseField>
+    <ResponseField name="sub_skill_id" type="string">Which sub-skill category this belongs to</ResponseField>
+    <ResponseField name="master_skill_id" type="string">Which master skill category this belongs to</ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="page" type="integer">The page you're on</ResponseField>
+<ResponseField name="limit" type="integer">How many results per page (always 10)</ResponseField>
+<ResponseField name="count" type="integer">How many results came back on this page</ResponseField>
+
+---
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl "http://localhost:5000/api/skills/search?keyword=docker&page=1"
+```
+
+```js JavaScript
+const res = await fetch(
+  "http://localhost:5000/api/skills/search?keyword=docker&page=1"
+);
+const { data, count } = await res.json();
+```
+
+```python Python
+import requests
+
+res = requests.get(
+  "http://localhost:5000/api/skills/search",
+  params={"keyword": "docker", "page": 1}
+)
+print(res.json())
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json 200
+{
+  "data": [
+    {
+      "skill_id": "sk-001",
+      "Skill": "Docker",
+      "sub_skill_id": "sub-001",
+      "master_skill_id": "ms-001"
+    },
+    {
+      "skill_id": "sk-042",
+      "Skill": "Docker Compose",
+      "sub_skill_id": "sub-001",
+      "master_skill_id": "ms-001"
+    }
+  ],
+  "page": 1,
+  "limit": 10,
+  "count": 2
+}
+```
+
+```json 400
+{
+  "error": "Keyword must be at least 3 characters long."
+}
+```
+
+```json 400
+{
+  "error": "Page must be an integer between 1 and 5."
+}
+```
+
+```json 400
+{
+  "error": "Invalid search pattern. Please use alphanumeric characters."
+}
+```
+
+```json 429
+{
+  "error": "Search rate limit exceeded. Please try again later."
+}
+```
+</ResponseExample>
+
+---
+
+## A note on security
+
+This endpoint is public, so it has a few extra protections layered on:
+
+<Info>
+1. **Rate limit** — 15 requests per minute per IP. That's enough for normal use.
+2. **Regex sanitization** — your keyword is escaped before it hits the database query. This prevents [ReDoS attacks](https://owasp.org/www-community/attacks/ReDoS).
+3. **Scraping detection** — if an IP makes more than 30 requests in a 5-minute window, it gets blocked. The threshold is in `middleware/detectScraping.js` if you need to tune it.
+</Info>

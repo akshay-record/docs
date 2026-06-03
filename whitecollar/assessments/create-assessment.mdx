@@ -1,0 +1,190 @@
+---
+title: "Create Assessment"
+api: "POST /api/v1/assessments"
+description: "Create a WhiteCollar assessment."
+---
+
+## Overview
+
+Creates an assessment.
+
+<Note>
+  Requires `Content-Type: application/json` and a valid bearer access token. Use `test` mode while building integrations.
+</Note>
+
+---
+
+## Request Body
+
+<ParamField body="orgId" type="string" required>
+  Organization identifier.
+</ParamField>
+
+<ParamField body="name" type="string" required>
+  Assessment name.
+</ParamField>
+
+<ParamField body="assessmentType" type="string" required>
+  Assessment type, such as `AI Powered Assessment` or `Customized Assessment`.
+</ParamField>
+
+<ParamField body="creationMethod" type="string" required>
+  Creation method. Must be `ai` or `custom`.
+</ParamField>
+
+<ParamField body="mode" type="string" required>
+  Environment scope. Must be `test` or `live`.
+</ParamField>
+
+<ParamField body="jobTitle" type="string" required>
+  Target role title.
+</ParamField>
+
+<ParamField body="jobDescription" type="string" required>
+  Job description.
+</ParamField>
+
+<ParamField body="roleType" type="string" required>
+  Role type. Must be `IT` or `NON-IT`.
+</ParamField>
+
+<ParamField body="experienceRange" type="string" required>
+  Experience range, such as `1-3 years`.
+</ParamField>
+
+<ParamField body="skills" type="array" required>
+  Up to 5 skill identifiers.
+</ParamField>
+
+<ParamField body="totalMarks" type="number" required>
+  Total assessment marks.
+</ParamField>
+
+<ParamField body="passMarks" type="number" required>
+  Minimum passing marks.
+</ParamField>
+
+<ParamField body="duration" type="number" required>
+  Time limit in minutes.
+</ParamField>
+
+<ParamField body="difficulty" type="string" required>
+  Difficulty level. Must be `Easy`, `Medium`, `Hard`, or `Expert`.
+</ParamField>
+
+---
+
+## Response Fields
+
+<ResponseField name="success" type="boolean">
+  `true` when the assessment is created.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="Assessment fields">
+    <ResponseField name="assessmentId" type="string">
+      Unique assessment identifier.
+    </ResponseField>
+    <ResponseField name="name" type="string">
+      Assessment name.
+    </ResponseField>
+    <ResponseField name="assessmentType" type="string">
+      Assessment type.
+    </ResponseField>
+    <ResponseField name="creationMethod" type="string">
+      Creation method.
+    </ResponseField>
+    <ResponseField name="mode" type="string">
+      `test` or `live`.
+    </ResponseField>
+    <ResponseField name="roleType" type="string">
+      `IT` or `NON-IT`.
+    </ResponseField>
+    <ResponseField name="isPublished" type="boolean">
+      Whether the assessment is published.
+    </ResponseField>
+    <ResponseField name="isActive" type="boolean">
+      Whether the assessment accepts candidates.
+    </ResponseField>
+    <ResponseField name="createdAt" type="string">
+      ISO 8601 creation timestamp.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+<RequestExample>
+```bash cURL
+curl --request POST \
+  --url https://api.getrecord.in/api/v1/assessments \
+  --header 'Authorization: Bearer your_access_token' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "orgId": "RORG123456",
+    "name": "Frontend Developer Assessment",
+    "assessmentType": "Customized Assessment",
+    "creationMethod": "custom",
+    "mode": "live",
+    "jobTitle": "Frontend Developer",
+    "jobDescription": "We are looking for...",
+    "roleType": "IT",
+    "experienceRange": "1-3 years",
+    "skills": ["React", "TypeScript"],
+    "totalMarks": 100,
+    "passMarks": 65,
+    "duration": 75,
+    "difficulty": "Medium"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201 Created
+{
+  "success": true,
+  "data": {
+    "assessmentId": "asmnt_abc123",
+    "orgId": "RORG123456",
+    "name": "Frontend Developer Assessment",
+    "assessmentType": "Customized Assessment",
+    "creationMethod": "custom",
+    "mode": "live",
+    "roleType": "IT",
+    "isPublished": false,
+    "isActive": true,
+    "createdAt": "2026-05-30T10:00:00.000Z"
+  }
+}
+```
+
+```json 400 Validation Error
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Required field missing or invalid."
+  }
+}
+```
+
+```json 401 Unauthorized
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Access token missing or invalid."
+  }
+}
+```
+
+```json 403 Forbidden
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "User does not have permission to create assessments."
+  }
+}
+```
+</ResponseExample>

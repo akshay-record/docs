@@ -1,0 +1,29 @@
+---
+title: "Assessment creation"
+description: "Create AI-powered and custom assessments."
+---
+
+## Overview
+
+Assessments are the core evaluation unit in WhiteCollar. An assessment bundles job context, scoring configuration, knowledge sections, and coding problems into a candidate experience.
+
+---
+
+## Assessment types
+
+| Type | Creation method | Description |
+| --- | --- | --- |
+| AI powered assessment | `ai` | Generates tailored Q&A sets from job title, description, and skills. |
+| Customized assessment | `custom` | Uses a manual builder for knowledge sections and coding problems. |
+| Smart AI assessment | `ai` | Combines structured data with AI generation. |
+
+---
+
+## Role types
+
+| Role type | Knowledge assessment | Skill assessment | Builder steps |
+| --- | --- | --- | --- |
+| `IT` | Yes | Yes | 4 steps |
+| `NON-IT` | Yes | No | 3 steps |
+
+When `roleType` is `NON-IT`, the Skill Assessment step is hidden and coding problems are excluded from the publish payload.

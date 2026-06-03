@@ -1,0 +1,91 @@
+---
+title: "Send Reviewer Email"
+api: "POST /humanverification/send-email"
+description: "Trigger the human verification flow by sending the reviewer a secure email link."
+---
+
+## Overview
+
+Generates a reviewer token (valid for **30 days**), sends an email to the reviewer with a unique review link, fires a `verification.initiated` webhook, and increments your API key's credit usage.
+
+Each call to this endpoint **invalidates any previously issued token** for the session and generates a fresh one.
+
+<Note>
+  Requires a valid session token via the `x-api-key` session middleware. All required data (reviewer, skills, session) is read from the session — no additional fields are needed in the request body.
+</Note>
+
+---
+
+## Prerequisites
+
+All of the following must be completed before calling this endpoint:
+
+- ✅ Reviewer details stored via `POST /storereviewerdetails/store`
+- ✅ Skills stored via `POST /step1/storeskills/store`
+- ✅ Verification items stored via `POST /step3/store-verification-items/store`
+
+---
+
+## Response
+
+<ResponseField name="data" type="object">
+  <Expandable title="Response fields">
+    <ResponseField name="recordVerificationId" type="string">
+      The verification session ID.
+    </ResponseField>
+    <ResponseField name="reviewerEmail" type="string">
+      Email address the link was sent to.
+    </ResponseField>
+    <ResponseField name="reviewerName" type="string">
+      Name of the reviewer.
+    </ResponseField>
+    <ResponseField name="skillCount" type="number">
+      Number of skills included in this verification request.
+    </ResponseField>
+    <ResponseField name="reviewLink" type="string">
+      The unique link sent to the reviewer. Contains the `reviewerToken`.
+    </ResponseField>
+    <ResponseField name="expiresAt" type="string">
+      ISO 8601 timestamp when the reviewer token expires (30 days from send).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `MISSING_VERIFICATION_ID` | 400 | No `recordVerificationId` found in session |
+| `REVIEWER_NOT_FOUND` | 404 | No reviewer details stored for this session |
+| `NO_SKILLS_FOUND` | 404 | No skills found for this session |
+| `VERIFICATION_NOT_FOUND` | 404 | No aggregated verification data could be resolved |
+| `EMAIL_SEND_FAILED` | 500 | Email constructed but failed to send via AWS SES |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.yourservice.com/api/v1/humanverification/send-email \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your_api_key_here"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "reviewerEmail": "priya.sharma@techcorp.com",
+    "reviewerName": "Priya Sharma",
+    "skillCount": 2,
+    "reviewLink": "https://review.yourservice.com?recordVerificationId=ver_live_abc123&reviewerToken=uuid-token",
+    "expiresAt": "2025-05-09T10:00:00.000Z"
+  },
+  "message": "Reviewer email sent successfully",
+  "executionTime": "320ms"
+}
+```
+</ResponseExample>

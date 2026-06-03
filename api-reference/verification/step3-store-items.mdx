@@ -1,0 +1,122 @@
+---
+title: "Store Verification Items"
+api: "POST /step3/store-verification-items/store"
+description: "Attach source items (projects, experience, certificates) to a verification session."
+---
+
+## Overview
+
+Stores the source items the student has selected as the basis for their skill verification. Items are upserted against the session — items previously stored but not included in the new request are automatically deleted (replace-on-submit behaviour).
+
+<Warning>
+  **Prerequisite:** Step 2 (verification method) must be completed before calling this endpoint. Requests are rejected with `VERIFICATION_METHOD_NOT_SET` if Step 2 is missing.
+</Warning>
+
+<Note>
+  The IDs you pass must match items submitted during `POST /verify`. The session (stored in Redis) contains the full data for each item — the endpoint looks up each ID and writes the full details to the database.
+</Note>
+
+---
+
+## Request Body
+
+<ParamField body="sessionToken" type="string" required>
+  Session token returned from `POST /verify`.
+</ParamField>
+
+<ParamField body="projectIds" type="string[]">
+  IDs of projects from the session to attach. Defaults to `[]`.
+</ParamField>
+
+<ParamField body="workExperienceIds" type="string[]">
+  IDs of work experiences from the session to attach. Defaults to `[]`.
+</ParamField>
+
+<ParamField body="credentialIds" type="string[]">
+  IDs of certificates from the session to attach. Defaults to `[]`.
+</ParamField>
+
+<Warning>
+  At least one of `projectIds`, `workExperienceIds`, or `credentialIds` must be non-empty.
+</Warning>
+
+---
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  `true` on success.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="Response fields">
+    <ResponseField name="recordVerificationId" type="string">
+      The verification session ID.
+    </ResponseField>
+    <ResponseField name="recordUserId" type="string">
+      The internal user ID.
+    </ResponseField>
+    <ResponseField name="stored" type="object">
+      Contains `projects`, `experience`, and `certificates` arrays with stored item details.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `MISSING_SESSION_TOKEN` | 400 | `sessionToken` not provided |
+| `NO_ITEMS_SELECTED` | 400 | All three arrays are empty |
+| `SESSION_NOT_FOUND` | 404 | Session token is expired or invalid |
+| `VERIFICATION_METHOD_NOT_SET` | 400 | Step 2 has not been completed |
+| `DUPLICATE_SKILLS_IN_BUNDLE` | 409 | Skills already verified for this source under same endorsement type |
+| `MAX_SKILLS_PER_SOURCE` | 409 | Would exceed the 10-skill limit for this source |
+| `ASSESSMENT_ALREADY_PASSED` | 409 | Skill already assessment-verified and passed |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.yourservice.com/api/v1/step3/store-verification-items/store \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your_api_key_here" \
+  -d '{
+    "sessionToken": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "projectIds": ["proj_001", "proj_002"],
+    "workExperienceIds": [],
+    "credentialIds": ["cert_001"]
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201 Created
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "recordUserId": "usr_live_xyz789",
+    "stored": {
+      "projects": [
+        {
+          "recordProjectId": "uuid-proj-1",
+          "externalProjectId": "proj_001",
+          "projectName": "E-Commerce App"
+        }
+      ],
+      "experience": [],
+      "certificates": [
+        {
+          "recordCertificateId": "uuid-cert-1",
+          "externalCertificateId": "cert_001",
+          "certificateName": "AWS Certified Developer"
+        }
+      ]
+    }
+  },
+  "message": "Verification items synced successfully"
+}
+```
+</ResponseExample>

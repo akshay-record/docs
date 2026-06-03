@@ -1,0 +1,45 @@
+---
+title: "Get Company Name by Website"
+api: "GET /storereviewerdetails/company-name"
+description: "Look up a company name from previously stored reviewer records by website domain."
+---
+
+Useful for auto-filling the company name field when the reviewer's website is entered in a form. Searches both live and test databases. Returns `null` if no match is found — this is not an error.
+
+<Note>No authentication required for this endpoint.</Note>
+
+## Query Parameters
+
+<ParamField query="website" type="string" required>
+  A website URL or domain (e.g. `techcorp.com` or `https://techcorp.com`). The `www.` prefix is stripped before matching.
+</ParamField>
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `MISSING_WEBSITE` | 400 | `website` query parameter not provided |
+| `INVALID_WEBSITE` | 400 | Value cannot be parsed as a valid URL |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+<RequestExample>
+```bash cURL
+curl "https://api.yourservice.com/api/v1/storereviewerdetails/company-name?website=techcorp.com"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK (Match Found)
+{
+  "success": true,
+  "data": { "companyName": "TechCorp" }
+}
+```
+
+```json 200 OK (No Match)
+{
+  "success": true,
+  "data": { "companyName": null }
+}
+```
+</ResponseExample>

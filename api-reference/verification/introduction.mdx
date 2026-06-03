@@ -1,0 +1,90 @@
+---
+title: "Skill Verification API"
+description: "Verify student skills through human endorsement or AI-based assessment."
+---
+
+## Overview
+
+The Skill Verification API allows you to programmatically submit a student's skills for verification. There are two verification paths:
+
+<CardGroup cols={2}>
+  <Card title="Human Endorsement" icon="user-check">
+    A reviewer (manager, colleague, or client) receives an email with a secure link and endorses the student's skills directly.
+  </Card>
+  <Card title="AI Assessment" icon="brain">
+    An AI generates multiple-choice questions tailored to the student's projects and experience. The student passes with a score of 60% or above.
+  </Card>
+</CardGroup>
+
+---
+
+## Base URL
+
+```
+https://api.yourservice.com/api/v1
+```
+
+---
+
+## Authentication
+
+All requests require a valid API key passed via the `x-api-key` header. The key determines whether you are in **live** or **test** mode.
+
+```bash
+x-api-key: your_api_key_here
+```
+
+---
+
+## Verification Flow
+
+Every verification must follow these steps in order:
+
+<Steps>
+  <Step title="Init Session">
+    Call `POST /verify` with the student's data. Receive a `sessionToken` and `recordVerificationId`.
+  </Step>
+  <Step title="Store Skills">
+    Call `POST /step1/storeskills/store` with the skills to verify and optional proof URLs.
+  </Step>
+  <Step title="Choose Verification Method">
+    Call `POST /step2/verification-method` to choose **human** or **assessment**.
+  </Step>
+  <Step title="Attach Source Items">
+    Call `POST /step3/store-verification-items/store` to attach projects, experience, or certificates.
+  </Step>
+  <Step title="Trigger Verification">
+    **Human path:** Store reviewer details → Send reviewer email → Reviewer endorses skills.
+
+    **Assessment path:** Generate questions → Student submits answers → Score and lock result.
+  </Step>
+</Steps>
+
+---
+
+## Common Error Shape
+
+All error responses follow this consistent structure:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable description"
+  }
+}
+```
+
+---
+
+## Webhooks
+
+Two events are fired during verification:
+
+| Event | Trigger |
+|---|---|
+| `verification.initiated` | Fired when reviewer email is sent or assessment questions are first generated |
+| `verification.completed` | Fired when reviewer submits endorsement or student submits assessment |
+
+Both events are signed with your API key and secret, delivered to the `callbackWebhookUrl` provided at session init, with up to **3 retry attempts** and a **10-second timeout** per attempt.

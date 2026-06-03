@@ -1,0 +1,104 @@
+---
+title: "Toggle or Delete Assessment"
+api: "PATCH /api/v1/assessments/{assessmentId}/toggle"
+description: "Activate, deactivate, or delete an assessment."
+---
+
+## Overview
+
+Toggle whether an assessment accepts new candidates.
+
+<Note>
+  Use the toggle endpoint to change `isActive`. Use `DELETE /api/v1/assessments/{assessmentId}?orgId={orgId}` to delete an assessment.
+</Note>
+
+---
+
+## Path Parameters
+
+<ParamField path="assessmentId" type="string" required>
+  Assessment identifier.
+</ParamField>
+
+---
+
+## Query Parameters
+
+<ParamField query="orgId" type="string" required>
+  Organization identifier.
+</ParamField>
+
+---
+
+## Response Fields
+
+<ResponseField name="success" type="boolean">
+  `true` when the assessment active state is toggled.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="Assessment fields">
+    <ResponseField name="assessmentId" type="string">
+      Assessment identifier.
+    </ResponseField>
+    <ResponseField name="isActive" type="boolean">
+      Current active state.
+    </ResponseField>
+    <ResponseField name="updatedAt" type="string">
+      ISO 8601 update timestamp.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+<RequestExample>
+```bash cURL
+curl --request PATCH \
+  --url 'https://api.getrecord.in/api/v1/assessments/asmnt_abc123/toggle?orgId=RORG123456' \
+  --header 'Authorization: Bearer your_access_token'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": {
+    "assessmentId": "asmnt_abc123",
+    "isActive": false,
+    "updatedAt": "2026-05-30T10:00:00.000Z"
+  }
+}
+```
+
+```json 401 Unauthorized
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Access token missing or invalid."
+  }
+}
+```
+
+```json 403 Forbidden
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "User does not have permission to update or delete assessments."
+  }
+}
+```
+
+```json 404 Not Found
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Assessment does not exist."
+  }
+}
+```
+</ResponseExample>

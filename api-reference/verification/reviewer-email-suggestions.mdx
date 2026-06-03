@@ -1,0 +1,49 @@
+---
+title: "Get Email Suggestions"
+api: "GET /storereviewerdetails/email-suggestions"
+description: "Return reviewer autocomplete suggestions filtered by website domain and optional email prefix."
+---
+
+Powers the autocomplete suggestions in the reviewer email input field. Returns up to 10 results from live and test databases. Returns an empty array if no website is provided — this is not an error.
+
+<Note>No authentication required for this endpoint.</Note>
+
+## Query Parameters
+
+<ParamField query="website" type="string">
+  Website URL or domain to filter by. Returns empty array if missing or unparseable.
+</ParamField>
+
+<ParamField query="email" type="string">
+  Partial email string for prefix filtering. Case-insensitive.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl "https://api.yourservice.com/api/v1/storereviewerdetails/email-suggestions?website=techcorp.com&email=priya"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": {
+    "suggestions": [
+      {
+        "name": "Priya Sharma",
+        "email": "priya.sharma@techcorp.com",
+        "company": "TechCorp"
+      }
+    ]
+  }
+}
+```
+
+```json 200 OK (No Results)
+{
+  "success": true,
+  "data": { "suggestions": [] }
+}
+```
+</ResponseExample>

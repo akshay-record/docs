@@ -1,0 +1,260 @@
+---
+title: "Init Session"
+api: "POST /verify"
+description: "Initialize a skill verification session for a student."
+---
+
+## Overview
+
+Validates the student's data, creates or retrieves a user record, stores a session in Redis, registers a callback webhook, and returns a session token to drive the rest of the verification flow.
+
+<Warning>
+  At least one of `projects`, `experience`, or `certificates` must be non-empty.
+</Warning>
+
+---
+
+## Request Body
+
+<ParamField body="studentId" type="string" required>
+  External student identifier from your system.
+</ParamField>
+
+<ParamField body="callbackWebhookUrl" type="string" required>
+  URL to receive `verification.initiated` and `verification.completed` webhook callbacks.
+</ParamField>
+
+<ParamField body="name" type="string" required>
+  Full name of the student.
+</ParamField>
+
+<ParamField body="email" type="string">
+  Student email address. Required if `phoneNumber` is absent.
+</ParamField>
+
+<ParamField body="phoneNumber" type="string">
+  Student phone number. Required if `email` is absent.
+</ParamField>
+
+<ParamField body="projects" type="array" required>
+  List of student project objects. Can be empty only if `experience` or `certificates` is non-empty.
+
+  <Expandable title="Project object fields">
+    <ParamField body="projectId" type="string" required>
+      Your system's unique project identifier.
+    </ParamField>
+    <ParamField body="name" type="string" required>
+      Project name.
+    </ParamField>
+    <ParamField body="description" type="string">
+      Project description.
+    </ParamField>
+    <ParamField body="startDate" type="string">
+      Start date (ISO 8601).
+    </ParamField>
+    <ParamField body="endDate" type="string">
+      End date (ISO 8601). Omit if ongoing.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="experience" type="array" required>
+  List of student work experience objects.
+
+  <Expandable title="Experience object fields">
+    <ParamField body="workExperienceId" type="string" required>
+      Your system's unique experience identifier.
+    </ParamField>
+    <ParamField body="role" type="string" required>
+      Job title or role.
+    </ParamField>
+    <ParamField body="companyName" type="string" required>
+      Employer name.
+    </ParamField>
+    <ParamField body="description" type="string">
+      Role description.
+    </ParamField>
+    <ParamField body="startDate" type="string">
+      Start date (ISO 8601).
+    </ParamField>
+    <ParamField body="endDate" type="string">
+      End date (ISO 8601). Omit if current role.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="certificates" type="array" required>
+  List of student certificate objects.
+
+  <Expandable title="Certificate object fields">
+    <ParamField body="credentialId" type="string" required>
+      Your system's unique certificate identifier.
+    </ParamField>
+    <ParamField body="name" type="string" required>
+      Certificate name.
+    </ParamField>
+    <ParamField body="issuedOrganization" type="string">
+      Issuing organisation name.
+    </ParamField>
+    <ParamField body="issueDate" type="string">
+      Issue date (ISO 8601).
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="skillIds" type="array">
+  Optional array of skill IDs to verify against.
+</ParamField>
+
+---
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  `true` on success.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="Response fields">
+    <ResponseField name="sessionToken" type="string">
+      UUID used to authenticate subsequent verification steps. Store this securely.
+    </ResponseField>
+    <ResponseField name="recordVerificationId" type="string">
+      Unique ID for this verification record (e.g. `ver_live_xxxx`).
+    </ResponseField>
+    <ResponseField name="keyId" type="string">
+      The API key ID used for this request.
+    </ResponseField>
+    <ResponseField name="recordUserId" type="string">
+      Internal user ID — created if new, or existing if matched by email/phone.
+    </ResponseField>
+    <ResponseField name="externalStudentId" type="string">
+      The `studentId` you passed in.
+    </ResponseField>
+    <ResponseField name="expiresIn" type="number">
+      Session TTL in seconds. Default: `3456000` (40 days).
+    </ResponseField>
+    <ResponseField name="expiresAt" type="string">
+      ISO 8601 timestamp of session expiry.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="executionTime" type="string">
+  Server-side execution time (e.g. `"42ms"`).
+</ResponseField>
+
+---
+
+## Behavior Notes
+
+- **User lookup:** Searches for an existing user by `email` (preferred) or `phoneNumber`. Creates a new user if not found.
+- **Session storage:** Stored in Redis with a 40-day TTL. A reverse lookup key `verification:{recordVerificationId}` → `sessionToken` is also stored.
+- **Callback registration:** A `VerificationCallback` record is upserted using `recordVerificationId` as the unique key.
+- **Mode:** Derived from the API key — `live` or `test`. Determines database models and ID prefixes.
+
+---
+
+## Validation Rules
+
+| Rule | Error Code |
+|---|---|
+| `studentId` missing | `MISSING_STUDENT_ID` |
+| `callbackWebhookUrl` missing | `MISSING_CALLBACK_WEBHOOK_URL` |
+| `name` missing | `MISSING_NAME` |
+| Both `email` and `phoneNumber` missing | `MISSING_CONTACT` |
+| `projects`, `experience`, or `certificates` not an array | `INVALID_DATA_FORMAT` |
+| All three arrays are empty | `NO_DATA` |
+| `skillIds` provided but not an array | `INVALID_SKILL_IDS` |
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.yourservice.com/api/v1/verify \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your_api_key_here" \
+  -d '{
+    "studentId": "student_123",
+    "callbackWebhookUrl": "https://yourapp.com/webhooks/verification",
+    "name": "Arun Kumar",
+    "email": "arun@example.com",
+    "projects": [
+      {
+        "projectId": "proj_001",
+        "name": "E-Commerce App",
+        "description": "Built with React and Node.js",
+        "startDate": "2023-01-01"
+      }
+    ],
+    "experience": [
+      {
+        "workExperienceId": "exp_001",
+        "role": "Frontend Developer",
+        "companyName": "TechCorp",
+        "startDate": "2022-06-01",
+        "endDate": "2023-01-01"
+      }
+    ],
+    "certificates": [],
+    "skillIds": ["skill_001", "skill_002"]
+  }'
+```
+
+```javascript Node.js
+const response = await fetch('https://api.yourservice.com/api/v1/verify', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': 'your_api_key_here'
+  },
+  body: JSON.stringify({
+    studentId: 'student_123',
+    callbackWebhookUrl: 'https://yourapp.com/webhooks/verification',
+    name: 'Arun Kumar',
+    email: 'arun@example.com',
+    projects: [{ projectId: 'proj_001', name: 'E-Commerce App' }],
+    experience: [{ workExperienceId: 'exp_001', role: 'Frontend Developer', companyName: 'TechCorp' }],
+    certificates: [],
+    skillIds: ['skill_001', 'skill_002']
+  })
+});
+const data = await response.json();
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201 Created
+{
+  "success": true,
+  "data": {
+    "sessionToken": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "recordVerificationId": "ver_live_abc123",
+    "keyId": "key_xxxx",
+    "recordUserId": "usr_live_xyz789",
+    "externalStudentId": "student_123",
+    "expiresIn": 3456000,
+    "expiresAt": "2025-05-19T10:00:00.000Z"
+  },
+  "executionTime": "42ms"
+}
+```
+
+```json 400 Validation Error
+{
+  "success": false,
+  "error": {
+    "code": "MISSING_STUDENT_ID",
+    "message": "Student ID is required"
+  }
+}
+```
+
+```json 500 Session Storage Failed
+{
+  "success": false,
+  "error": {
+    "code": "SESSION_STORAGE_FAILED",
+    "message": "Failed to create session"
+  }
+}
+```
+</ResponseExample>

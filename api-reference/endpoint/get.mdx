@@ -1,0 +1,85 @@
+---
+title: Get Selected Skills
+api: GET /api/selected-skills/{user_id}
+description: "Pull up everything a user has selected so far."
+---
+
+Pass in a user ID, get back their full list of selected skills. If they haven't selected anything yet, you'll get an empty array — not an error.
+
+No authentication needed.
+
+---
+
+## Path Parameters
+
+<ParamField path="user_id" type="string" required>
+  The ID of the user you want to look up. This is whatever string you're using as a user identifier in your system.
+</ParamField>
+
+---
+
+## Response
+
+<ResponseField name="success" type="boolean">Always `true` when the request goes through fine</ResponseField>
+<ResponseField name="count" type="integer">How many skills this user has selected</ResponseField>
+<ResponseField name="data" type="array">
+  The list of selected skill records. Empty array if none yet.
+
+  <Expandable title="Each record looks like this">
+    <ResponseField name="selected_skill_id" type="string">A UUID that uniquely identifies this selection. You'll need this if you want to delete it later.</ResponseField>
+    <ResponseField name="user_id" type="string">The user this belongs to</ResponseField>
+    <ResponseField name="skill_id" type="string">The skill that was selected</ResponseField>
+    <ResponseField name="sub_skill_id" type="string">The sub-skill category it sits in</ResponseField>
+    <ResponseField name="master_skill_id" type="string">The master skill category above that</ResponseField>
+    <ResponseField name="createdAt" type="string">When the skill was selected (ISO 8601)</ResponseField>
+    <ResponseField name="updatedAt" type="string">Last updated (ISO 8601)</ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl "http://localhost:5000/api/selected-skills/user-123"
+```
+
+```js JavaScript
+const res = await fetch(
+  "http://localhost:5000/api/selected-skills/user-123"
+);
+const { data, count } = await res.json();
+```
+
+```python Python
+import requests
+
+res = requests.get(
+  "http://localhost:5000/api/selected-skills/user-123"
+)
+print(res.json())
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json 200
+{
+  "success": true,
+  "count": 2,
+  "data": [
+    {
+      "selected_skill_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "user_id": "user-123",
+      "skill_id": "sk-001",
+      "sub_skill_id": "sub-001",
+      "master_skill_id": "ms-001",
+      "createdAt": "2025-01-15T10:30:00.000Z",
+      "updatedAt": "2025-01-15T10:30:00.000Z"
+    }
+  ]
+}
+```
+</ResponseExample>

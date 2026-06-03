@@ -1,0 +1,52 @@
+---
+title: "Get Assessment Questions"
+api: "GET /assessment/{recordVerificationId}"
+description: "Retrieve previously generated questions for a session."
+---
+
+Returns only `questionId`, `question`, and `options`. Correct answers are never returned. Used to re-display questions if the student navigates away and returns.
+
+<Note>
+  Requires a valid session token via the `x-api-key` session middleware.
+</Note>
+
+## Path Parameters
+
+<ParamField path="recordVerificationId" type="string" required>
+  The verification session ID.
+</ParamField>
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `MISSING_VERIFICATION_ID` | 400 | No `recordVerificationId` in session |
+| `NO_QUESTIONS` | 404 | No questions found — call generate first |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+<RequestExample>
+```bash cURL
+curl https://api.yourservice.com/api/v1/assessment/ver_live_abc123 \
+  -H "x-api-key: your_api_key_here"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "totalQuestions": 10,
+    "questions": [
+      {
+        "questionId": "uuid-q-1",
+        "question": "Which React hook is used to manage side effects?",
+        "options": ["useState", "useEffect", "useContext", "useReducer"]
+      }
+    ]
+  },
+  "executionTime": "12ms"
+}
+```
+</ResponseExample>

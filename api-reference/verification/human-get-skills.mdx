@@ -1,0 +1,52 @@
+---
+title: "Get Skills for Review"
+api: "GET /humanverification/skills/{recordVerificationId}"
+description: "Return all skills for a verification session — used to render the reviewer's page."
+---
+
+Intended for the reviewer's frontend to display what they are being asked to endorse, including proof URLs.
+
+<Note>No authentication required. Accessed from the reviewer's email link.</Note>
+
+## Path Parameters
+
+<ParamField path="recordVerificationId" type="string" required>
+  The verification session ID.
+</ParamField>
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `MISSING_VERIFICATION_ID` | 400 | Path parameter is missing |
+| `NO_SKILLS_FOUND` | 404 | No skills found for this session |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+<RequestExample>
+```bash cURL
+curl https://api.yourservice.com/api/v1/humanverification/skills/ver_live_abc123
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "skills": [
+      {
+        "skillId": "skill_001",
+        "name": "React",
+        "proofUrls": ["https://github.com/user/project"]
+      },
+      {
+        "skillId": "skill_002",
+        "name": "Node.js",
+        "proofUrls": []
+      }
+    ]
+  }
+}
+```
+</ResponseExample>

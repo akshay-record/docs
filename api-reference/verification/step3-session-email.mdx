@@ -1,0 +1,32 @@
+---
+title: "Get Session Email"
+api: "GET /step3/store-verification-items/{sessionToken}/email"
+description: "Return only the email, name, and recordUserId from the session."
+---
+
+Lightweight alternative to the full session fetch when only contact details are needed.
+
+<Note>No authentication required for this endpoint.</Note>
+
+## Path Parameters
+
+<ParamField path="sessionToken" type="string" required>
+  The session token returned from `POST /verify`.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl https://api.yourservice.com/api/v1/step3/store-verification-items/f47ac10b-58cc-4372-a567-0e02b2c3d479/email
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "email": "arun@example.com",
+  "name": "Arun Kumar",
+  "recordUserId": "usr_live_xyz789"
+}
+```
+</ResponseExample>

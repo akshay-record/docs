@@ -1,0 +1,78 @@
+---
+title: "Retake Assessment"
+api: "POST /assessment/retakeassessment"
+description: "Generate fresh questions for a student to retry a failed assessment."
+---
+
+## Overview
+
+The previous questions are deleted and replaced with a new AI-generated set. The previous attempt result is preserved in the database for history. Only available when the student has at least one prior **failed** attempt.
+
+<Warning>
+  Allow extra time — AI generation is involved. Same 90-second timeout applies as `POST /assessment/generate`.
+</Warning>
+
+<Note>
+  Requires a valid session token via the `x-api-key` session middleware. No additional fields needed in the request body.
+</Note>
+
+---
+
+## Retake Eligibility Rules
+
+| Condition | Result |
+|---|---|
+| Assessment is locked (passed) | `403 ASSESSMENT_LOCKED` |
+| No prior attempt exists | `400 NO_PRIOR_ATTEMPT` |
+| Last attempt was passed | `403 ASSESSMENT_PASSED` |
+| Last attempt was failed | Allowed — new questions generated |
+
+---
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `MISSING_VERIFICATION_ID` | 400 | No `recordVerificationId` in session |
+| `ASSESSMENT_LOCKED` | 403 | Already passed and locked |
+| `NO_PRIOR_ATTEMPT` | 400 | No prior attempt — use generate for first attempt |
+| `ASSESSMENT_PASSED` | 403 | Last attempt was a pass — retake not permitted |
+| `NO_DATA` | 400 | No projects, experience, or certificates found |
+| `NO_SKILLS` | 400 | No skills found for this session |
+| `GENERATION_FAILED` | 500 | AI generation returned zero questions |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.yourservice.com/api/v1/assessment/retakeassessment \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your_api_key_here"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201 Created
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "retakeAttemptNumber": 2,
+    "totalQuestions": 10,
+    "questions": [
+      {
+        "questionId": "uuid-q-new-1",
+        "question": "What is the virtual DOM in React?",
+        "options": [
+          "A copy of the real DOM kept in memory",
+          "A browser extension",
+          "A CSS framework",
+          "A JavaScript bundler"
+        ]
+      }
+    ]
+  },
+  "message": "Retake assessment generated successfully",
+  "executionTime": "7900ms"
+}
+```
+</ResponseExample>

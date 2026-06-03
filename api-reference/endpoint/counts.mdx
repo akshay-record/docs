@@ -1,0 +1,78 @@
+---
+title: Get Skill Counts
+api: GET /api/admin/counts
+description: "A quick snapshot of how many skills are in the database."
+---
+
+Returns the total document count for each skill collection — master skills, sub-skills, and individual skills. Useful for verifying that a data import went through or just keeping an eye on how the catalogue is growing.
+
+This is an admin-only route. You'll need to pass your API key.
+
+---
+
+## Headers
+
+<ParamField header="x-api-key" type="string" required>
+  Your admin API key. Set this via the `ADMIN_API_KEY` environment variable on the server.
+</ParamField>
+
+---
+
+## Response
+
+<ResponseField name="master_skill_count" type="integer">How many top-level skill domains exist</ResponseField>
+<ResponseField name="sub_skill_count" type="integer">How many sub-skill categories exist across all master skills</ResponseField>
+<ResponseField name="skill_count" type="integer">How many individual skills are in the catalogue in total</ResponseField>
+
+---
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl http://localhost:5000/api/admin/counts \
+  -H "x-api-key: supersecretadminkey123"
+```
+
+```js JavaScript
+const res = await fetch("http://localhost:5000/api/admin/counts", {
+  headers: { "x-api-key": "supersecretadminkey123" }
+});
+const counts = await res.json();
+console.log(`${counts.skill_count} skills across ${counts.master_skill_count} domains`);
+```
+
+```python Python
+import requests
+
+res = requests.get(
+  "http://localhost:5000/api/admin/counts",
+  headers={"x-api-key": "supersecretadminkey123"}
+)
+print(res.json())
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json 200
+{
+  "master_skill_count": 8,
+  "sub_skill_count": 34,
+  "skill_count": 210
+}
+```
+
+```json 403
+{
+  "message": "Access Denied"
+}
+```
+</ResponseExample>
+
+---
+
+<Warning>
+  Don't use your real `ADMIN_API_KEY` value in client-side code or paste it into public chat logs. Treat it like a password.
+</Warning>

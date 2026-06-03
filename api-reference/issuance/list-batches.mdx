@@ -1,0 +1,65 @@
+---
+title: "List Credential Batches"
+api: "GET /api/external/issuance/credentials"
+description: "List all credential batches issued under your organisation."
+---
+
+## Overview
+
+Returns a summary list of every credential batch your organisation has issued. To see the full recipient list for a batch, use [Get Credential Batch](/api-reference/issuance/get-batch).
+
+<Note>
+  No query parameters or request body required. Authentication via `Authorization` or `X-Api-Key` header.
+</Note>
+
+---
+
+## Response Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `batchId` | string | Unique batch identifier |
+| `programId` | string | Programme this batch belongs to |
+| `batchName` | string | Batch label |
+| `orgId` | string | Organisation |
+| `mode` | string | `"live"` or `"test"` |
+| `status` | string | Batch status |
+| `recipientCount` | number | Number of credentials issued in this batch |
+| `issuedAt` | string | ISO 8601 timestamp |
+
+---
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `UNAUTHORIZED` | 401 | Token missing or invalid |
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url https://api.getrecord.in/api/external/issuance/credentials \
+  --header 'Authorization: Bearer sk_test_your_token_here'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "message": "Credential batches fetched successfully",
+  "data": [
+    {
+      "batchId": "batch_1779353381048_e3ixqz",
+      "programId": "prog_1779172339924_j3pr93",
+      "batchName": "May 2025 Cohort",
+      "orgId": "org_1779085658651_hmhfv5",
+      "mode": "test",
+      "status": "issued",
+      "recipientCount": 2,
+      "issuedAt": "2025-05-21T08:09:41.048Z"
+    }
+  ]
+}
+```
+</ResponseExample>

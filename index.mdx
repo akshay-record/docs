@@ -1,0 +1,52 @@
+---
+title: "Record Skills Verification API"
+description: "Overview of the full integration flow across credentials, SDKs, verification, webhooks, and infrastructure."
+---
+
+# Record Skills Verification API
+
+Use this documentation to integrate the verification and skills flow across **Testing**, **Staging**, and **Production** environments.
+
+## What you'll set up
+
+<Card title="Credentials & Vault" icon="key">
+  Configure API keys, secret keys, base URLs, callback URLs, and webhook secrets.
+</Card>
+
+<Card title="SDK Setup" icon="box">
+  Use the Popup SDK for testing and staging. Use the Skills Frontends SDK for staging and production.
+</Card>
+
+<Card title="Client Data" icon="user">
+  Pass client identity fields during session initialization, including name, email, and fallback phone number.
+</Card>
+
+<Card title="Webhooks" icon="bell">
+  Receive verification results, assessment updates, skills metadata, and audit logs.
+</Card>
+
+## High-level flow
+
+1. Initialize session
+2. Launch SDK
+3. Identity capture
+4. Assessment
+5. Verification decision
+6. Skills delivery
+7. Audit logging
+
+## Environments at a glance
+
+| Environment | Base URL | Popup SDK | Skills SDK |
+| --- | --- | --- | --- |
+| Testing | `https://api-test.example.com/v1` | Yes | No |
+| Staging | `https://api-staging.example.com/v1` | Yes | Yes |
+| Production | `https://api.example.com/v1` | No | Yes |
+
+## Recommended start order
+
+1. Read [Quickstart](/quickstart)
+2. Configure [Credentials & Keys](/guides/credentials-and-keys)
+3. Review [Environments](/guides/environments)
+4. Implement [Session & Client Data](/guides/session-and-client-data)
+5. Add [Webhooks](/guides/webhooks)

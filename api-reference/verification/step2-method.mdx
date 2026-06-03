@@ -1,0 +1,83 @@
+---
+title: "Set Verification Method"
+api: "POST /step2/verification-method"
+description: "Choose between human endorsement or AI assessment for the verification."
+---
+
+## Overview
+
+Stores the endorsement type selected for this verification session. Must be called after Step 1 and before Step 3. The method chosen here determines which path the verification will follow.
+
+<Note>
+  Requires a valid session token via the `x-api-key` session middleware.
+</Note>
+
+---
+
+## Request Body
+
+<ParamField body="recordVerificationId" type="string" required>
+  Verification session ID returned from `POST /verify`.
+</ParamField>
+
+<ParamField body="verificationMethod" type="string" required>
+  The endorsement type. Accepted values:
+
+  - `human` — A reviewer will endorse the student's skills via email.
+  - `assessment` — An AI will generate questions for the student to answer.
+</ParamField>
+
+---
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  `true` on success.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="Response fields">
+    <ResponseField name="recordVerificationId" type="string">
+      The session ID this applies to.
+    </ResponseField>
+    <ResponseField name="verificationMethod" type="string">
+      The endorsement method stored — `human` or `assessment`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `MISSING_VERIFICATION_ID` | 400 | `recordVerificationId` not provided |
+| `MISSING_VERIFICATION_METHOD` | 400 | `verificationMethod` not provided |
+| `INVALID_VERIFICATION_METHOD` | 400 | Value is not `human` or `assessment` |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.yourservice.com/api/v1/step2/verification-method \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your_api_key_here" \
+  -d '{
+    "recordVerificationId": "ver_live_abc123",
+    "verificationMethod": "human"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "verificationMethod": "human"
+  },
+  "message": "Verification method stored successfully"
+}
+```
+</ResponseExample>

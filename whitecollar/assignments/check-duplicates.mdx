@@ -1,0 +1,105 @@
+---
+title: "Check Duplicates"
+api: "POST /api/v1/assessments/{assessmentId}/assign/check"
+description: "Preview candidates already assigned to an assessment."
+---
+
+## Overview
+
+Before creating a batch, check which emails are already assigned to the same assessment.
+
+<Note>
+  This preview lets the UI warn you before committing an assignment batch.
+</Note>
+
+---
+
+## Path Parameters
+
+<ParamField path="assessmentId" type="string" required>
+  Assessment identifier.
+</ParamField>
+
+---
+
+## Request Body
+
+<ParamField body="orgId" type="string" required>
+  Organization identifier.
+</ParamField>
+
+<ParamField body="emails" type="array" required>
+  Candidate email addresses to check.
+</ParamField>
+
+---
+
+## Response Fields
+
+<ResponseField name="success" type="boolean">
+  `true` when the duplicate check succeeds.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="Duplicate check fields">
+    <ResponseField name="alreadyAssigned" type="array">
+      Email addresses already assigned to the assessment.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+<RequestExample>
+```bash cURL
+curl --request POST \
+  --url https://api.getrecord.in/api/v1/assessments/asmnt_abc123/assign/check \
+  --header 'Authorization: Bearer your_access_token' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "orgId": "RORG123456",
+    "emails": ["alice@example.com", "bob@example.com", "carol@example.com"]
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": {
+    "alreadyAssigned": ["bob@example.com"]
+  }
+}
+```
+
+```json 400 Validation Error
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request body is invalid."
+  }
+}
+```
+
+```json 401 Unauthorized
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Access token missing or invalid."
+  }
+}
+```
+
+```json 404 Not Found
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Assessment does not exist."
+  }
+}
+```
+</ResponseExample>

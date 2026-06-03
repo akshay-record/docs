@@ -1,0 +1,67 @@
+---
+title: "Get Verify Page Data"
+api: "GET /humanverification/verify-page/{recordVerificationId}"
+description: "Return all data needed to render the reviewer's verification page."
+---
+
+Returns skills, source context, student info, reviewer info, and endorsement type. Source context is normalised into a single `source` object regardless of whether the source is a project, experience, or certificate.
+
+<Note>No authentication required. Accessed from the reviewer's email link.</Note>
+
+## Path Parameters
+
+<ParamField path="recordVerificationId" type="string" required>
+  The verification session ID.
+</ParamField>
+
+## Source Object — `type` Values
+
+| `source.type` | When Used |
+|---|---|
+| `experience` | Source is a work experience entry |
+| `project` | Source is a project |
+| `certificate` | Source is a certificate |
+
+Priority order: `experience` → `project` → `certificate`.
+
+<RequestExample>
+```bash cURL
+curl https://api.yourservice.com/api/v1/humanverification/verify-page/ver_live_abc123
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "endorserInfo": {
+      "name": "Priya Sharma",
+      "company": "TechCorp",
+      "email": "priya.sharma@techcorp.com"
+    },
+    "requesterInfo": {
+      "name": "Arun Kumar",
+      "email": "arun@example.com",
+      "externalStudentId": "student_123"
+    },
+    "source": {
+      "type": "experience",
+      "title": "Frontend Developer",
+      "subtitle": "TechCorp",
+      "meta": "Jun 2022 – Jan 2023",
+      "description": "Dashboard UI development"
+    },
+    "skills": [
+      {
+        "skillId": "skill_001",
+        "name": "React",
+        "proofUrl": ["https://github.com/user/project"]
+      }
+    ]
+  },
+  "executionTime": "95ms"
+}
+```
+</ResponseExample>

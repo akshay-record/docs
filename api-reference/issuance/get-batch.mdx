@@ -1,0 +1,89 @@
+---
+title: "Get Credential Batch"
+api: "GET /api/external/issuance/credentials/{batchId}"
+description: "Retrieve full details of a credential batch including all recipients and their credential URLs."
+---
+
+## Overview
+
+Returns complete batch details including every recipient and their unique `credentialUrl`. Use `batchId` values from the [Issue Credentials](/api-reference/issuance/issue-credentials) or [List Credential Batches](/api-reference/issuance/list-batches) response.
+
+<Note>
+  No request body required. Pass the `batchId` as a path parameter.
+</Note>
+
+---
+
+## Path Parameters
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `batchId` | string | Yes | The `batchId` returned from Issue Credentials or List Batches |
+
+---
+
+## Response Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `batchId` | string | Unique batch identifier |
+| `programId` | string | Programme this batch belongs to |
+| `batchName` | string | Name given to this batch |
+| `orgId` | string | Organisation |
+| `mode` | string | `"live"` or `"test"` |
+| `status` | string | Batch status |
+| `recipients` | array | Array of issued credentials |
+| `recipients[].recipientId` | string | Unique credential ID per recipient |
+| `recipients[].name` | string | Recipient full name |
+| `recipients[].email` | string | Recipient email address |
+| `recipients[].credentialUrl` | string | Public URL to view the credential |
+| `issuedAt` | string | ISO 8601 timestamp |
+
+---
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `UNAUTHORIZED` | 401 | Token missing or invalid |
+| `NOT_FOUND` | 404 | `batchId` does not exist or belongs to another org |
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url https://api.getrecord.in/api/external/issuance/credentials/batch_1779353381048_e3ixqz \
+  --header 'Authorization: Bearer sk_test_your_token_here'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "message": "Credential batch fetched successfully",
+  "data": {
+    "batchId": "batch_1779353381048_e3ixqz",
+    "programId": "prog_1779172339924_j3pr93",
+    "batchName": "May 2025 Cohort",
+    "orgId": "org_1779085658651_hmhfv5",
+    "mode": "test",
+    "status": "issued",
+    "recipients": [
+      {
+        "recipientId": "rec_1779353381048_ab12cd",
+        "name": "Alice Johnson",
+        "email": "alice@example.com",
+        "credentialUrl": "https://app.getrecord.in/credential/rec_1779353381048_ab12cd"
+      },
+      {
+        "recipientId": "rec_1779353381049_ef34gh",
+        "name": "Bob Smith",
+        "email": "bob@example.com",
+        "credentialUrl": "https://app.getrecord.in/credential/rec_1779353381049_ef34gh"
+      }
+    ],
+    "issuedAt": "2025-05-21T08:09:41.048Z"
+  }
+}
+```
+</ResponseExample>

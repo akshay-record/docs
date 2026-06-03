@@ -1,0 +1,89 @@
+---
+title: "Verify Skills"
+api: "POST /humanverification/verify"
+description: "Reviewer submits their endorsement decision."
+---
+
+## Overview
+
+Skills included in `skillIds` are marked **verified**. Skills currently pending but not included are marked **rejected**. After saving:
+
+- Fires a `verification.completed` webhook with full results.
+- Sends a confirmation email to the student.
+- Marks the reviewer session as completed (preventing re-submission).
+- Increments `verifiedProfiles` on the API key.
+
+<Note>
+  Uses the `reviewerToken` from the email link for authorisation — **no session authentication required**.
+</Note>
+
+---
+
+## Query Parameters
+
+<ParamField query="reviewerToken" type="string" required>
+  The reviewer token embedded in the email link.
+</ParamField>
+
+---
+
+## Request Body
+
+<ParamField body="skillIds" type="string[]" required>
+  IDs of the skills the reviewer is endorsing. Must not be empty.
+</ParamField>
+
+---
+
+## Token Validation Rules
+
+| Condition | Result |
+|---|---|
+| Token not found | `401 INVALID_REVIEWER_TOKEN` |
+| Token found but expired | `410 REVIEWER_TOKEN_EXPIRED` — session marked expired |
+| Session already completed | `409 ALREADY_VERIFIED` |
+| Token valid and pending | Proceeds normally |
+
+---
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `MISSING_REVIEWER_TOKEN` | 400 | `reviewerToken` query param not provided |
+| `MISSING_SKILL_IDS` | 400 | `skillIds` is missing or empty |
+| `INVALID_REVIEWER_TOKEN` | 401 | Token not found in live or test database |
+| `REVIEWER_TOKEN_EXPIRED` | 410 | Review link has expired — student must resend |
+| `ALREADY_VERIFIED` | 409 | This verification has already been completed |
+| `REVIEWER_NOT_FOUND` | 404 | Reviewer details not found for this session |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://api.yourservice.com/api/v1/humanverification/verify?reviewerToken=uuid-reviewer-token" \
+  -H "Content-Type: application/json" \
+  -d '{ "skillIds": ["skill_001"] }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "skillsVerified": 1,
+    "reviewerEmail": "priya.sharma@techcorp.com",
+    "webhook": { "sent": true, "status": "sending" },
+    "summary": {
+      "totalSkillsVerified": 1,
+      "totalProjects": 1,
+      "totalExperience": 0,
+      "totalCertificates": 0
+    }
+  },
+  "message": "Skills verified successfully",
+  "executionTime": "540ms"
+}
+```
+</ResponseExample>

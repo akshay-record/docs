@@ -1,0 +1,47 @@
+---
+title: "WhiteCollar Assessments"
+description: "Overview of the WhiteCollar Assessments module."
+---
+
+## Overview
+
+WhiteCollar Assessments is a Record Studio module for creating, assigning, proctoring, and scoring assessments for white-collar roles.
+
+Use it to:
+
+- Generate assessments from job descriptions.
+- Build custom knowledge and coding sections.
+- Assign assessments to candidate batches.
+- Track proctoring violations and candidate progress.
+- Review funnel and pass-rate analytics.
+
+---
+
+## Operating modes
+
+All resources are scoped to a mode.
+
+| Mode | Description | Use case |
+| --- | --- | --- |
+| `test` | Sandbox data with no real candidate impact. | Development, QA, and integration testing. |
+| `live` | Production data for real candidate evaluations. | Active hiring campaigns. |
+
+<Warning>
+  Create test-mode API keys and assessments during integration development. Records do not cross between `test` and `live` modes.
+</Warning>
+
+---
+
+## Roles
+
+| Role | Create | Update | Delete | Read |
+| --- | --- | --- | --- | --- |
+| `owner` | Yes | Yes | Yes | Yes |
+| `superadmin` | Yes | Yes | Yes | Yes |
+| `reader` | No | No | No | Yes |
+
+---
+
+## Reference PDF
+
+[Open the WhiteCollar Assessments PDF](/assets/whitecollar-assessments-documentation.pdf)

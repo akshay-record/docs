@@ -1,0 +1,97 @@
+---
+title: "Store Reviewer Details"
+api: "POST /storereviewerdetails/store"
+description: "Store the endorser details for a human verification session."
+---
+
+## Overview
+
+Stores or updates the reviewer (endorser) for a given verification session. Checks for duplicate reviewer emails across the same skill and source before storing.
+
+<Note>
+  Applies to **human endorsement verifications only**.
+</Note>
+
+## Key Rule — Reviewer Email Uniqueness
+
+For the same skill and source, each endorsement type must use a **different** reviewer email. If the same email is already associated with an endorsement for the same source under any other endorsement type, the request is rejected with `DUPLICATE_REVIEWER_EMAIL`.
+
+---
+
+## Request Body
+
+<ParamField body="recordVerificationId" type="string" required>
+  Verification session ID from `POST /verify`.
+</ParamField>
+
+<ParamField body="name" type="string" required>
+  Full name of the reviewer.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  Reviewer email address. Stored in lowercase. Must be a valid email format.
+</ParamField>
+
+<ParamField body="company" type="string" required>
+  Company or organisation the reviewer belongs to.
+</ParamField>
+
+<ParamField body="website" type="string">
+  Reviewer's company website. Must be a valid URL if provided.
+</ParamField>
+
+---
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `MISSING_VERIFICATION_ID` | 400 | `recordVerificationId` not provided |
+| `MISSING_NAME` | 400 | `name` not provided |
+| `MISSING_EMAIL` | 400 | `email` not provided |
+| `MISSING_COMPANY` | 400 | `company` not provided |
+| `INVALID_EMAIL` | 400 | Email format is invalid |
+| `INVALID_WEBSITE` | 400 | Website is provided but not a valid URL |
+| `DUPLICATE_REVIEWER_EMAIL` | 409 | Email already used as endorser for the same source |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.yourservice.com/api/v1/storereviewerdetails/store \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your_api_key_here" \
+  -d '{
+    "recordVerificationId": "ver_live_abc123",
+    "name": "Priya Sharma",
+    "email": "priya.sharma@techcorp.com",
+    "company": "TechCorp",
+    "website": "https://techcorp.com"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "name": "Priya Sharma",
+    "email": "priya.sharma@techcorp.com",
+    "company": "TechCorp",
+    "website": "https://techcorp.com"
+  },
+  "message": "Reviewer details stored successfully"
+}
+```
+
+```json 409 Duplicate Email
+{
+  "success": false,
+  "error": {
+    "code": "DUPLICATE_REVIEWER_EMAIL",
+    "message": "This email is already used as an endorser for the same source."
+  }
+}
+```
+</ResponseExample>

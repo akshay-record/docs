@@ -1,0 +1,52 @@
+---
+title: "Get Session Data"
+api: "GET /step3/store-verification-items/session/{sessionToken}"
+description: "Retrieve the full session data stored in Redis for the given session token."
+---
+
+Used by the frontend to display all projects, experiences, and certificates originally submitted during `POST /verify` so the student can select which to attach.
+
+<Note>No authentication required for this endpoint.</Note>
+
+## Path Parameters
+
+<ParamField path="sessionToken" type="string" required>
+  The session token returned from `POST /verify`.
+</ParamField>
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `MISSING_SESSION_TOKEN` | 400 | Path parameter is missing |
+| `SESSION_NOT_FOUND` | 404 | Session is expired or invalid — student must restart verification |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+<RequestExample>
+```bash cURL
+curl https://api.yourservice.com/api/v1/step3/store-verification-items/session/f47ac10b-58cc-4372-a567-0e02b2c3d479
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "recordUserId": "usr_live_xyz789",
+    "externalStudentId": "student_123",
+    "callbackWebhookUrl": "https://yourapp.com/webhooks/verification",
+    "email": "arun@example.com",
+    "name": "Arun Kumar",
+    "projects": [
+      { "projectId": "proj_001", "name": "E-Commerce App", "description": "Built with React and Node.js" }
+    ],
+    "experience": [
+      { "workExperienceId": "exp_001", "role": "Frontend Developer", "companyName": "TechCorp" }
+    ],
+    "certificates": []
+  }
+}
+```
+</ResponseExample>

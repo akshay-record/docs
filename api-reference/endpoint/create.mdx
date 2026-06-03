@@ -1,0 +1,137 @@
+---
+title: Add Selected Skill
+api: POST /api/selected-skills
+description: "Record that a user has selected a skill."
+---
+
+Send a user ID and a skill ID, and this creates a record tying them together. That's it.
+
+One rule: a user can't select the same skill twice. Try it and you'll get a `409`. This is enforced at both the application level and in the database with a compound unique index, so even concurrent requests won't create duplicates.
+
+No authentication needed.
+
+---
+
+## Request Body
+
+<ParamField body="user_id" type="string" required>
+  The user who's selecting the skill.
+</ParamField>
+
+<ParamField body="skill_id" type="string" required>
+  The skill being selected.
+</ParamField>
+
+<ParamField body="sub_skill_id" type="string" required>
+  The sub-skill category this skill belongs to. You can get this from the search endpoint.
+</ParamField>
+
+<ParamField body="master_skill_id" type="string" required>
+  The master skill category. Also available from search results.
+</ParamField>
+
+---
+
+## Response
+
+<ResponseField name="success" type="boolean">`true` when the record is created</ResponseField>
+<ResponseField name="message" type="string">A short confirmation message</ResponseField>
+<ResponseField name="data" type="object">
+  The newly created record. Hold onto the `selected_skill_id` — you'll need it if you want to delete this later.
+
+  <Expandable title="The created record">
+    <ResponseField name="selected_skill_id" type="string">Auto-generated UUID. Save this.</ResponseField>
+    <ResponseField name="user_id" type="string" />
+    <ResponseField name="skill_id" type="string" />
+    <ResponseField name="sub_skill_id" type="string" />
+    <ResponseField name="master_skill_id" type="string" />
+    <ResponseField name="createdAt" type="string">ISO 8601 timestamp</ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST http://localhost:5000/api/selected-skills \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "user-123",
+    "skill_id": "sk-001",
+    "sub_skill_id": "sub-001",
+    "master_skill_id": "ms-001"
+  }'
+```
+
+```js JavaScript
+const res = await fetch("http://localhost:5000/api/selected-skills", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    user_id: "user-123",
+    skill_id: "sk-001",
+    sub_skill_id: "sub-001",
+    master_skill_id: "ms-001"
+  })
+});
+const data = await res.json();
+```
+
+```python Python
+import requests
+
+res = requests.post(
+  "http://localhost:5000/api/selected-skills",
+  json={
+    "user_id": "user-123",
+    "skill_id": "sk-001",
+    "sub_skill_id": "sub-001",
+    "master_skill_id": "ms-001"
+  }
+)
+print(res.json())
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json 201
+{
+  "success": true,
+  "message": "Skill selected successfully",
+  "data": {
+    "selected_skill_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "user_id": "user-123",
+    "skill_id": "sk-001",
+    "sub_skill_id": "sub-001",
+    "master_skill_id": "ms-001",
+    "createdAt": "2025-01-15T10:30:00.000Z",
+    "updatedAt": "2025-01-15T10:30:00.000Z"
+  }
+}
+```
+
+```json 400
+{
+  "message": "\"skill_id\" is required"
+}
+```
+
+```json 409
+{
+  "success": false,
+  "message": "Skill already selected by this user"
+}
+```
+</ResponseExample>
+
+---
+
+<Info>
+**Why does the 409 check happen twice?**
+
+The route checks for an existing `{ user_id, skill_id }` record before trying to insert. But just in case two requests land at exactly the same time, the database also has a compound unique index on those fields. The app-level check gives you the nicer error message. The DB-level index is the safety net.
+</Info>

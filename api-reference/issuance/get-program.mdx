@@ -1,0 +1,70 @@
+---
+title: "Get Program"
+api: "GET /api/external/issuance/programs/{programId}"
+description: "Retrieve details of a single programme by its ID."
+---
+
+## Overview
+
+Returns full details for one programme. Use `programId` values from the [List Programs](/api-reference/issuance/list-programs) response.
+
+<Note>
+  No request body required. Pass the `programId` as a path parameter.
+</Note>
+
+---
+
+## Path Parameters
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `programId` | string | Yes | The `programId` returned from List Programs |
+
+---
+
+## Response Fields
+
+| Field | Type | Description |
+|---|---|---|
+| `programId` | string | Unique programme identifier |
+| `name` | string | Programme name |
+| `description` | string | Programme description |
+| `orgId` | string | Organisation the programme belongs to |
+| `mode` | string | `"live"` or `"test"` |
+| `createdAt` | string | ISO 8601 creation timestamp |
+| `updatedAt` | string | ISO 8601 last-updated timestamp |
+
+---
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `UNAUTHORIZED` | 401 | Token missing or invalid |
+| `NOT_FOUND` | 404 | `programId` does not exist or belongs to another org |
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url https://api.getrecord.in/api/external/issuance/programs/prog_1779172339924_j3pr93 \
+  --header 'Authorization: Bearer sk_test_your_token_here'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "message": "Program fetched successfully",
+  "data": {
+    "programId": "prog_1779172339924_j3pr93",
+    "name": "MongoDB",
+    "description": "MongoDB Program",
+    "orgId": "org_1779085658651_hmhfv5",
+    "mode": "test",
+    "createdAt": "2025-05-19T12:12:19.924Z",
+    "updatedAt": "2025-05-19T12:12:19.924Z"
+  }
+}
+```
+</ResponseExample>

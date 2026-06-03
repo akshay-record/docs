@@ -1,0 +1,82 @@
+---
+title: "Get Stored Skills"
+api: "GET /step1/storeskills/{recordVerificationId}"
+description: "Fetch all skills stored for a verification session."
+---
+
+## Overview
+
+Returns all skills stored for a given verification session, including resolved skill names and associated proof URLs.
+
+<Note>No authentication required for this endpoint.</Note>
+
+---
+
+## Path Parameters
+
+<ParamField path="recordVerificationId" type="string" required>
+  The verification session ID to look up.
+</ParamField>
+
+---
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  `true` on success.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="Response fields">
+    <ResponseField name="recordVerificationId" type="string">
+      The session ID.
+    </ResponseField>
+    <ResponseField name="skills" type="array">
+      Array of skill objects with `skillId`, `name`, and `proofUrls`.
+    </ResponseField>
+    <ResponseField name="totalSkills" type="number">
+      Total number of skills stored.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `MISSING_VERIFICATION_ID` | 400 | Path parameter is missing |
+| `NOT_FOUND` | 404 | No skills found for the given `recordVerificationId` |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+<RequestExample>
+```bash cURL
+curl https://api.yourservice.com/api/v1/step1/storeskills/ver_live_abc123
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "skills": [
+      {
+        "skillId": "skill_001",
+        "name": "React",
+        "proofUrls": ["https://github.com/user/project"]
+      },
+      {
+        "skillId": "skill_002",
+        "name": "Node.js",
+        "proofUrls": []
+      }
+    ],
+    "totalSkills": 2
+  },
+  "executionTime": "18ms"
+}
+```
+</ResponseExample>

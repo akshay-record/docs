@@ -1,0 +1,48 @@
+---
+title: "Update Session Email"
+api: "POST /step3/store-verification-items/session/email"
+description: "Update the student's email in both the Redis session and the database."
+---
+
+Used when the email needs to be corrected or set after the session was initiated.
+
+<Note>No authentication required for this endpoint.</Note>
+
+## Request Body
+
+<ParamField body="sessionToken" type="string" required>
+  The session token returned from `POST /verify`.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  The new email address. Must be a valid email format.
+</ParamField>
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `MISSING_DATA` | 400 | `sessionToken` or `email` is missing |
+| `INVALID_EMAIL` | 400 | Email does not match a valid format |
+| `SESSION_NOT_FOUND` | 404 | Session is expired or not found |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.yourservice.com/api/v1/step3/store-verification-items/session/email \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionToken": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "email": "newemail@example.com"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "message": "Email updated successfully"
+}
+```
+</ResponseExample>

@@ -1,0 +1,124 @@
+---
+title: API Reference
+description: "Authentication, errors, rate limits — the stuff that applies to every endpoint."
+---
+
+## Base URL
+
+```
+http://localhost:5000
+```
+
+Replace this with your deployed domain in production.
+
+---
+
+## Authentication
+
+Most of the API is wide open — no tokens, no sign-in. The only exception is the admin routes.
+
+| Route | Auth? |
+|---|---|
+| `GET /api/skills/*` | No |
+| `GET /api/selected-skills/*` | No |
+| `POST /api/selected-skills` | No |
+| `DELETE /api/selected-skills/*` | No |
+| `GET /api/admin/*` | **Yes — API key required** |
+
+### Admin API key
+
+Pass your key in the `x-api-key` header:
+
+```bash
+curl http://localhost:5000/api/admin/counts \
+  -H "x-api-key: your-admin-api-key"
+```
+
+If the key is wrong or missing, you'll get:
+
+```json
+{
+  "message": "Access Denied"
+}
+```
+
+The key is set via the `ADMIN_API_KEY` environment variable. Don't hardcode it anywhere, don't log it, and definitely don't commit it.
+
+---
+
+## Rate limiting
+
+There are three layers of rate limiting in place:
+
+| What's limited | Cap | Window |
+|---|---|---|
+| Every route (global) | 100 requests / IP | 15 minutes |
+| `GET /api/skills/search` | 15 requests / IP | 1 minute |
+| Scraping detection on `/api/skills/*` | 30 requests / IP | 5 minutes rolling |
+
+Hit any of these and you'll get a `429`:
+
+```json
+{
+  "error": "Too many requests. Please try again later."
+}
+```
+
+---
+
+## Errors
+
+The API returns standard HTTP status codes. Here's what each one means in context:
+
+| Code | What happened |
+|---|---|
+| `400` | Something in your request didn't pass validation — missing field, keyword too short, page out of range |
+| `403` | You hit an admin route without a valid API key |
+| `404` | The resource you're referencing doesn't exist |
+| `409` | You tried to add a skill a user already has |
+| `429` | You've been rate limited or flagged for scraping |
+| `500` | Something unexpected broke on the server — check the logs |
+
+Error responses look like this:
+
+```json
+{
+  "success": false,
+  "message": "A clear explanation of what went wrong"
+}
+```
+
+Search and validation errors use `error` instead of `message`:
+
+```json
+{
+  "error": "Keyword must be at least 3 characters long."
+}
+```
+
+Yeah, the inconsistency is a known thing. It'll get cleaned up.
+
+---
+
+## Response shapes
+
+**Paginated list** (search results):
+
+```json
+{
+  "data": [...],
+  "page": 1,
+  "limit": 10,
+  "count": 3
+}
+```
+
+**Single resource** (create/delete):
+
+```json
+{
+  "success": true,
+  "message": "Skill selected successfully",
+  "data": { ... }
+}
+```

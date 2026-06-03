@@ -1,0 +1,54 @@
+---
+title: "Get Verification Items"
+api: "GET /step3/store-verification-items/get/{recordVerificationId}"
+description: "Fetch all stored source items for a verification session."
+---
+
+<Note>No authentication required for this endpoint.</Note>
+
+## Path Parameters
+
+<ParamField path="recordVerificationId" type="string" required>
+  The verification session ID to look up.
+</ParamField>
+
+## Response
+
+Returns all stored projects, work experiences, and certificates for the session. Fields like `description`, `endDate`, `issuedCompanyName`, and `issueDate` may be `null` if not provided during session init.
+
+<RequestExample>
+```bash cURL
+curl https://api.yourservice.com/api/v1/step3/store-verification-items/get/ver_live_abc123
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "projects": [
+      {
+        "externalProjectId": "proj_001",
+        "projectName": "E-Commerce App",
+        "description": "Built with React and Node.js",
+        "startDate": "2023-01-01T00:00:00.000Z",
+        "endDate": null
+      }
+    ],
+    "experience": [
+      {
+        "externalExpId": "exp_001",
+        "companyName": "TechCorp",
+        "role": "Frontend Developer",
+        "startDate": "2022-06-01T00:00:00.000Z",
+        "endDate": "2023-01-01T00:00:00.000Z"
+      }
+    ],
+    "certificates": []
+  },
+  "executionTime": "22ms"
+}
+```
+</ResponseExample>

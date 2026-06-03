@@ -1,0 +1,82 @@
+---
+title: Delete Selected Skill
+api: DELETE /api/selected-skills/{selected_skill_id}
+description: "Remove a skill from a user's profile. This can't be undone."
+---
+
+Deletes a selected skill record. Once it's gone, it's gone — there's no soft delete or recovery here.
+
+No authentication needed.
+
+---
+
+## Path Parameters
+
+<ParamField path="selected_skill_id" type="string" required>
+  The UUID of the **selection record** you want to remove.
+
+  This is **not** the `skill_id`. It's the `selected_skill_id` that was returned when you called `POST /api/selected-skills`. If you don't have it, fetch the user's selected skills first to find it.
+</ParamField>
+
+---
+
+## Response
+
+<ResponseField name="success" type="boolean">`true` when something was actually deleted</ResponseField>
+<ResponseField name="message" type="string">Confirmation or error message</ResponseField>
+
+---
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl -X DELETE \
+  "http://localhost:5000/api/selected-skills/a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+```
+
+```js JavaScript
+const res = await fetch(
+  "http://localhost:5000/api/selected-skills/a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  { method: "DELETE" }
+);
+const data = await res.json();
+```
+
+```python Python
+import requests
+
+res = requests.delete(
+  "http://localhost:5000/api/selected-skills/a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+)
+print(res.json())
+```
+
+</CodeGroup>
+
+<ResponseExample>
+```json 200
+{
+  "success": true,
+  "message": "Selected skill deleted successfully"
+}
+```
+
+```json 404
+{
+  "success": false,
+  "message": "Selected skill not found"
+}
+```
+</ResponseExample>
+
+---
+
+<Warning>
+  **Make sure you're using `selected_skill_id`, not `skill_id`.**
+
+  These are two different things. `skill_id` identifies a skill in the catalogue. `selected_skill_id` identifies the record of a specific user having selected that skill. It's the UUID in the `data` object from the POST response.
+
+  If you pass a `skill_id` here by accident, you'll just get a 404.
+</Warning>

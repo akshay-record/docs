@@ -1,0 +1,110 @@
+---
+title: "List All Assignments"
+api: "GET /api/v1/assessments/assignments"
+description: "List assignment batches across an organization."
+---
+
+## Overview
+
+Returns all assignment batches across the organization, filtered by mode.
+
+Use `mode=test` for test-mode assessment assignments and `mode=live` for live-mode assessment assignments.
+
+---
+
+## Query Parameters
+
+<ParamField query="orgId" type="string" required>
+  Organization identifier.
+</ParamField>
+
+<ParamField query="mode" type="string" required>
+  Assignment mode. Must be `test` or `live`.
+</ParamField>
+
+---
+
+## Response Fields
+
+<ResponseField name="success" type="boolean">
+  `true` when the request succeeds.
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  Assignment batches across the organization.
+
+  <Expandable title="Assignment fields">
+    <ResponseField name="assignmentId" type="string">
+      Unique assignment batch ID.
+    </ResponseField>
+    <ResponseField name="assessmentId" type="string">
+      Assessment identifier.
+    </ResponseField>
+    <ResponseField name="batchName" type="string">
+      Batch label.
+    </ResponseField>
+    <ResponseField name="totalCandidates" type="number">
+      Number of candidates in the batch.
+    </ResponseField>
+    <ResponseField name="createdAt" type="string">
+      ISO 8601 creation timestamp.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url 'https://api.getrecord.in/api/v1/assessments/assignments?orgId=RORG123456&mode=live' \
+  --header 'Authorization: Bearer your_access_token'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": [
+    {
+      "assignmentId": "assgn_abc123",
+      "assessmentId": "asmnt_abc123",
+      "batchName": "Batch June 2026",
+      "totalCandidates": 2,
+      "createdAt": "2026-06-01T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+```json 400 Validation Error
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Required query parameter is missing or invalid."
+  }
+}
+```
+
+```json 401 Unauthorized
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Access token missing or invalid."
+  }
+}
+```
+
+```json 403 Forbidden
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "User does not have permission to read assignments."
+  }
+}
+```
+</ResponseExample>

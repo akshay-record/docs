@@ -1,0 +1,54 @@
+---
+title: "Request signing"
+description: "Sign WhiteCollar API requests with HMAC-SHA256."
+---
+
+## Overview
+
+Every API request must include a cryptographic signature computed with the `secretKey`.
+
+---
+
+## Required headers
+
+| Header | Value |
+| --- | --- |
+| `x-api-key` | Your public `apiKey`. |
+| `x-timestamp` | Current Unix timestamp in milliseconds as a string. |
+| `x-signature` | Hex-encoded HMAC-SHA256 signature. |
+
+---
+
+## Algorithm
+
+1. Concatenate the timestamp and the JSON-serialized request body.
+2. Compute HMAC-SHA256 with the `secretKey`.
+3. Send the API key, timestamp, and signature in request headers.
+
+```js
+const crypto = require("crypto");
+
+const API_KEY = process.env.RECORD_STUDIO_API_KEY;
+const SECRET = process.env.RECORD_STUDIO_SECRET_KEY;
+
+const timestamp = Date.now().toString();
+const payload = JSON.stringify(requestBody);
+
+const signature = crypto
+  .createHmac("sha256", SECRET)
+  .update(timestamp + payload)
+  .digest("hex");
+
+headers["x-api-key"] = API_KEY;
+headers["x-timestamp"] = timestamp;
+headers["x-signature"] = signature;
+```
+
+---
+
+## Timestamp window
+
+The server rejects requests when the timestamp differs from server time by more than:
+
+- 5 minutes in `live` mode.
+- 30 minutes in `test` mode.

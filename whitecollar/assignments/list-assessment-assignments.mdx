@@ -1,0 +1,116 @@
+---
+title: "List Assessment Assignments"
+api: "GET /api/v1/assessments/{assessmentId}/assignments"
+description: "List assignment batches for one assessment."
+---
+
+## Overview
+
+Returns all batches for a specific assessment.
+
+<Note>
+  Use this endpoint when you need assignment batches for one assessment only.
+</Note>
+
+---
+
+## Path Parameters
+
+<ParamField path="assessmentId" type="string" required>
+  Assessment identifier.
+</ParamField>
+
+---
+
+## Query Parameters
+
+<ParamField query="orgId" type="string" required>
+  Organization identifier.
+</ParamField>
+
+---
+
+## Response Fields
+
+<ResponseField name="success" type="boolean">
+  `true` when the request succeeds.
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  Assignment batches.
+
+  <Expandable title="Assignment fields">
+    <ResponseField name="assignmentId" type="string">
+      Unique assignment batch ID.
+    </ResponseField>
+    <ResponseField name="batchName" type="string">
+      Batch label.
+    </ResponseField>
+    <ResponseField name="totalCandidates" type="number">
+      Number of candidates in the batch.
+    </ResponseField>
+    <ResponseField name="duplicatesRemoved" type="number">
+      Number of duplicates skipped.
+    </ResponseField>
+    <ResponseField name="createdAt" type="string">
+      ISO 8601 creation timestamp.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url 'https://api.getrecord.in/api/v1/assessments/asmnt_abc123/assignments?orgId=RORG123456' \
+  --header 'Authorization: Bearer your_access_token'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": [
+    {
+      "assignmentId": "assgn_abc123",
+      "batchName": "Batch June 2026",
+      "totalCandidates": 2,
+      "duplicatesRemoved": 0,
+      "createdAt": "2026-06-01T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+```json 401 Unauthorized
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Access token missing or invalid."
+  }
+}
+```
+
+```json 403 Forbidden
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "User does not have permission to read assignments."
+  }
+}
+```
+
+```json 404 Not Found
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Assessment does not exist."
+  }
+}
+```
+</ResponseExample>

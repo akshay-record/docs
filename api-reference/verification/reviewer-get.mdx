@@ -1,0 +1,42 @@
+---
+title: "Get Reviewer Details"
+api: "GET /storereviewerdetails/{recordVerificationId}"
+description: "Fetch the reviewer details stored for a verification session."
+---
+
+<Note>No authentication required for this endpoint.</Note>
+
+## Path Parameters
+
+<ParamField path="recordVerificationId" type="string" required>
+  The verification session ID to look up.
+</ParamField>
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `MISSING_VERIFICATION_ID` | 400 | Path parameter is missing |
+| `NOT_FOUND` | 404 | No reviewer details found for this session |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+<RequestExample>
+```bash cURL
+curl https://api.yourservice.com/api/v1/storereviewerdetails/ver_live_abc123
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "name": "Priya Sharma",
+    "email": "priya.sharma@techcorp.com",
+    "company": "TechCorp",
+    "website": "https://techcorp.com"
+  }
+}
+```
+</ResponseExample>

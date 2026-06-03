@@ -1,0 +1,112 @@
+---
+title: "List API Keys"
+api: "GET /api/v1/api-keys"
+description: "Return API keys for an organization."
+---
+
+## Overview
+
+Returns all API keys for the organization. The response excludes `secretKey`.
+
+<Note>
+  Requires a valid bearer access token. API keys are filtered by organization and mode.
+</Note>
+
+---
+
+## Query Parameters
+
+<ParamField query="orgId" type="string" required>
+  Organization identifier.
+</ParamField>
+
+<ParamField query="mode" type="string" required>
+  Filters keys by mode. Must be `test` or `live`.
+</ParamField>
+
+---
+
+## Response Fields
+
+<ResponseField name="success" type="boolean">
+  `true` when the request succeeds.
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  API key records. The `secretKey` is never returned.
+
+  <Expandable title="API key fields">
+    <ResponseField name="keyId" type="string">
+      Unique key identifier.
+    </ResponseField>
+    <ResponseField name="apiKey" type="string">
+      Public API key.
+    </ResponseField>
+    <ResponseField name="mode" type="string">
+      `test` or `live`.
+    </ResponseField>
+    <ResponseField name="name" type="string">
+      Human-readable key label.
+    </ResponseField>
+    <ResponseField name="createdAt" type="string">
+      ISO 8601 creation timestamp.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url 'https://api.getrecord.in/api/v1/api-keys?orgId=RORG123456&mode=test' \
+  --header 'Authorization: Bearer your_access_token'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": [
+    {
+      "keyId": "key_test_4f3a9c",
+      "apiKey": "ak_test_8e2b",
+      "mode": "test",
+      "name": "Production Integration",
+      "createdAt": "2026-05-30T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+```json 400 Validation Error
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Required query parameter is missing or invalid."
+  }
+}
+```
+
+```json 401 Unauthorized
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Access token missing or invalid."
+  }
+}
+```
+
+```json 403 Forbidden
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "User does not have permission to read API keys."
+  }
+}
+```
+</ResponseExample>

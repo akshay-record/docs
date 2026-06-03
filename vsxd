@@ -1,0 +1,155 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Skills & Verification API",
+  "description": "Unified documentation for Skills management and Record Skills Verification APIs.",
+  "colors": {
+    "primary": "#7C6AF7",
+    "light": "#A78BFA",
+    "dark": "#5A4FCF"
+  },
+  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.png",
+    "dark": "/logo/dark.png"
+  },
+
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "index",
+              "quickstart",
+              "development"
+            ]
+          },
+          {
+            "group": "Core Setup",
+            "pages": [
+              "guides/credentials-and-keys",
+              "guides/environments",
+              "guides/sdk-setup",
+              "guides/session-and-client-data",
+              "guides/source-configuration"
+            ]
+          },
+          {
+            "group": "Verification Flow",
+            "pages": [
+              "guides/assessment-flow",
+              "guides/webhooks"
+            ]
+          },
+          {
+            "group": "Infrastructure",
+            "pages": [
+              "guides/vault-and-secrets",
+              "guides/integration-checklist"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/introduction"
+            ]
+          },
+          {
+            "group": "Skills",
+            "pages": [
+              "api-reference/endpoint/search"
+            ]
+          },
+          {
+            "group": "Selected Skills",
+            "pages": [
+              "api-reference/endpoint/get",
+              "api-reference/endpoint/create",
+              "api-reference/endpoint/delete"
+            ]
+          },
+          {
+            "group": "Admin",
+            "pages": [
+              "api-reference/endpoint/counts"
+            ]
+          }
+        ]
+      }
+    ],
+
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Swagger UI",
+          "href": "http://localhost:5000/api-docs",
+          "icon": "brackets-curly"
+        },
+        {
+          "anchor": "GitHub",
+          "href": "https://github.com/your-org/skills-api",
+          "icon": "github"
+        }
+      ]
+    }
+  },
+
+  "api": {
+    "mdx": {
+      "server": "https://api.example.com/v1",
+      "auth": {
+        "method": "key",
+        "name": "x-api-key"
+      }
+    }
+  },
+
+  "navbar": {
+    "links": [
+      {
+        "label": "Guides",
+        "href": "/quickstart"
+      },
+      {
+        "label": "API Reference",
+        "href": "/api-reference/introduction"
+      },
+      {
+        "label": "Support",
+        "href": "mailto:support@yourcompany.com"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Swagger UI",
+      "href": "http://localhost:5000/api-docs"
+    }
+  },
+
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
+  },
+
+  "footer": {
+    "socials": {
+      "github": "https://github.com/your-org/skills-api"
+    }
+  }
+}

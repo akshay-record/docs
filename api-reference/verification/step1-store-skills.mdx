@@ -1,0 +1,167 @@
+---
+title: "Store Skills"
+api: "POST /step1/storeskills/store"
+description: "Store the list of skills a student wants verified for a given session."
+---
+
+## Overview
+
+Stores (or fully replaces) the skills a student wants verified. If skills were previously stored for this session, they are deleted and replaced with the new set. Runs conflict and duplicate checks before storing.
+
+<Note>
+  Requires a valid session token via the `x-api-key` session middleware.
+</Note>
+
+---
+
+## Request Body
+
+<ParamField body="recordVerificationId" type="string" required>
+  Verification session ID returned from `POST /verify`.
+</ParamField>
+
+<ParamField body="recordUserId" type="string" required>
+  Internal user ID returned from `POST /verify`.
+</ParamField>
+
+<ParamField body="skills" type="array" required>
+  Array of skill objects to verify. Must not be empty.
+
+  <Expandable title="Skill object fields">
+    <ParamField body="skillId" type="string" required>
+      Unique identifier of the skill.
+    </ParamField>
+    <ParamField body="proofUrls" type="string[]">
+      Public URLs as evidence for this skill. Defaults to `[]`.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+---
+
+## Conflict & Duplicate Rules
+
+| Case | Condition | Result |
+|---|---|---|
+| 1 | Same source + same endorsement type | **Blocked** — `DUPLICATE_SKILLS_IN_BUNDLE` |
+| 2 | Same source + different endorsement type | Allowed |
+| 3 | Different source + same endorsement type | Allowed |
+| 4 | More than 10 unique skills per source | **Blocked** — `MAX_SKILLS_PER_SOURCE` |
+
+<Note>
+  A **failed** assessment can be retried. Only a **passed** (locked) assessment blocks re-verification of the same skill and source.
+</Note>
+
+---
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  `true` on success.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="Response fields">
+    <ResponseField name="recordVerificationId" type="string">
+      The session ID this operation applies to.
+    </ResponseField>
+    <ResponseField name="skills" type="array">
+      Array of stored skill objects, each with `skillId`, `proofUrls`, and `totalUrls`.
+    </ResponseField>
+    <ResponseField name="totalProcessed" type="number">
+      Total number of skills stored.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## Error Codes
+
+| Code | HTTP | Description |
+|---|---|---|
+| `MISSING_VERIFICATION_ID` | 400 | `recordVerificationId` not provided |
+| `MISSING_SKILLS` | 400 | `skills` is missing, not an array, or empty |
+| `MISSING_SKILL_ID` | 400 | One or more skill objects missing a `skillId` |
+| `MAX_SKILLS_PER_SOURCE` | 409 | Would exceed the 10-skill limit for this source |
+| `DUPLICATE_SKILLS_IN_BUNDLE` | 409 | Skills already verified for this source under same endorsement type |
+| `ASSESSMENT_ALREADY_PASSED` | 409 | Skill already assessment-verified and passed |
+| `INTERNAL_ERROR` | 500 | Unexpected server error |
+
+<RequestExample>
+```bash cURL
+curl -X POST https://api.yourservice.com/api/v1/step1/storeskills/store \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: your_api_key_here" \
+  -d '{
+    "recordVerificationId": "ver_live_abc123",
+    "recordUserId": "usr_live_xyz789",
+    "skills": [
+      {
+        "skillId": "skill_001",
+        "proofUrls": [
+          "https://github.com/user/project",
+          "https://portfolio.example.com/react"
+        ]
+      },
+      {
+        "skillId": "skill_002",
+        "proofUrls": []
+      }
+    ]
+  }'
+```
+
+```javascript Node.js
+const response = await fetch('https://api.yourservice.com/api/v1/step1/storeskills/store', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', 'x-api-key': 'your_api_key_here' },
+  body: JSON.stringify({
+    recordVerificationId: 'ver_live_abc123',
+    recordUserId: 'usr_live_xyz789',
+    skills: [
+      { skillId: 'skill_001', proofUrls: ['https://github.com/user/project'] },
+      { skillId: 'skill_002', proofUrls: [] }
+    ]
+  })
+});
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": {
+    "recordVerificationId": "ver_live_abc123",
+    "skills": [
+      {
+        "skillId": "skill_001",
+        "proofUrls": ["https://github.com/user/project"],
+        "totalUrls": 1
+      },
+      {
+        "skillId": "skill_002",
+        "proofUrls": [],
+        "totalUrls": 0
+      }
+    ],
+    "totalProcessed": 2
+  },
+  "message": "Skill verifications replaced successfully"
+}
+```
+
+```json 409 Duplicate Skills
+{
+  "success": false,
+  "error": {
+    "code": "DUPLICATE_SKILLS_IN_BUNDLE",
+    "message": "\"React\" has already been verified for this source under the selected endorsement type.",
+    "duplicateSkills": [
+      { "skillId": "skill_001", "name": "React" }
+    ]
+  }
+}
+```
+</ResponseExample>

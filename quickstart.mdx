@@ -1,0 +1,53 @@
+---
+title: "Quickstart"
+description: "Set up the docs, configure environment variables, and run your first verification flow."
+---
+
+# Quickstart
+
+## Prerequisites
+
+- Node.js 20.17.0 or newer
+- Mintlify CLI through this project dependency
+- Access to your environment-specific credentials
+
+## Install project dependencies
+
+```bash
+npm install
+```
+
+## Run locally
+
+```bash
+npm run dev
+```
+
+## Add environment variables
+
+Create your own environment source for backend services:
+
+```env
+KYS_API_KEY_ID=<your_key_id>
+KYS_SECRET_KEY=<your_secret_key>
+KYS_BASE_URL=https://api-staging.example.com/v1
+KYS_CALLBACK_URL=https://your-app.example.com/KYS/callback
+KYS_ACJ_URL=https://your-app.example.com/KYS/acj
+KYS_WEBHOOK_SECRET=<your_webhook_secret>
+KYS_ENV=staging
+```
+
+## Basic integration order
+
+1. Create a verification session
+2. Launch the correct SDK
+3. Capture identity data
+4. Track verification result
+5. Receive webhook updates
+6. Deliver skills metadata
+
+## Next pages
+
+- [Credentials & Keys](/guides/credentials-and-keys)
+- [SDK Setup](/guides/sdk-setup)
+- [Session & Client Data](/guides/session-and-client-data)

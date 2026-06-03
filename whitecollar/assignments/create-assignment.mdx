@@ -1,0 +1,171 @@
+---
+title: "Create Assignment"
+api: "POST /api/v1/assessments/{assessmentId}/assign"
+description: "Create an assignment batch for an assessment."
+---
+
+## Overview
+
+Creates an assignment batch. Duplicates are removed server-side even if you did not run the duplicate check first.
+
+<Note>
+  After assignment, each candidate receives a unique session token scoped to the assessment.
+</Note>
+
+---
+
+## Path Parameters
+
+<ParamField path="assessmentId" type="string" required>
+  Assessment identifier.
+</ParamField>
+
+---
+
+## Request Body
+
+<ParamField body="orgId" type="string" required>
+  Organization identifier.
+</ParamField>
+
+<ParamField body="batchName" type="string" required>
+  Human-readable batch label.
+</ParamField>
+
+<ParamField body="tag" type="string">
+  Optional grouping tag.
+</ParamField>
+
+<ParamField body="candidates" type="array" required>
+  Candidate records.
+
+  <Expandable title="Candidate object fields">
+    <ParamField body="name" type="string" required>
+      Candidate full name.
+    </ParamField>
+    <ParamField body="email" type="string" required>
+      Candidate email address.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+---
+
+## Response Fields
+
+<ResponseField name="success" type="boolean">
+  `true` when the assignment batch is created.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="Assignment fields">
+    <ResponseField name="assignmentId" type="string">
+      Unique assignment batch ID.
+    </ResponseField>
+    <ResponseField name="assessmentId" type="string">
+      Assessment being assigned.
+    </ResponseField>
+    <ResponseField name="batchName" type="string">
+      Batch label.
+    </ResponseField>
+    <ResponseField name="tag" type="string">
+      Optional grouping tag.
+    </ResponseField>
+    <ResponseField name="totalCandidates" type="number">
+      Final count after deduplication.
+    </ResponseField>
+    <ResponseField name="duplicatesRemoved" type="number">
+      Number of skipped duplicates.
+    </ResponseField>
+    <ResponseField name="alreadyAssigned" type="array">
+      Emails already assigned before this batch.
+    </ResponseField>
+    <ResponseField name="createdAt" type="string">
+      ISO 8601 creation timestamp.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+<RequestExample>
+```bash cURL
+curl --request POST \
+  --url https://api.getrecord.in/api/v1/assessments/asmnt_abc123/assign \
+  --header 'Authorization: Bearer your_access_token' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "orgId": "RORG123456",
+    "batchName": "Batch June 2026",
+    "tag": "frontend-hiring",
+    "candidates": [
+      {
+        "name": "Alice Smith",
+        "email": "alice@example.com"
+      },
+      {
+        "name": "Carol Johnson",
+        "email": "carol@example.com"
+      }
+    ]
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201 Created
+{
+  "success": true,
+  "data": {
+    "assignmentId": "assgn_abc123",
+    "assessmentId": "asmnt_abc123",
+    "batchName": "Batch June 2026",
+    "tag": "frontend-hiring",
+    "totalCandidates": 2,
+    "duplicatesRemoved": 0,
+    "alreadyAssigned": [],
+    "createdAt": "2026-06-01T10:00:00.000Z"
+  }
+}
+```
+
+```json 400 Validation Error
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request body is invalid."
+  }
+}
+```
+
+```json 401 Unauthorized
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Access token missing or invalid."
+  }
+}
+```
+
+```json 403 Forbidden
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "User does not have permission to assign assessments."
+  }
+}
+```
+
+```json 404 Not Found
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Assessment does not exist."
+  }
+}
+```
+</ResponseExample>

@@ -1,0 +1,135 @@
+---
+title: "List Assessments"
+api: "GET /api/v1/assessments"
+description: "List assessments for an organization and mode."
+---
+
+## Overview
+
+Returns assessments for an organization and mode.
+
+<Note>
+  Use `mode=test` for sandbox assessments and `mode=live` for production assessments.
+</Note>
+
+---
+
+## Query Parameters
+
+<ParamField query="orgId" type="string" required>
+  Organization identifier.
+</ParamField>
+
+<ParamField query="mode" type="string" required>
+  Assessment mode. Must be `test` or `live`.
+</ParamField>
+
+<ParamField query="page" type="number">
+  Page number.
+</ParamField>
+
+<ParamField query="limit" type="number">
+  Results per page.
+</ParamField>
+
+---
+
+## Response Fields
+
+<ResponseField name="success" type="boolean">
+  `true` when the request succeeds.
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  Assessment records.
+
+  <Expandable title="Assessment fields">
+    <ResponseField name="assessmentId" type="string">
+      Unique assessment identifier.
+    </ResponseField>
+    <ResponseField name="name" type="string">
+      Assessment name.
+    </ResponseField>
+    <ResponseField name="mode" type="string">
+      `test` or `live`.
+    </ResponseField>
+    <ResponseField name="isPublished" type="boolean">
+      Whether the assessment is published.
+    </ResponseField>
+    <ResponseField name="isActive" type="boolean">
+      Whether the assessment accepts candidates.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="page" type="number">
+  Current page.
+</ResponseField>
+
+<ResponseField name="limit" type="number">
+  Results per page.
+</ResponseField>
+
+<ResponseField name="count" type="number">
+  Total results returned.
+</ResponseField>
+
+---
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url 'https://api.getrecord.in/api/v1/assessments?orgId=RORG123456&mode=live&page=1&limit=10' \
+  --header 'Authorization: Bearer your_access_token'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 OK
+{
+  "success": true,
+  "data": [
+    {
+      "assessmentId": "asmnt_abc123",
+      "name": "Frontend Developer Assessment",
+      "mode": "live",
+      "isPublished": false,
+      "isActive": true
+    }
+  ],
+  "page": 1,
+  "limit": 10,
+  "count": 1
+}
+```
+
+```json 400 Validation Error
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Query parameter is invalid."
+  }
+}
+```
+
+```json 401 Unauthorized
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Access token missing or invalid."
+  }
+}
+```
+
+```json 403 Forbidden
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "User does not have permission to read assessments."
+  }
+}
+```
+</ResponseExample>

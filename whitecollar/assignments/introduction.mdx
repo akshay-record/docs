@@ -1,0 +1,26 @@
+---
+title: "Assignment management"
+description: "Assign published assessments to candidate batches."
+---
+
+## Overview
+
+Assignments link published assessments to candidate batches.
+
+The platform deduplicates candidates, generates unique session tokens, and notifies candidates.
+
+---
+
+## Assignment fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `assignmentId` | `string` | Unique assignment batch ID. |
+| `assessmentId` | `string` | Assessment being assigned. |
+| `orgId` | `string` | Owning organization. |
+| `batchName` | `string` | Human-readable batch label. |
+| `tag` | `string` | Optional grouping tag. |
+| `candidates` | `CandidateRecord[]` | Candidates in the batch. |
+| `totalCandidates` | `number` | Final count after deduplication. |
+| `duplicatesRemoved` | `number` | Number of skipped duplicate emails. |
+| `alreadyAssigned` | `string[]` | Emails already assigned for the assessment. |

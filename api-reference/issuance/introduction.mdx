@@ -1,0 +1,55 @@
+---
+title: "Issuance API"
+description: "Issue verifiable credentials to recipients under your programmes."
+---
+
+## Overview
+
+The Issuance API lets you programmatically issue credentials to one or more recipients under a programme. Each issuance creates a **credential batch** that you can query at any time.
+
+<CardGroup cols={2}>
+  <Card title="Programmes" icon="folder-open">
+    Retrieve your organisation's programmes and use their IDs when issuing credentials.
+  </Card>
+  <Card title="Credential Batches" icon="certificate">
+    Issue credentials to multiple recipients in a single request. Each recipient gets a unique, shareable credential URL.
+  </Card>
+</CardGroup>
+
+---
+
+## Base URL
+
+```
+https://api.getrecord.in/api/external/issuance
+```
+
+---
+
+## Authentication
+
+Every request must include your API token in one of the following headers:
+
+| Header | Format |
+|---|---|
+| `Authorization` | `Bearer sk_test_xxxxxxxx` or `Bearer sk_live_xxxxxxxx` |
+| `X-Api-Key` | `sk_test_xxxxxxxx` or `sk_live_xxxxxxxx` |
+
+The token prefix automatically routes your request to the correct environment — no need to pass `orgId` or `mode` separately.
+
+| Token Prefix | Environment | Use Case |
+|---|---|---|
+| `sk_test_` | Test | Development & testing |
+| `sk_live_` | Live | Production |
+
+---
+
+## Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/programs` | List all programmes |
+| `GET` | `/programs/{programId}` | Get a single programme |
+| `POST` | `/credentials` | Issue credentials |
+| `GET` | `/credentials` | List credential batches |
+| `GET` | `/credentials/{batchId}` | Get a single batch |
