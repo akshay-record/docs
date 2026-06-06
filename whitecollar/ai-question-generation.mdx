@@ -1,0 +1,23 @@
+---
+title: "AI Question Generation"
+description: "How the portal generates questions via OpenAI GPT-4o."
+---
+
+```
+POST /api/v1/assessments/:id/generate
+Headers: x-session-token
+```
+
+- **1.** Fetches assessment from DB by \_id and orgId
+- **2.** Builds question specs from questionConfig
+- **3.** Constructs OpenAI prompt with job title, skills, level, difficulty
+- **4.** Calls gpt-4o with response\_format: json\_object
+- **5.** Saves questions, sets totalMarks=100, status=draft
+
+| Type | Fields |
+|---|---|
+| `mcq` | text, options[4], correctAnswer, marks |
+| `true-false` | text, options[True/False], correctAnswer, marks |
+| `short-answer` | text, correctAnswer (model answer), marks |
+| `long-answer` | text, correctAnswer (detailed), marks |
+| `coding` | text, problemStatement, sampleI/O, allowedLanguages, solutionCode, testCases[3], marks |

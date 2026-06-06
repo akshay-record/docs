@@ -1,47 +1,20 @@
 ---
-title: "WhiteCollar Assessments"
-description: "Overview of the WhiteCollar Assessments module."
+title: "System Overview"
+description: "AI Assessment Portal — complete flow documentation."
 ---
 
-## Overview
+The AI Assessment Portal allows organisations to create AI-generated assessments tailored to a specific job role and skill set, review questions, and send assessments to candidates via email.
 
-WhiteCollar Assessments is a Record Studio module for creating, assigning, proctoring, and scoring assessments for white-collar roles.
+- Create AI-generated assessments tailored to job role and skill set
+- Configure question types and mark allocation (always totalling 100)
+- Review and edit AI-generated questions before sending
+- Send assessments to candidates via AWS SES email
+- Save and reuse configurations for future candidates
+- Candidate takes the test with proctoring, recording, and code execution
 
-Use it to:
-
-- Generate assessments from job descriptions.
-- Build custom knowledge and coding sections.
-- Assign assessments to candidate batches.
-- Track proctoring violations and candidate progress.
-- Review funnel and pass-rate analytics.
-
----
-
-## Operating modes
-
-All resources are scoped to a mode.
-
-| Mode | Description | Use case |
-| --- | --- | --- |
-| `test` | Sandbox data with no real candidate impact. | Development, QA, and integration testing. |
-| `live` | Production data for real candidate evaluations. | Active hiring campaigns. |
-
-<Warning>
-  Create test-mode API keys and assessments during integration development. Records do not cross between `test` and `live` modes.
-</Warning>
-
----
-
-## Roles
-
-| Role | Create | Update | Delete | Read |
-| --- | --- | --- | --- | --- |
-| `owner` | Yes | Yes | Yes | Yes |
-| `superadmin` | Yes | Yes | Yes | Yes |
-| `reader` | No | No | No | Yes |
-
----
-
-## Reference PDF
-
-[Open the WhiteCollar Assessments PDF](/assets/whitecollar-assessments-documentation.pdf)
+| Application | Purpose | Repo |
+|---|---|---|
+| white-collar-assessment-portal-backend | Creator API (session, assessment, config) | white-collar-assessment-portal-backend |
+| white-collar-assessment-portal | Creator modal UI (Next.js, iframe) | white-collar-assessment-portal |
+| record-assessment-backend | Candidate test API (exam, proctoring, scoring) | record-assessment-backend |
+| record-assessment-frontend | Candidate test UI (Next.js) | record-assessment-frontend |

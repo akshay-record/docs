@@ -1,0 +1,25 @@
+---
+title: "Architecture"
+description: "High-level architecture of the AI Assessment Portal."
+---
+
+```
+Parent App (Client)
+    |
+    +-- POST /api/v1/sessions        <- Creates session with candidate list
+    |   (x-api-key + x-secret-key)
+    |
+    +-- Embeds creator modal iframe  (?token=xxx&company=xxx)
+    |
+    +-- Candidates receive email link -> record-assessment-frontend
+
+Creator Modal (white-collar-assessment-portal)
+    | Step 1: Job Details   Step 2: Config    Step 3: Generate
+    | Step 4: Review        Step 5: Send      Step 6: Success
+
+Candidate App (record-assessment-frontend)
+    | /assessment/:id           <- Email + OTP verification
+    | /assessment/:id/verify    <- Identity photo verification
+    | /assessment/:id/start     <- Exam with proctoring + recording
+    | /assessment/:id/complete  <- Results + AI feedback
+```

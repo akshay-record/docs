@@ -1,0 +1,17 @@
+---
+title: "Database Collections"
+description: "MongoDB collections used by the creator and candidate backends."
+---
+
+| Collection | Repo | Purpose |
+|---|---|---|
+| `whitecollar_api_keys` | creator-backend | API key credentials per org |
+| `whitecollar_users_organization` | creator-backend | Org metadata (name, logo, roles) |
+| `ap_sessions` | creator-backend | Creator sessions with candidate list + 2hr TTL |
+| `ap_candidates` | creator-backend | Candidate profiles (upserted by email+orgId) |
+| `smartAi_assessment` | creator-backend | Assessment documents with questions |
+| `wc_skills` | creator-backend | Skill library for search |
+| `whitecollar_sessions` | assessment-backend | Candidate exam sessions with proctoring data |
+| `whitecollar_assessments` | assessment-backend | Assessment config + question sets |
+| `whitecollar_questions` | assessment-backend | AI-generated question bank |
+| `whitecollar_records` | assessment-backend | Webhook delivery records |

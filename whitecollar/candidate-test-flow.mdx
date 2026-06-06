@@ -1,0 +1,117 @@
+---
+title: "Candidate Test Flow (record-assessment)"
+description: "Six phases of the candidate exam from email link to results."
+---
+
+After the assessment is sent via email, candidates open a link to record-assessment-frontend. The test flow has six phases managed by record-assessment-backend.
+
+## Session Status Flow
+
+```
+registered -> verified -> in_progress -> submitted
+                                      -> timed_out
+                                      -> disqualified
+```
+
+## Phase 1 — Email & OTP Verification
+
+Candidate enters email. OTP sent via AWS SES. On successful verification a 64-char session token is returned.
+
+| Endpoint | Method | Body / Notes |
+|---|---|---|
+| /exam/:assessmentId/request-otp | POST | \{ email \} — sends OTP |
+| /exam/:assessmentId/verify-otp | POST | \{ email, otp \} — returns sessionToken |
+
+```
+Response from verify-otp:
+{ "sessionToken": "64-char-hex",  "duration": 75,
+  "sessionStatus": "registered",  "assessmentName": "..." }
+```
+
+## Phase 2 — Identity Verification
+
+Candidate takes a photo. Uploaded as multipart/form-data. Session status -> verified.
+
+```
+POST /exam/session/verify
+Header: x-session-token: <token>
+Body:   multipart/form-data    field: photo (JPEG/PNG blob)
+```
+
+Photo stored in GCP: assessments/\{assessmentId\}/\{candidateId\}/verification.jpg
+
+## Phase 3 — Question Loading & Exam Start
+
+Poll /exam/session/status until questionsStatus = ready, then call /start.
+
+```
+GET  /exam/session/status  ->  { questionsStatus: pending|generating|ready|failed }
+POST /exam/session/start   ->  { questions[], duration, startTime }
+```
+
+Question types returned: MCQ, True/False, Short Answer, Long Answer, Coding — each with marks, difficulty, allowedLanguages (coding), testCases (coding).
+
+## Phase 4 — Exam Activities (concurrent)
+
+| Activity | Endpoint | Frequency |
+|---|---|---|
+| Save answer | POST /exam/session/answer | On each answer change |
+| Upload recording chunk | POST /exam/session/upload-chunk | Every ~30s (camera + screen) |
+| Log proctoring events | POST /exam/session/proctoring | On violation detected |
+| Run code | POST /exam/session/run-code | On demand (sample / all cases) |
+
+## Proctoring violations tracked
+
+| Violation Type | Severity | Description |
+|---|---|---|
+| NO\_FACE | high | No face detected in camera feed |
+| MULTIPLE\_FACES | critical | More than one face detected |
+| TAB\_SWITCH | critical | Candidate switched browser tab |
+| FULLSCREEN\_EXIT | high | Candidate exited fullscreen mode |
+| LOOKING\_AWAY | medium | Eyes looking away from screen |
+| EXTERNAL\_OBJECT | medium | Phone or external device detected |
+
+## Recording storage (GCP)
+
+```
+Chunk path:   assessments/{assessmentId}/{candidateId}/chunks/{i}_{streamType}.webm
+Final video:  assessments/{assessmentId}/{candidateId}/final.mp4
+Verification: assessments/{assessmentId}/{candidateId}/verification.jpg
+GCP Bucket:   assessmentmodule
+```
+
+## Phase 5 — Submission & Scoring
+
+```
+POST /exam/session/submit
+Body: { answers: [{ questionId, answer, timeSpent }] }
+Response: { score: 75, passed: true, totalMarks: 100, passMarks: 65 }
+```
+
+| Question Type | Scoring Logic |
+|---|---|
+| MCQ / True-False | Exact match -> full marks, else 0 |
+| Short / Long Answer | Non-empty -> full marks, else 0 |
+| Coding | Proportional to test cases passed |
+
+## Phase 6 — Results & Report
+
+```
+GET /exam/session/result                                    <- uses session token
+GET /exam/:assessmentId/report/:candidateId                 <- public (30s cache)
+GET /exam/:assessmentId/report/:candidateId/recording       <- HTTP 206 stream
+```
+
+Report includes: score, passed, questionAnswers with correctness, proctoring summary, AI feedback, recording URL (signed GCP link).
+
+## Candidate Session — key fields (whitecollar_sessions)
+
+```
+{ sessionToken, assessmentId, candidateId,
+  candidate: { name, email, phone, employeeId },
+  status: registered|verified|in_progress|submitted|timed_out|disqualified,
+  answers: [{ questionId, answer, timeSpent }],
+  score, passed,
+  proctoring: { violations[], proctoringScore, tabSwitchCount, noFaceCount, ... },
+  recording: { chunks[], finalRecordingUrl, status } }
+```

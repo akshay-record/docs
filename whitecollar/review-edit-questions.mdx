@@ -1,0 +1,16 @@
+---
+title: "Review & Edit Questions"
+description: "Step 4 — review and edit AI-generated questions."
+---
+
+```
+PUT /api/v1/assessments/:id/questions
+Headers: x-session-token
+Body: { questions: [...] }
+```
+
+- Questions grouped by type
+- Click type card to expand all questions of that type
+- Each question is an accordion — click to expand and edit
+- Back button always visible
+- Read-only mode (saved config): all fields non-editable, Done button shown

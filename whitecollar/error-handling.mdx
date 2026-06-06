@@ -1,0 +1,180 @@
+---
+title: "Error Handling & Response Codes"
+description: "HTTP status codes and response shapes for all endpoints."
+---
+
+Every endpoint returns a consistent JSON envelope with a `success` boolean. On error, an `error` string describes what went wrong. HTTP status codes follow REST conventions.
+
+## HTTP Status Code Reference
+
+| Code | Meaning | When returned |
+|---|---|---|
+| 200 | OK | Successful GET or action |
+| 201 | Created | Resource successfully created (POST that creates) |
+| 400 | Bad Request | Validation failure, missing required field |
+| 401 | Unauthorized | Missing, invalid, or expired credentials |
+| 404 | Not Found | Resource does not exist or not accessible to the caller |
+| 500 | Server Error | Unexpected internal error |
+
+## Creator Backend (white-collar-assessment-portal-backend)
+
+### POST /api/v1/sessions
+
+| Status | Scenario | Response |
+|---|---|---|
+| 201 | Created | `{ "success": true, "data": { "token": "HKKPBaUppEt9", "candidates": [...] } }` |
+| 401 | Missing x-api-key header | `{ "success": false, "error": "Missing required headers: x-api-key, x-secret-key" }` |
+| 401 | Wrong secret key | `{ "success": false, "error": "Invalid secret key" }` |
+| 400 | No users provided | `{ "success": false, "error": "Provide either name and email, or a non-empty users array" }` |
+
+### POST /api/v1/assessments
+
+| Status | Scenario | Response |
+|---|---|---|
+| 201 | Created | `{ "success": true, "data": { "assessmentId": "asmnt_xxx", "status": "draft", ... } }` |
+| 401 | Missing or invalid session token | `{ "success": false, "error": "Invalid or expired session token" }` |
+| 401 | Session token expired | `{ "success": false, "error": "Session token expired" }` |
+
+### POST /api/v1/assessments/:id/generate
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true, "data": { "questions": [...], "totalQuestions": 21, "totalMarks": 100 } }` |
+| 401 | Invalid session token | `{ "success": false, "error": "Invalid or expired session token" }` |
+| 404 | Assessment not found | `{ "success": false, "error": "Assessment not found" }` |
+| 400 | Already completed | `{ "success": false, "error": "Cannot regenerate a completed assessment" }` |
+
+### PUT /api/v1/assessments/:id/questions
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true, "data": { "status": "draft", "questions": [...] } }` |
+| 401 | Invalid session token | `{ "success": false, "error": "Invalid or expired session token" }` |
+| 404 | Assessment not found | `{ "success": false, "error": "Assessment not found" }` |
+
+### POST /api/v1/assessments/:id/send
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true, "data": { "sentTo": 3, "failed": 0, "errors": [] } }` |
+| 400 | No candidateIds provided | `{ "success": false, "error": "candidateIds must be a non-empty array" }` |
+| 404 | Assessment not found | `{ "success": false, "error": "Assessment not found" }` |
+| 400 | No valid candidates found | `{ "success": false, "error": "No valid candidates found" }` |
+
+### GET /api/v1/assessments/saved
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true, "data": [ { "assessmentId": "asmnt_xxx", ... } ] }` |
+| 401 | Invalid session token | `{ "success": false, "error": "Invalid or expired session token" }` |
+
+### POST /api/v1/assessments/:id/reuse
+
+| Status | Scenario | Response |
+|---|---|---|
+| 201 | Created | `{ "success": true, "data": { "assessmentId": "asmnt_new", ... } }` |
+| 404 | Saved config not found | `{ "success": false, "error": "Saved configuration not found" }` |
+
+### GET /api/v1/candidates/session
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true, "data": [ { "_id": "...", "name": "saran", "email": "..." } ] }` |
+| 401 | Invalid session token | `{ "success": false, "error": "Invalid or expired session token" }` |
+
+### GET /api/v1/assessments (verifySignature)
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true, "data": [ { "assessmentId": "...", ... } ] }` |
+| 401 | Missing headers | `{ "success": false, "error": "Missing required headers: x-api-key, x-signature, x-timestamp" }` |
+| 401 | Expired timestamp | `{ "success": false, "error": "Request timestamp expired" }` |
+| 401 | Wrong signature | `{ "success": false, "error": "Invalid signature" }` |
+
+## Candidate Backend (record-assessment-backend)
+
+### POST /api/exam/:assessmentId/request-otp
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true, "message": "OTP sent to your email" }` |
+| 404 | Assessment not found or inactive | `{ "success": false, "error": "Assessment not found" }` |
+| 400 | Missing email | `{ "success": false, "error": "Email is required" }` |
+
+### POST /api/exam/:assessmentId/verify-otp
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true, "data": { "sessionToken": "64-char-hex", "duration": 75, "sessionStatus": "registered" } }` |
+| 401 | Wrong OTP | `{ "success": false, "error": "Invalid or expired OTP" }` |
+| 404 | Assessment not found | `{ "success": false, "error": "Assessment not found" }` |
+
+### POST /api/exam/session/verify (identity photo)
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true, "message": "Identity verified" }` |
+| 401 | Invalid session token | `{ "success": false, "error": "Invalid or expired session token" }` |
+| 400 | No photo uploaded | `{ "success": false, "error": "Photo is required" }` |
+
+### POST /api/exam/session/start
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true, "data": { "questions": [...], "duration": 75, "startTime": "..." } }` |
+| 401 | Invalid session token | `{ "success": false, "error": "Invalid or expired session token" }` |
+| 400 | Session not verified | `{ "success": false, "error": "Identity verification required" }` |
+
+### POST /api/exam/session/answer
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true }` |
+| 401 | Invalid session token | `{ "success": false, "error": "Invalid or expired session token" }` |
+| 400 | Session not in progress | `{ "success": false, "error": "Session is not in progress" }` |
+
+### POST /api/exam/session/submit
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true, "data": { "score": 75, "passed": true, "totalMarks": 100, "passMarks": 65 } }` |
+| 401 | Invalid session token | `{ "success": false, "error": "Invalid or expired session token" }` |
+| 400 | Already submitted | `{ "success": false, "error": "Session already submitted" }` |
+
+### POST /api/exam/session/run-code
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true, "data": { "results": [...], "totalPassed": 2, "totalCases": 3 } }` |
+| 401 | Invalid session token | `{ "success": false, "error": "Invalid or expired session token" }` |
+| 400 | Unsupported language | `{ "success": false, "error": "Language not allowed for this question" }` |
+
+### POST /api/exam/session/upload-chunk
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true, "chunkIndex": 0 }` |
+| 401 | Invalid session token | `{ "success": false, "error": "Invalid or expired session token" }` |
+| 400 | Missing chunk data | `{ "success": false, "error": "Chunk file is required" }` |
+
+### POST /api/exam/session/proctoring
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true }` |
+| 401 | Invalid session token | `{ "success": false, "error": "Invalid or expired session token" }` |
+
+### GET /api/exam/session/result
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true, "data": { "score": 75, "passed": true, "aiFeedback": "...", "proctoring": { "score": 88 }, "recording": { "status": "ready" } } }` |
+| 401 | Invalid session token | `{ "success": false, "error": "Invalid or expired session token" }` |
+| 404 | No result yet | `{ "success": false, "error": "Session not submitted yet" }` |
+
+### GET /api/exam/:assessmentId/report/:candidateId
+
+| Status | Scenario | Response |
+|---|---|---|
+| 200 | OK | `{ "success": true, "data": { "score": 75, "questionAnswers": [...], "recording": { "url": "https://signed-gcp-url" } } }` |
+| 404 | Report not found | `{ "success": false, "error": "Session not found" }` |
