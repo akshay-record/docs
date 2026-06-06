@@ -179,42 +179,25 @@
         "groups": [
           {
             "group": "Overview",
-            "pages": ["whitecollar/introduction"]
-          },
-          {
-            "group": "API Keys",
             "pages": [
-              "whitecollar/api-keys/introduction",
-              "whitecollar/api-keys/list-api-keys",
-              "whitecollar/api-keys/create-api-key",
-              "whitecollar/api-keys/delete-api-key",
-              "whitecollar/api-keys/request-signing"
-            ]
-          },
-          {
-            "group": "Assessment Creation",
-            "pages": [
-              "whitecollar/assessments/introduction",
-              "whitecollar/assessments/create-assessment",
-              "whitecollar/assessments/get-assessment",
-              "whitecollar/assessments/list-assessments",
-              "whitecollar/assessments/update-assessment",
-              "whitecollar/assessments/toggle-assessment",
-              "whitecollar/assessments/knowledge-sections",
-              "whitecollar/assessments/coding-problems",
-              "whitecollar/assessments/builder-flow"
-            ]
-          },
-          {
-            "group": "Assignment Management",
-            "pages": [
-              "whitecollar/assignments/introduction",
-              "whitecollar/assignments/check-duplicates",
-              "whitecollar/assignments/create-assignment",
-              "whitecollar/assignments/list-assessment-assignments",
-              "whitecollar/assignments/list-all-assignments",
-              "whitecollar/assignments/session-lifecycle",
-              "whitecollar/assignments/overview-dashboard"
+              "whitecollar/introduction",
+              "whitecollar/architecture",
+              "whitecollar/authentication",
+              "whitecollar/api-key-management",
+              "whitecollar/session-creation",
+              "whitecollar/assessment-creation-flow",
+              "whitecollar/mark-allocation",
+              "whitecollar/ai-question-generation",
+              "whitecollar/review-edit-questions",
+              "whitecollar/send-assessment",
+              "whitecollar/save-reuse-configuration",
+              "whitecollar/database-collections",
+              "whitecollar/api-reference",
+              "whitecollar/frontend-step-flow",
+              "whitecollar/postman-integration-guide",
+              "whitecollar/candidate-test-flow",
+              "whitecollar/webhook-integration",
+              "whitecollar/error-handling"
             ]
           }
         ]

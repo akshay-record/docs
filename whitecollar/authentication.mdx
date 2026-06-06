@@ -1,0 +1,32 @@
+---
+title: "Authentication"
+description: "Authentication strategies used across the AI Assessment Portal."
+---
+
+## verifyApiKeyAndSecret — Session creation
+
+Validates both API key and secret key directly against the database. Used for POST /api/v1/sessions.
+
+```
+Headers: x-api-key: wc_xxx    x-secret-key: xxx
+```
+
+## verifySignature — Server-to-server signed requests
+
+HMAC-SHA256 verification. Body keys sorted alphabetically. Timestamp window: 5 min (prod) / 30 min (dev).
+
+```
+Headers: x-api-key    x-timestamp    x-signature
+Payload: METHOD:URL:timestamp:sortedBody
+e.g.    POST:/api/v1/sessions:1749123456789:{"users":[...]}
+```
+
+## verifySession — Modal API calls
+
+```
+Header: x-session-token: <token>
+```
+
+## x-session-token (Candidate test) — record-assessment-backend
+
+JWT-based session token issued after OTP verification. Passed as x-session-token on all exam endpoints.

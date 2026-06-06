@@ -1,0 +1,16 @@
+---
+title: "Save & Reuse Configuration"
+description: "Save and reuse assessment configurations for future candidates."
+---
+
+## List saved configs
+
+```
+GET /api/v1/assessments/saved — returns isSavedConfiguration=true
+```
+
+## Reuse
+
+```
+POST /api/v1/assessments/:id/reuse — clones with new candidateId + users
+```

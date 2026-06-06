@@ -1,0 +1,15 @@
+---
+title: "Frontend Step Flow"
+description: "Creator modal step flow and state management."
+---
+
+```
+start -> job-details [JobDetailsStep]
+       -> config [ConfigStep]
+         -> generating [GenerateStep]  <- POST /assessments + generate
+           -> review [ReviewStep]
+             -> send [SendStep]        <- GET /candidates/session
+               -> success [SuccessStep]
+```
+
+State persisted to localStorage (assess_session) on every change. Token from URL ?token=xxx passed as x-session-token on all calls.

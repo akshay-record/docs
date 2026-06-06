@@ -1,0 +1,43 @@
+---
+title: "API Reference"
+description: "Complete endpoint listing for the creator and candidate backends."
+---
+
+Creator backend: /api/v1 prefix. Candidate backend: /api prefix.
+
+## Creator — Sessions
+
+| Method | Route | Auth | Description |
+|---|---|---|---|
+| POST | /sessions | verifyApiKeyAndSecret | Create session + upsert candidates |
+| GET | /sessions/current | verifySession | Get current session payload |
+
+## Creator — Assessments
+
+| Method | Route | Auth | Description |
+|---|---|---|---|
+| GET | /assessments | verifySignature | List all org assessments |
+| POST | /assessments | verifySession | Create assessment |
+| GET | /assessments/saved | verifySession | List saved configs |
+| POST | /assessments/:id/generate | verifySession | Generate via OpenAI |
+| PUT | /assessments/:id/questions | verifySession | Update questions |
+| POST | /assessments/:id/send | verifySession | Send emails |
+| POST | /assessments/:id/reuse | verifySession | Clone config |
+
+## Candidate — Exam
+
+| Method | Route | Auth | Description |
+|---|---|---|---|
+| GET | /exam/:assessmentId | public | Get assessment metadata |
+| POST | /exam/:assessmentId/request-otp | public | Send OTP email |
+| POST | /exam/:assessmentId/verify-otp | public | Verify OTP, get session token |
+| POST | /exam/session/verify | x-session-token | Upload identity photo |
+| GET | /exam/session/status | x-session-token | Check question gen status |
+| POST | /exam/session/start | x-session-token | Load questions, start timer |
+| POST | /exam/session/answer | x-session-token | Save single answer |
+| POST | /exam/session/submit | x-session-token | Submit all, calculate score |
+| POST | /exam/session/upload-chunk | x-session-token | Upload recording chunk |
+| POST | /exam/session/proctoring | x-session-token | Log violations |
+| POST | /exam/session/run-code | x-session-token | Execute code against test cases |
+| GET | /exam/session/result | x-session-token | Get score + report |
+| GET | /exam/:id/report/:candidateId | public | Full candidate report |

@@ -1,0 +1,33 @@
+---
+title: "Session Creation"
+description: "Create a session for one or more candidates."
+---
+
+**ENDPOINT**
+
+```
+POST /api/v1/sessions
+Headers: x-api-key, x-secret-key
+```
+
+## Single candidate
+
+```json
+{ "name": "saran", "email": "saran@getrecord.in" }
+```
+
+## Multiple candidates (recommended)
+
+```json
+{ "users": [
+    { "name": "saran",    "email": "saran@getrecord.in" },
+    { "name": "Avinash",  "email": "avinash@getrecord.in" },
+    { "name": "monesh",   "email": "monesh@getrecord.in" }
+  ] }
+```
+
+- **1.** All users upserted into ap_candidates
+- **2.** First user becomes primary candidate (candidateId on session)
+- **3.** Full users array stored in session document
+- **4.** 12-character token generated (expires 2 hours)
+- **5.** orgName fetched from whitecollar_users_organization

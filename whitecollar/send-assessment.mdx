@@ -1,0 +1,16 @@
+---
+title: "Send Assessment"
+description: "Step 5 — send the assessment to candidates via email."
+---
+
+```
+POST /api/v1/assessments/:id/send
+Headers: x-session-token
+Body: { candidateIds: ["<id>", ...],
+  saveConfiguration?: { enabled: true, name: "Python Backend - v1" } }
+```
+
+- **1.** Fetches candidates via GET /candidates/session (filtered by session users)
+- **2.** All candidates pre-selected, user can deselect
+- **3.** Prompts to optionally save configuration
+- **4.** Sends email to selected candidates via AWS SES

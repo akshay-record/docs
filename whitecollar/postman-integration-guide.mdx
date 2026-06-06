@@ -1,0 +1,34 @@
+---
+title: "Postman Integration Guide"
+description: "Testing the WhiteCollar Assessment Portal with Postman."
+---
+
+## Create a Session
+
+```
+POST http://localhost:8080/api/v1/sessions
+x-api-key:    wc_8c076d034ada3a234cb9a288383e4aeb59553349
+x-secret-key: 9e345f2b48dd318d301a2bdd2e90a29a45f15e4db88473ad9c132278b00a76b5
+Body: { "users": [ {"name":"saran","email":"saran@getrecord.in"} ] }
+```
+
+## Embed the modal
+
+```html
+<iframe src="http://localhost:3000/assess?token=HKKPBaUppEt9&company=Acme+Corp" />
+```
+
+## Listen for close event
+
+```js
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'WC_ASSESS_CLOSE') { /* close iframe */ }
+});
+```
+
+## Environment Variables (Creator Backend)
+
+```
+PORT=8080    MONGODB_URI=mongodb://...    OPENAI_API_KEY=sk-...
+AWS_ACCESS_KEY=AKIA...    AWS_SECRET_KEY=xxx    AWS_SES_FROM_EMAIL=no-reply@domain.com
+```
