@@ -220,6 +220,7 @@
       },
       {
         "tab": "WhiteCollar Assessments",
+        "hidden": true,
         "groups": [
           {
             "group": "Overview",
