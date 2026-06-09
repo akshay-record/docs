@@ -1,0 +1,98 @@
+---
+title: "client.acknowledgeWebhookEvents()"
+description: "Remove processed events from the SmartAI queue. Always call this after saving results."
+---
+
+<Info>
+  This is a **Backend SDK method**, not an HTTP endpoint.
+</Info>
+
+<Warning>
+  **Always save first, acknowledge second.** If your database write fails before you acknowledge, the event will be re-delivered on the next poll. That is safe — as long as your save is idempotent (upsert on `eventId`).
+</Warning>
+
+## Signature
+
+```typescript
+client.acknowledgeWebhookEvents(eventIds: string[]): Promise<AcknowledgeResult>
+```
+
+---
+
+## Parameters
+
+<ParamField body="eventIds" type="string[]" required>
+  Array of `eventId` strings to remove from the queue. Get these from `event.eventId` inside the `getWebhookEvents` response.
+</ParamField>
+
+---
+
+## Return value
+
+<ResponseField name="acknowledged" type="number">
+  Number of events successfully removed from the queue.
+</ResponseField>
+
+---
+
+<RequestExample>
+
+```typescript Standard usage
+const { events } = await client.getWebhookEvents({ limit: 50 });
+
+for (const event of events) {
+  await saveToYourDatabase(event); // save first
+}
+
+// Remove from queue only after saving
+await client.acknowledgeWebhookEvents(events.map(e => e.eventId));
+```
+
+```typescript Safe partial acknowledgement
+const processedIds: string[] = [];
+
+for (const event of events) {
+  try {
+    await saveToYourDatabase(event);
+    processedIds.push(event.eventId); // only add on success
+  } catch (err) {
+    console.error('Failed to save', event.eventId, err);
+    // Skip — will be re-delivered next poll
+  }
+}
+
+if (processedIds.length) {
+  await client.acknowledgeWebhookEvents(processedIds);
+}
+```
+
+```typescript Idempotent database upsert (MongoDB)
+// Use this pattern so duplicate deliveries never cause double-writes
+await db.collection('assessment_results').updateOne(
+  { eventId: event.eventId },       // match on unique key
+  { $setOnInsert: mapEvent(event) }, // only writes if no existing doc
+  { upsert: true }
+);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Success
+{
+  "acknowledged": 2
+}
+```
+
+</ResponseExample>
+
+---
+
+## Error cases
+
+| Condition | Error message |
+|---|---|
+| `eventIds` is not an array | `eventIds must be a non-empty array` |
+| `eventIds` is an empty array | `eventIds must be a non-empty array` |
+| One or more IDs already acknowledged | Silently skipped — no error |

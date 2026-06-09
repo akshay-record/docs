@@ -1,0 +1,159 @@
+---
+title: "client.getWebhookEvents()"
+description: "Pull pending assessment-completion events from the SmartAI queue. Run this on a timer in your backend."
+---
+
+<Info>
+  This is a **Backend SDK method**, not an HTTP endpoint. Run it on your server — typically every 30 seconds.
+</Info>
+
+## Signature
+
+```typescript
+client.getWebhookEvents(options?: GetWebhookEventsOptions): Promise<GetWebhookEventsResult>
+```
+
+---
+
+## Parameters
+
+<ParamField query="limit" type="number" default="50">
+  Maximum number of events to return per call. Server cap is **100**.
+</ParamField>
+
+<ParamField query="since" type="number">
+  Unix timestamp in milliseconds. Only returns events stored after this time. Useful for paginating across a specific time window.
+</ParamField>
+
+---
+
+## Return value
+
+<ResponseField name="events" type="array">
+  Array of `WebhookEvent` objects. See [Webhook Event Schema](/smartai/webhook-event-schema) for the full field list.
+</ResponseField>
+
+<ResponseField name="pendingCount" type="number">
+  Total events still in the queue after this batch. If greater than `0`, call `getWebhookEvents` again to drain the rest.
+</ResponseField>
+
+---
+
+<RequestExample>
+
+```typescript Basic poll
+const { events, pendingCount } = await client.getWebhookEvents({ limit: 50 });
+
+console.log(`Got ${events.length} events, ${pendingCount} still pending`);
+
+for (const event of events) {
+  await saveToYourDatabase(event);
+}
+
+// Always acknowledge after saving
+if (events.length) {
+  await client.acknowledgeWebhookEvents(events.map(e => e.eventId));
+}
+```
+
+```typescript Drain the full queue
+let hasMore = true;
+
+while (hasMore) {
+  const { events, pendingCount } = await client.getWebhookEvents({ limit: 50 });
+
+  for (const event of events) {
+    await saveToYourDatabase(event);
+  }
+
+  if (events.length) {
+    await client.acknowledgeWebhookEvents(events.map(e => e.eventId));
+  }
+
+  hasMore = pendingCount > 0;
+}
+```
+
+```typescript Scheduled poller (setInterval)
+async function pollResults() {
+  const client = new AssessmentClient({
+    apiKey:    process.env.ASSESSMENT_API_KEY,
+    secretKey: process.env.ASSESSMENT_SECRET_KEY,
+  });
+
+  try {
+    const { events } = await client.getWebhookEvents({ limit: 50 });
+
+    for (const event of events) {
+      await saveToDatabase(event);
+    }
+
+    if (events.length) {
+      await client.acknowledgeWebhookEvents(events.map(e => e.eventId));
+    }
+  } catch (err) {
+    console.error('Poll failed:', err);
+  }
+}
+
+setInterval(pollResults, 30_000); // every 30 seconds
+pollResults();                     // once on startup
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Events returned
+{
+  "events": [
+    {
+      "eventId": "evt_01J9XYZABC",
+      "event": "assessment.completed",
+      "assessmentId": "asmt_xyz789",
+      "candidateId": "cand_abc123",
+      "candidateName": "Priya Sharma",
+      "candidateEmail": "priya@example.com",
+      "assessmentName": "Full Stack Developer Assessment",
+      "jobTitle": "Senior Software Engineer",
+      "score": 78,
+      "totalMarks": 100,
+      "passMarks": 60,
+      "passed": true,
+      "status": "completed",
+      "submittedAt": "2026-06-09T10:30:00.000Z",
+      "durationMinutes": 45,
+      "reportUrl": "https://platform.smartai.app/reports/evt_01J9XYZABC",
+      "proctoring": {
+        "score": 88,
+        "violationCount": 2
+      },
+      "storedAt": "2026-06-09T10:31:00.000Z"
+    }
+  ],
+  "pendingCount": 3
+}
+```
+
+```json 200 Empty queue
+{
+  "events": [],
+  "pendingCount": 0
+}
+```
+
+</ResponseExample>
+
+---
+
+## Recommended polling interval
+
+| Requirement | Interval |
+|---|---|
+| Near-real-time results | 10 seconds |
+| Standard (recommended) | 30 seconds |
+| Low-traffic / batch processing | 5 minutes |
+
+<Warning>
+  Do not poll more frequently than every 5 seconds — the platform rate-limits aggressive polling.
+</Warning>

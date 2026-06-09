@@ -1,0 +1,627 @@
+---
+title: "Client API Reference"
+description: "How to call every WhiteCollar Assessment Portal endpoint — auth headers, request bodies, and expected responses."
+---
+
+This page is the integration guide for **clients** (organisations embedding the assessment portal). It covers both the **Creator backend** (`/api/v1`) and the **Candidate backend** (`/api`).
+
+---
+
+## Base URLs
+
+| Environment | Creator backend | Candidate backend |
+|---|---|---|
+| Local | `http://localhost:8080/api/v1` | `http://localhost:8081/api` |
+| Production | `https://assess-api.getrecord.in/api/v1` | `https://exam-api.getrecord.in/api` |
+
+---
+
+## Authentication overview
+
+| Strategy | Endpoints | Headers required |
+|---|---|---|
+| `verifyApiKeyAndSecret` | `POST /sessions` | `x-api-key`, `x-secret-key` |
+| `verifySignature` | `GET /assessments` (signed) | `x-api-key`, `x-timestamp`, `x-signature` |
+| `verifySession` | All other creator endpoints | `x-session-token` |
+| `x-session-token` (candidate) | All `/exam/session/*` endpoints | `x-session-token` (JWT issued after OTP) |
+
+---
+
+## Creator — Sessions
+
+### Create session
+
+```http
+POST /api/v1/sessions
+x-api-key: wc_8c076d034ada3a234cb9a288383e4aeb59553349
+x-secret-key: 9e345f2b48dd318d301a2bdd2e90a29a45f15e4db88473ad9c132278b00a76b5
+Content-Type: application/json
+```
+
+**Single candidate**
+
+```json
+{ "name": "Saran", "email": "saran@getrecord.in" }
+```
+
+**Multiple candidates (recommended)**
+
+```json
+{
+  "users": [
+    { "name": "Saran",   "email": "saran@getrecord.in" },
+    { "name": "Avinash", "email": "avinash@getrecord.in" },
+    { "name": "Monesh",  "email": "monesh@getrecord.in" }
+  ]
+}
+```
+
+**Response `200`**
+
+```json
+{
+  "token": "HKKPBaUppEt9",
+  "sessionId": "sess_xxxx",
+  "candidateId": "cand_xxxx",
+  "expiresAt": "2026-06-09T12:00:00.000Z"
+}
+```
+
+Use the returned `token` to embed the modal iframe:
+
+```html
+<iframe
+  src="https://assess.getrecord.in/assess?token=HKKPBaUppEt9&company=Acme+Corp"
+  width="900"
+  height="700"
+/>
+```
+
+Listen for the close event from the modal:
+
+```js
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'WC_ASSESS_CLOSE') {
+    document.querySelector('iframe').remove();
+  }
+});
+```
+
+---
+
+### Get current session
+
+```http
+GET /api/v1/sessions/current
+x-session-token: <session-token>
+```
+
+**Response `200`**
+
+```json
+{
+  "sessionId": "sess_xxxx",
+  "orgId": "RORG438402",
+  "candidateId": "cand_xxxx",
+  "users": [{ "name": "Saran", "email": "saran@getrecord.in" }],
+  "orgName": "Acme Corp",
+  "expiresAt": "2026-06-09T12:00:00.000Z"
+}
+```
+
+---
+
+## Creator — Assessments
+
+### List all assessments (signed)
+
+This endpoint requires HMAC-SHA256 signing. Body keys must be sorted alphabetically. Timestamp window is 5 min (prod) / 30 min (dev).
+
+**Signature construction**
+
+```
+payload = "GET:/api/v1/assessments:<timestamp>:"
+signature = HMAC-SHA256(secretKey, payload)
+```
+
+```http
+GET /api/v1/assessments
+x-api-key: wc_xxx
+x-timestamp: 1749123456789
+x-signature: <hex-digest>
+```
+
+**Response `200`**
+
+```json
+[
+  {
+    "assessmentId": "asmnt_72b47a64306f",
+    "jobTitle": "Backend Engineer",
+    "status": "sent",
+    "createdAt": "2026-06-05T08:00:00.000Z"
+  }
+]
+```
+
+---
+
+### Create assessment
+
+```http
+POST /api/v1/assessments
+x-session-token: <session-token>
+Content-Type: application/json
+```
+
+```json
+{
+  "jobTitle": "Backend Engineer",
+  "skills": ["Node.js", "MongoDB", "REST APIs"],
+  "markAllocation": {
+    "mcq":       { "count": 10, "marksEach": 2 },
+    "coding":    { "count": 2,  "marksEach": 15 },
+    "shortAnswer":{ "count": 2, "marksEach": 10 }
+  },
+  "passMarks": 60,
+  "durationMinutes": 60
+}
+```
+
+**Response `201`**
+
+```json
+{
+  "assessmentId": "asmnt_72b47a64306f",
+  "status": "draft",
+  "jobTitle": "Backend Engineer"
+}
+```
+
+---
+
+### Generate questions with AI
+
+```http
+POST /api/v1/assessments/:assessmentId/generate
+x-session-token: <session-token>
+```
+
+No body required. Questions are generated asynchronously via OpenAI. Poll `GET /exam/session/status` on the candidate backend to check readiness.
+
+**Response `202`**
+
+```json
+{ "message": "Generation started", "assessmentId": "asmnt_72b47a64306f" }
+```
+
+---
+
+### Update questions
+
+```http
+PUT /api/v1/assessments/:assessmentId/questions
+x-session-token: <session-token>
+Content-Type: application/json
+```
+
+```json
+{
+  "questions": [
+    {
+      "questionId": "q_001",
+      "type": "mcq",
+      "text": "What is the event loop in Node.js?",
+      "options": ["A single-threaded loop", "A multi-threaded pool", "A garbage collector", "A file watcher"],
+      "correctOption": 0,
+      "marks": 2
+    }
+  ]
+}
+```
+
+**Response `200`**
+
+```json
+{ "updated": true, "questionCount": 14 }
+```
+
+---
+
+### Send assessment to candidates
+
+```http
+POST /api/v1/assessments/:assessmentId/send
+x-session-token: <session-token>
+Content-Type: application/json
+```
+
+```json
+{
+  "candidates": [
+    { "name": "Saran", "email": "saran@getrecord.in" }
+  ]
+}
+```
+
+**Response `200`**
+
+```json
+{ "sent": 1, "failed": 0 }
+```
+
+---
+
+### List saved configurations
+
+```http
+GET /api/v1/assessments/saved
+x-session-token: <session-token>
+```
+
+**Response `200`**
+
+```json
+[
+  {
+    "configId": "cfg_xxx",
+    "jobTitle": "Backend Engineer",
+    "skills": ["Node.js", "MongoDB"],
+    "savedAt": "2026-06-01T09:00:00.000Z"
+  }
+]
+```
+
+---
+
+### Reuse (clone) a saved configuration
+
+```http
+POST /api/v1/assessments/:configId/reuse
+x-session-token: <session-token>
+```
+
+**Response `201`**
+
+```json
+{ "assessmentId": "asmnt_newxxx", "clonedFrom": "cfg_xxx" }
+```
+
+---
+
+## Candidate — Exam flow
+
+All candidate endpoints are on the **Candidate backend** (`/api`). The `x-session-token` here is the JWT issued after OTP verification — it is different from the creator session token.
+
+### Get assessment metadata
+
+```http
+GET /api/exam/:assessmentId
+```
+
+No auth required.
+
+**Response `200`**
+
+```json
+{
+  "assessmentId": "asmnt_72b47a64306f",
+  "jobTitle": "Backend Engineer",
+  "durationMinutes": 60,
+  "totalMarks": 100,
+  "passMarks": 60,
+  "orgName": "Acme Corp"
+}
+```
+
+---
+
+### Request OTP
+
+```http
+POST /api/exam/:assessmentId/request-otp
+Content-Type: application/json
+```
+
+```json
+{ "email": "saran@getrecord.in" }
+```
+
+**Response `200`**
+
+```json
+{ "message": "OTP sent to saran@getrecord.in" }
+```
+
+---
+
+### Verify OTP — get candidate session token
+
+```http
+POST /api/exam/:assessmentId/verify-otp
+Content-Type: application/json
+```
+
+```json
+{ "email": "saran@getrecord.in", "otp": "482913" }
+```
+
+**Response `200`**
+
+```json
+{
+  "sessionToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "candidateId": "cand_xxxx",
+  "name": "Saran"
+}
+```
+
+Use `sessionToken` as `x-session-token` on all subsequent candidate calls.
+
+---
+
+### Upload identity photo
+
+```http
+POST /api/exam/session/verify
+x-session-token: <candidate-jwt>
+Content-Type: multipart/form-data
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `photo` | file | JPEG/PNG of candidate's face |
+
+**Response `200`**
+
+```json
+{ "verified": true }
+```
+
+---
+
+### Check question generation status
+
+```http
+GET /api/exam/session/status
+x-session-token: <candidate-jwt>
+```
+
+**Response `200`**
+
+```json
+{ "status": "ready" }
+```
+
+Poll until `status === "ready"` before calling `start`.
+
+---
+
+### Start exam
+
+```http
+POST /api/exam/session/start
+x-session-token: <candidate-jwt>
+```
+
+**Response `200`**
+
+```json
+{
+  "questions": [
+    {
+      "questionId": "q_001",
+      "type": "mcq",
+      "text": "What is the event loop in Node.js?",
+      "options": ["A single-threaded loop", "A multi-threaded pool", "A garbage collector", "A file watcher"],
+      "marks": 2
+    }
+  ],
+  "durationSeconds": 3600,
+  "startedAt": "2026-06-09T10:00:00.000Z"
+}
+```
+
+---
+
+### Save a single answer
+
+```http
+POST /api/exam/session/answer
+x-session-token: <candidate-jwt>
+Content-Type: application/json
+```
+
+```json
+{
+  "questionId": "q_001",
+  "answer": 0
+}
+```
+
+For coding questions pass `"answer": "<code string>"`.
+
+**Response `200`**
+
+```json
+{ "saved": true }
+```
+
+---
+
+### Submit exam
+
+```http
+POST /api/exam/session/submit
+x-session-token: <candidate-jwt>
+```
+
+**Response `200`**
+
+```json
+{
+  "score": 75,
+  "totalMarks": 100,
+  "passed": true,
+  "passMarks": 60
+}
+```
+
+---
+
+### Upload recording chunk
+
+```http
+POST /api/exam/session/upload-chunk
+x-session-token: <candidate-jwt>
+Content-Type: multipart/form-data
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `chunk` | file | WebM video blob |
+| `chunkIndex` | number | Sequential chunk index (0-based) |
+
+**Response `200`**
+
+```json
+{ "received": true, "chunkIndex": 4 }
+```
+
+---
+
+### Log proctoring violation
+
+```http
+POST /api/exam/session/proctoring
+x-session-token: <candidate-jwt>
+Content-Type: application/json
+```
+
+```json
+{
+  "type": "tab_switch",
+  "timestamp": "2026-06-09T10:15:30.000Z",
+  "metadata": { "windowBlurred": true }
+}
+```
+
+**Violation types:** `tab_switch` · `face_not_detected` · `multiple_faces` · `fullscreen_exit` · `copy_paste`
+
+**Response `200`**
+
+```json
+{ "logged": true, "violationCount": 3 }
+```
+
+---
+
+### Execute code (coding questions)
+
+```http
+POST /api/exam/session/run-code
+x-session-token: <candidate-jwt>
+Content-Type: application/json
+```
+
+```json
+{
+  "questionId": "q_coding_01",
+  "language": "javascript",
+  "code": "function twoSum(nums, target) { ... }"
+}
+```
+
+**Response `200`**
+
+```json
+{
+  "passed": 4,
+  "total": 5,
+  "results": [
+    { "testCase": 1, "passed": true,  "output": "[0,1]", "expected": "[0,1]" },
+    { "testCase": 5, "passed": false, "output": "[]",    "expected": "[2,3]" }
+  ]
+}
+```
+
+---
+
+### Get result
+
+```http
+GET /api/exam/session/result
+x-session-token: <candidate-jwt>
+```
+
+**Response `200`**
+
+```json
+{
+  "score": 75,
+  "totalMarks": 100,
+  "passed": true,
+  "passMarks": 60,
+  "proctoring": { "score": 88, "violationCount": 2 },
+  "reportUrl": "https://app.getrecord.in/exam/asmnt_xxx/report/cand_xxx"
+}
+```
+
+---
+
+### Full candidate report (public)
+
+```http
+GET /api/exam/:assessmentId/report/:candidateId
+```
+
+No auth required.
+
+**Response `200`**
+
+```json
+{
+  "candidate": { "name": "Saran", "email": "saran@getrecord.in" },
+  "jobTitle": "Backend Engineer",
+  "score": 75,
+  "totalMarks": 100,
+  "passed": true,
+  "skills": [{ "name": "Node.js", "score": 80 }],
+  "submittedAt": "2026-06-09T11:00:00.000Z",
+  "recordingUrl": "https://signed-gcp-url/final.mp4"
+}
+```
+
+---
+
+## Error responses
+
+All endpoints return errors in this shape:
+
+```json
+{
+  "error": "Unauthorized",
+  "message": "Invalid or expired session token.",
+  "statusCode": 401
+}
+```
+
+| Status | Meaning |
+|---|---|
+| `400` | Bad request — missing or invalid fields |
+| `401` | Auth failed — invalid key / expired token |
+| `403` | Forbidden — signature mismatch or timestamp expired |
+| `404` | Resource not found |
+| `409` | Conflict — e.g. OTP already sent |
+| `500` | Internal server error |
+
+---
+
+## Quick-start checklist
+
+1. Obtain your `x-api-key` and `x-secret-key` from the WhiteCollar dashboard.
+2. Call `POST /api/v1/sessions` to create a session and get a `token`.
+3. Embed the iframe with the token and your company name.
+4. Listen for `WC_ASSESS_CLOSE` to know when the creator finishes.
+5. Register a webhook URL to receive `assessment.submitted` events.
+6. Verify every webhook signature before processing results.

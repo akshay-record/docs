@@ -1,0 +1,395 @@
+---
+title: "What Gets Stored in Redis"
+description: "Both event types, exact Redis key structure, TTL, and full JSON payloads — read directly from the source code."
+---
+
+There are **two event types** written to Redis. Both use the same key structure and TTL. Your server reads both via `client.getWebhookEvents()`.
+
+| Event | Fired by | When |
+|---|---|---|
+| `assessment.sent` | White-collar portal backend | Recruiter clicks Send (webhook mode, no email) |
+| `assessment.completed` | Record assessment backend | Candidate submits the exam |
+
+---
+
+## Event 1 — `assessment.sent`
+
+Fired from `white-collar-assessment-portal-backend` when an assessment is sent to candidates and `emailNotificationsEnabled` is `false` on the API key.
+
+<Info>
+  This event fires **once per assessment**, batching all candidates into a single payload. It tells your app "these people have been invited to take this assessment at this URL."
+</Info>
+
+### Full JSON stored in Redis
+
+```json
+{
+  "eventId":    "8820caaf-3419-4049-bb85-a5c81c762750",
+  "storedAt":   "2026-06-09T06:16:20.858Z",
+
+  "event":      "assessment.sent",
+
+  "assessmentId":  "asmnt_a8a53807d8b9e2fc2b98",
+  "assessmentUrl": "http://localhost:3000/assessment/asmnt_a8a53807d8b9e2fc2b98/wc_key_test_ca8a32727c6cb4d3",
+
+  "keyId":   "wc_key_test_ca8a32727c6cb4d3",
+  "orgId":   "RORG645662",
+  "jobTitle": ".net",
+
+  "candidates": [
+    {
+      "id":    "6a27ad8a55617702aa91b823",
+      "name":  "Saran",
+      "email": "sarannithish069@gmail.com"
+    }
+  ],
+  "totalCandidates": 1
+}
+```
+
+### Field reference
+
+| Field | Type | What it means |
+|---|---|---|
+| `eventId` | string | Unique ID — use as DB primary key |
+| `storedAt` | string | When this was written to Redis (ISO-8601) |
+| `event` | string | Always `"assessment.sent"` |
+| `assessmentId` | string | ID of the assessment that was sent |
+| `assessmentUrl` | string | The URL candidates use to open the assessment |
+| `keyId` | string | Your API key's internal ID |
+| `orgId` | string | Your organisation ID |
+| `jobTitle` | string | Job role this assessment is for |
+| `candidates` | array | All candidates invited in this send |
+| `candidates[].id` | string | Candidate's MongoDB `_id` |
+| `candidates[].name` | string | Candidate's full name |
+| `candidates[].email` | string | Candidate's email — use to match your user |
+| `totalCandidates` | number | Count of candidates in `candidates[]` |
+
+### Source code (assessment.service.ts)
+
+```typescript
+await WebhookStore.storeEvent(keyId, {
+  event:         "assessment.sent",
+  assessmentId:  String(assessment._id),
+  assessmentUrl: `${env.FRONTEND_URL}/assessment/${String(assessment._id)}`,
+  jobTitle:      assessment.jobTitle,
+  orgId,
+  candidates: candidates.map((c) => ({
+    id:    String(c._id),
+    name:  c.name,
+    email: c.email,
+  })),
+  totalCandidates: candidates.length,
+});
+```
+
+### When this fires vs email
+
+This event only fires when `emailNotificationsEnabled = false` on the API key.
+
+| `emailNotificationsEnabled` | What happens on Send |
+|---|---|
+| `true` | Emails are sent via AWS SES — **no Redis event** |
+| `false` | Redis event stored — **your app handles delivery** |
+
+---
+
+## Event 2 — `assessment.completed`
+
+Fired from `record-assessment-backend` when a candidate submits the exam. See [What Gets Stored in Redis — Completed](/smartai/webhook-redis-internals#full-json-stored-in-redis-1) for the full payload.
+
+When a candidate submits an assessment, the backend writes two things into Redis instantly, then your server reads them via `client.getWebhookEvents()`.
+
+---
+
+## Redis key structure (same for both events)
+
+Two keys are written per event:
+
+```
+webhook:events:{keyId}:{eventId}   ← the full event JSON (STRING)
+webhook:index:{keyId}              ← sorted set of all eventIds for this API key (ZSET)
+```
+
+| Key | Redis type | What it stores | TTL |
+|---|---|---|---|
+| `webhook:events:{keyId}:{eventId}` | String | Full JSON of the event | **30 days** |
+| `webhook:index:{keyId}` | Sorted Set | All pending `eventId`s, scored by Unix ms timestamp | **30 days** |
+
+**`keyId`** = your API key's internal ID (from `ApiKeyModel` — not the `wc_test_xxx` value itself, but the `keyId` field on the key document).
+
+**`eventId`** = a `randomUUID()` generated at store time.
+
+### How the sorted set is used
+
+```
+ZADD webhook:index:{keyId}  <timestamp_ms>  <eventId>
+```
+
+When you call `getWebhookEvents({ since, limit })`:
+```
+ZRANGEBYSCORE webhook:index:{keyId}  <since or -inf>  +inf  LIMIT 0 <limit>
+```
+
+When you `acknowledgeWebhookEvents([...ids])`:
+```
+ZREM  webhook:index:{keyId}  <eventId>
+DEL   webhook:events:{keyId}:<eventId>
+```
+
+---
+
+## Required environment variable
+
+```bash
+# .env  (record-assessment-backend)
+REDIS_URL=redis://localhost:6379
+
+# or for TLS (Upstash, Redis Cloud, etc.)
+REDIS_URL=rediss://:<password>@<host>:<port>
+```
+
+Also accepted: `REDIS_URI` (fallback). If neither is set, Redis won't connect and all webhook storage is silently skipped — assessments still complete, but no events are queued.
+
+```bash
+REPORT_BASE_URL=https://your-frontend.com
+# Used to build: REPORT_BASE_URL/assessment/{assessmentId}/report/{candidateId}
+```
+
+---
+
+## What triggers the write
+
+Inside `submitSession()` in `exam.controller.ts`, after the session is saved:
+
+```typescript
+await WebhookStore.storeEvent(keyId, {
+  event:          webhookEvent,          // "assessment.completed" or "assessment.disqualified"
+  assessmentId:   session.assessmentId,
+  ...fullResult,                         // everything from buildSessionResult()
+  org:            undefined,             // org object stripped — not stored
+  durationMinutes,                       // recalculated: Math.ceil((endMs - startMs) / 60000), min 1
+  reportUrl,                             // REPORT_BASE_URL/assessment/{id}/report/{candidateId}
+});
+```
+
+`storeEvent` then adds two more fields automatically:
+- `eventId` → `randomUUID()`
+- `storedAt` → `new Date().toISOString()`
+
+---
+
+## Exact JSON stored in Redis
+
+This is the complete object that gets `JSON.stringify()`-ed and written to `webhook:events:{keyId}:{eventId}`:
+
+```json
+{
+  // ── Added by storeEvent ─────────────────────────────────
+  "eventId":   "550e8400-e29b-41d4-a716-446655440000",
+  "storedAt":  "2026-06-09T10:31:00.000Z",
+
+  // ── Event type ──────────────────────────────────────────
+  "event":     "assessment.completed",
+  // or        "assessment.disqualified"  (if session was disqualified)
+
+  // ── Assessment identity ──────────────────────────────────
+  "assessmentId":   "asmnt_72b47a64306f",
+  "assessmentName": "Full Stack Developer Assessment",
+  "jobTitle":       "Senior Software Engineer",
+
+  // ── Candidate ──────────────────────────────────────────────
+  "candidateId":    "cand_abc123",
+  "candidateName":  "Priya Sharma",
+  "candidateEmail": "priya@example.com",
+
+  // ── Skills ──────────────────────────────────────────────
+  "skills": ["JavaScript", "React", "Node.js"],
+
+  // ── Result ──────────────────────────────────────────────
+  "status":      "submitted",
+  "score":       78,
+  "totalMarks":  100,
+  "passMarks":   65,
+  "passed":      true,
+  "submittedAt": "2026-06-09T10:30:00.000Z",
+
+  // durationMinutes: Math.ceil((submittedAt - startTime) / 60000), minimum 1
+  // null only if startTime or submittedAt is missing
+  "durationMinutes": 45,
+
+  // ── AI feedback ──────────────────────────────────────────
+  // Generated async AFTER submit — will be null when first stored.
+  // Your poller may see null here even for a successful session.
+  "aiFeedback": null,
+
+  // ── Report link ──────────────────────────────────────────
+  // Built from: env.REPORT_BASE_URL + /assessment/{assessmentId}/report/{candidateId}
+  "reportUrl": "https://your-frontend.com/assessment/asmnt_72b47a64306f/report/cand_abc123",
+
+  // ── Per-question breakdown ────────────────────────────────
+  "questionAnswers": [
+    {
+      "questionId":      "q_001",
+      "type":            "MCQ",
+      "question":        "What is the time complexity of binary search?",
+      "options":         ["O(n)", "O(log n)", "O(n²)", "O(1)"],
+      "correctAnswer":   "O(log n)",
+      "marks":           5,
+      "difficulty":      "Medium",
+      "candidateAnswer": "O(log n)",
+      "isCorrect":       true,
+      "marksAwarded":    5,
+      "timeSpent":       45,
+      "order":           1
+    },
+    {
+      "questionId":      "q_002",
+      "type":            "Coding",
+      "question":        "Reverse a linked list",
+      "options":         [],
+      "correctAnswer":   "",
+      "marks":           20,
+      "difficulty":      "Medium",
+      "candidateAnswer": "function reverseList(head) { ... }",
+      "isCorrect":       null,
+      "marksAwarded":    20,
+      "timeSpent":       380,
+      "order":           2
+    }
+  ],
+
+  // ── Identity verification ─────────────────────────────────
+  "verification": {
+    // GCP signed URL to selfie photo — null if verification was skipped
+    "imageUrl": "https://storage.googleapis.com/assessmentmodule/...?X-Goog-Signature=..."
+  },
+
+  // ── Proctoring ────────────────────────────────────────────
+  "proctoring": {
+    "score":                88,
+    "violationCount":        2,
+    "tabSwitchCount":        1,
+    "fullscreenExitCount":   0,
+    "noFaceCount":           1,
+    "multipleFaceCount":     0,
+    "lookawayCount":         0,
+    "externalObjectCount":   0,
+    // Last 30 violations, newest first
+    "recentViolations": [
+      {
+        "type":      "TAB_SWITCH",
+        "severity":  "low",
+        "timestamp": "2026-06-09T10:05:00.000Z"
+      }
+    ]
+  },
+
+  // ── Recording ─────────────────────────────────────────────
+  "recording": {
+    // not_started | in_progress | processing | ready | failed
+    "status": "processing",
+    // GCP signed URL — null while status is not "ready"
+    "url": null
+  }
+}
+```
+
+---
+
+## Field-by-field source mapping
+
+| Field in Redis | Source in code | Notes |
+|---|---|---|
+| `eventId` | `randomUUID()` in `storeEvent` | Primary key |
+| `storedAt` | `new Date().toISOString()` in `storeEvent` | Write time |
+| `event` | `"assessment.completed"` or `"assessment.disqualified"` | From `originalStatus === "disqualified"` check |
+| `assessmentId` | `session.assessmentId` | |
+| `assessmentName` | `assessment.name` or `smartAiAssessment.jobTitle` | |
+| `jobTitle` | `assessment.jobTitle` or `smartAiAssessment.jobTitle` | |
+| `candidateId` | `session.candidateId` | |
+| `candidateName` | `session.candidate.name` | |
+| `candidateEmail` | `session.candidate.email` | |
+| `skills` | Resolved from skill IDs or SmartAI skill names | |
+| `status` | `session.status` at build time (usually `"submitted"`) | |
+| `score` | `session.score ?? 0` | |
+| `totalMarks` | `assessment.totalMarks` or `smartAiAssessment.totalMarks ?? 100` | |
+| `passMarks` | `assessment.passMarks` or `smartAiAssessment.passMark ?? 65` | |
+| `passed` | `session.passed ?? false` | |
+| `submittedAt` | `session.submittedAt.toISOString()` | |
+| `durationMinutes` | `Math.max(1, Math.ceil((endMs - startMs) / 60000))` | Recalculated after spread |
+| `aiFeedback` | `session.aiFeedback ?? null` | Generated async — likely `null` at store time |
+| `reportUrl` | `${env.REPORT_BASE_URL}/assessment/{assessmentId}/report/{candidateId}` | |
+| `questionAnswers` | Built from questions + `session.answers` map | |
+| `verification.imageUrl` | GCP signed URL from `session.verificationImagePath` | `null` if not set |
+| `proctoring.*` | `session.proctoring.*` | `recentViolations` = last 30, reversed |
+| `recording.status` | `session.recording.status` | May still be `"processing"` |
+| `recording.url` | GCP signed URL | `null` unless status is `"ready"` |
+| `org` | **Explicitly set to `undefined`** — stripped before storage | Not in Redis |
+
+---
+
+## ⚠️ Known gaps
+
+<Info>
+  **`aiFeedback` is almost always `null` when the event is first stored.**
+
+  AI feedback is generated asynchronously after the session is submitted. The webhook event is stored immediately — before the AI has finished. If you need the feedback, either:
+  - Poll the result again later via `GET /exam/session/result`
+  - Accept that `aiFeedback` will be `null` for most events at polling time
+</Info>
+
+<Info>
+  **`recording.url` may be `null` at polling time.**
+
+  The recording chunks are combined into a final `.mp4` asynchronously after submission. The `recording.status` will be `"processing"` until the combine job finishes. The URL only appears once status reaches `"ready"`.
+</Info>
+
+---
+
+## Redis connection setup (full .env)
+
+```bash
+# record-assessment-backend .env
+
+# Redis — required for webhook storage
+REDIS_URL=redis://localhost:6379
+# or for production (Upstash / Redis Cloud with TLS):
+# REDIS_URL=rediss://:<your-password>@<host>.upstash.io:6379
+
+# Report base URL — used to build reportUrl in every event
+REPORT_BASE_URL=https://your-frontend.com
+
+# Other required vars
+PORT=8081
+MODE=test
+MONGO_URI_TEST=mongodb+srv://...
+MONGO_URI_LIVE=mongodb+srv://...
+JWT_SECRET=your-jwt-secret
+OPENAI_API_KEY=sk-proj-...
+GCP_BUCKET_NAME=assessmentmodule
+GCP_PROJECT_ID=record-fs-production
+GCP_KEYFILE=src/config/gcp-key.json
+FRONTEND_URL=https://your-frontend.com
+AWS_REGION=ap-south-1
+AWS_ACCESS_KEY_ID=AKIA...
+AWS_SECRET_ACCESS_KEY=...
+AWS_SES_FROM=Team Record <no-reply@getrecord.in>
+```
+
+---
+
+## What happens if Redis is not configured
+
+If `REDIS_URL` is not set:
+- Redis client is `null`
+- `storeEvent` throws `"Redis is not connected"`
+- The throw is caught in the fire-and-forget block inside `submitSession`
+- **Assessments still complete normally** — the session is saved to MongoDB
+- No webhook events are queued
+- Your poller gets `{ events: [], pendingCount: 0 }` every time
+
+You will see this in server logs:
+```
+⚠️  Webhook storage unavailable — check REDIS_URL in .env
+```

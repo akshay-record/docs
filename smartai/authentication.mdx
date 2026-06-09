@@ -1,0 +1,114 @@
+---
+title: "Authentication"
+description: "API key setup and HMAC-SHA256 request signing for SmartAI Assessment."
+---
+
+## API keys
+
+Every SmartAI Assessment account has two keys:
+
+| Key | Header | Where it's used |
+|---|---|---|
+| API key | `x-api-key` | Every request — identifies your organisation |
+| Secret key | Used for HMAC signing | Every request — proves the request wasn't tampered with |
+
+<Warning>
+  Never expose your secret key in browser code or version control. Set both keys as environment variables on your server only.
+</Warning>
+
+```bash
+ASSESSMENT_API_KEY=wc_test_abc123
+ASSESSMENT_SECRET_KEY=9e345f2b48dd318d301a2bdd...
+```
+
+### Live vs test environments
+
+The API key prefix determines which environment you're in:
+
+| Prefix | Environment | Notes |
+|---|---|---|
+| `wc_test_` | Test / staging | No real emails sent, safe to experiment |
+| Anything else | Live / production | Real candidate emails, full proctoring |
+
+---
+
+## HMAC-SHA256 signing
+
+The Backend SDK signs every request automatically. You never need to do this manually. This section is for reference only.
+
+### Signature construction
+
+```
+payload = "METHOD:PATH:TIMESTAMP:SORTED_BODY_JSON"
+
+Examples:
+  GET:/api/v1/webhook/events:1717200000000:
+  POST:/api/v1/sessions:1717200000000:{"users":[{"email":"a@b.com","name":"A"}]}
+```
+
+Rules:
+- Body keys sorted **alphabetically** (nested keys too)
+- Empty body → empty string (not `{}`)
+- Timestamp is **Unix milliseconds** as a string
+
+### Headers sent on every request
+
+```
+x-api-key:   wc_test_abc123
+x-signature: <hmac-sha256-hex-digest>
+x-timestamp: 1717200000000
+```
+
+### Node.js signing reference
+
+```typescript
+import crypto from 'crypto';
+
+function buildSignature(
+  method: string,
+  path: string,
+  body: object | null,
+  secretKey: string
+): { signature: string; timestamp: string } {
+  const timestamp = Date.now().toString();
+
+  const sortedBody = body
+    ? JSON.stringify(body, Object.keys(body).sort())
+    : '';
+
+  const payload = `${method}:${path}:${timestamp}:${sortedBody}`;
+
+  const signature = crypto
+    .createHmac('sha256', secretKey)
+    .update(payload)
+    .digest('hex');
+
+  return { signature, timestamp };
+}
+```
+
+### Timestamp window
+
+| Environment | Window |
+|---|---|
+| Production | 5 minutes |
+| Development | 30 minutes |
+
+Requests outside the window are rejected with `403 Forbidden`.
+
+---
+
+## SDK initialisation
+
+Instantiate once per request (or share a single instance per server process):
+
+```typescript
+const AssessmentClient = require('@recordorg/smartai-assessment-backend');
+
+const client = new AssessmentClient({
+  apiKey:    process.env.ASSESSMENT_API_KEY,    // required
+  secretKey: process.env.ASSESSMENT_SECRET_KEY, // required
+});
+```
+
+The SDK reads both keys and attaches the correct headers and HMAC signature to every outgoing request — you do not pass keys to the frontend or to candidates.

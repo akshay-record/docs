@@ -1,0 +1,97 @@
+---
+title: "client.listAssessments()"
+description: "List all assessment templates configured for your organisation. Use this to build an assessment picker UI."
+---
+
+<Info>
+  This is a **Backend SDK method**, not an HTTP endpoint.
+</Info>
+
+## Signature
+
+```typescript
+client.listAssessments(): Promise<Assessment[]>
+```
+
+No parameters required.
+
+---
+
+## Return value
+
+Returns an array of assessment template objects.
+
+<ResponseField name="assessmentId" type="string">
+  Unique identifier for the assessment template. Pass this when creating a session for a specific assessment.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Display name of the assessment (e.g. `"Full Stack Developer Assessment"`).
+</ResponseField>
+
+<ResponseField name="skills" type="string[]">
+  Skills this assessment tests (e.g. `["JavaScript", "React", "Node.js"]`).
+</ResponseField>
+
+<ResponseField name="totalMarks" type="number">
+  Total marks available (always `100`).
+</ResponseField>
+
+<ResponseField name="passMarks" type="number">
+  Minimum marks required to pass.
+</ResponseField>
+
+<ResponseField name="durationMinutes" type="number">
+  Time limit for the assessment in minutes.
+</ResponseField>
+
+---
+
+<RequestExample>
+
+```typescript List and display
+const assessments = await client.listAssessments();
+
+assessments.forEach(a => {
+  console.log(`${a.name} — ${a.durationMinutes} min, pass at ${a.passMarks}/${a.totalMarks}`);
+});
+```
+
+```typescript Build an API endpoint for your frontend picker
+app.get('/assessments', yourAuthMiddleware, async (req, res) => {
+  const client = new AssessmentClient({
+    apiKey:    process.env.ASSESSMENT_API_KEY,
+    secretKey: process.env.ASSESSMENT_SECRET_KEY,
+  });
+
+  const assessments = await client.listAssessments();
+  res.json({ success: true, data: assessments });
+});
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Success
+[
+  {
+    "assessmentId": "asmt_xyz789",
+    "name": "Full Stack Developer Assessment",
+    "skills": ["JavaScript", "React", "Node.js", "MongoDB"],
+    "totalMarks": 100,
+    "passMarks": 60,
+    "durationMinutes": 60
+  },
+  {
+    "assessmentId": "asmt_abc123",
+    "name": "Data Analyst Assessment",
+    "skills": ["Python", "SQL", "Pandas", "Data Visualisation"],
+    "totalMarks": 100,
+    "passMarks": 65,
+    "durationMinutes": 45
+  }
+]
+```
+
+</ResponseExample>

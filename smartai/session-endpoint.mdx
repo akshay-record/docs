@@ -1,0 +1,221 @@
+---
+title: "Create Session"
+api: "POST /assessment/session"
+description: "Your backend endpoint that creates a session token for the SmartAI portal. Your frontend calls this before opening the assessment."
+---
+
+<Info>
+  **You build this endpoint.** The path `/assessment/session` is whatever route you choose in your own app. Internally it calls `client.createSession()` from the Backend SDK and returns the token to your frontend.
+</Info>
+
+---
+
+## How it fits in the flow
+
+```
+Your Frontend (ProfileList.tsx)
+    │
+    │  POST /assessment/session
+    │  { users: [{ name, email }, ...] }
+    │
+    ▼
+Your Backend (this endpoint)
+    │
+    │  client.createSession({ users })
+    │
+    ▼
+SmartAI Platform
+    │
+    │  { token, expiresAt }
+    │
+    ▼
+Your Backend returns { success: true, data: { token, expiresAt } }
+    │
+    ▼
+Your Frontend calls AssessmentPortal.open({ token })
+```
+
+---
+
+## Environment variables required
+
+Add these to your server's `.env` file before this endpoint will work:
+
+```bash
+ASSESSMENT_API_KEY=wc_test_your_key_here
+ASSESSMENT_SECRET_KEY=your_secret_key_here
+```
+
+<Warning>
+  Never put these in your frontend `.env`. They belong on the server only. Your frontend uses `NEXT_PUBLIC_ASSESSMENT_API_KEY` (the public API key) separately just to tell the portal which environment to use — the secret key never leaves your server.
+</Warning>
+
+---
+
+## Request
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  Your app's authentication token for the logged-in recruiter. Format: `Bearer <jwt>`.
+  Protect this endpoint so only your own recruiter accounts can call it.
+</ParamField>
+
+<ParamField header="Content-Type" type="string" required>
+  Must be `application/json`.
+</ParamField>
+
+### Body
+
+<ParamField body="users" type="array" required>
+  The list of candidates to include in this assessment session.
+
+  In your `ProfileList.tsx` this is built as:
+  ```typescript
+  users: data.map(c => ({
+    name:  c.name ?? c.fullName ?? '',
+    email: c.email ?? '',
+  }))
+  ```
+
+  <Expandable title="Each user object">
+    <ParamField body="name" type="string" required>
+      Candidate's full name. Will appear in the assessment UI and result reports.
+    </ParamField>
+    <ParamField body="email" type="string" required>
+      Candidate's email address. SmartAI uses this as the unique identifier — when you receive webhook results, match on this email to find the candidate in your own database.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+---
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  `true` when the session was created successfully.
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  <Expandable title="Session data">
+    <ResponseField name="token" type="string">
+      A session token. Pass this directly to `AssessmentPortal.open({ token })` in your frontend.
+
+      **Do not store or reuse this token.** Request a fresh one every time a recruiter starts a new session.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+<RequestExample>
+
+```bash cURL
+curl --request POST \
+  --url https://your-app.com/assessment/session \
+  --header 'Authorization: Bearer <recruiter-jwt>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "users": [
+      { "name": "Priya Sharma",  "email": "priya@example.com" },
+      { "name": "Rahul Verma",   "email": "rahul@example.com" },
+      { "name": "Aisha Khan",    "email": "aisha@example.com" }
+    ]
+  }'
+```
+
+```typescript Frontend (your ProfileList.tsx)
+// This is exactly how your ProfileList.tsx calls this endpoint
+const response = await assessmentApi.createSession(
+  data.map(c => ({
+    name:  c.name ?? c.fullName ?? '',
+    email: c.email ?? '',
+  }))
+);
+
+const token = response?.data?.token;
+```
+
+```typescript Backend (your controller)
+// assessmentSession.controller.ts
+import { Response } from 'express';
+import catchAsync from '../../utils/catch-async';
+
+const AssessmentClient = require('@recordorg/smartai-assessment-backend');
+
+export const createAssessmentSession = catchAsync(async (req: any, res: Response) => {
+  const apiKey    = process.env.ASSESSMENT_API_KEY;
+  const secretKey = process.env.ASSESSMENT_SECRET_KEY;
+
+  // 1. Guard — make sure env vars are set
+  if (!apiKey || !secretKey) {
+    return res.status(500).json({
+      success: false,
+      message: 'SmartAI assessment credentials are not configured',
+    });
+  }
+
+  // 2. Create the SDK client
+  const client = new AssessmentClient({ apiKey, secretKey });
+
+  // 3. Get the users array from the request body
+  const users: { name: string; email: string }[] = req.body.users || [];
+
+  // 4. Guard — make sure at least one candidate was sent
+  if (!users.length) {
+    return res.status(400).json({
+      success: false,
+      message: 'No candidates provided',
+    });
+  }
+
+  // 5. Create the session — this calls the SmartAI platform
+  const session = await client.createSession({ users });
+
+  // 6. Return the token to your frontend
+  res.status(200).json({
+    success: true,
+    data: session, // { token, expiresAt }
+  });
+});
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200 Success
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiJzZXNzXzAxIn0.HMAC"
+  }
+}
+```
+
+```json 400 No candidates
+{
+  "success": false,
+  "message": "No candidates provided"
+}
+```
+
+```json 500 Missing env vars
+{
+  "success": false,
+  "message": "SmartAI assessment credentials are not configured"
+}
+```
+
+</ResponseExample>
+
+---
+
+## Common mistakes
+
+| Mistake | What happens | Fix |
+|---|---|---|
+| `ASSESSMENT_API_KEY` not set in `.env` | Returns 500 | Add the key to your server `.env` |
+| Sending `users: []` empty array | Returns 400 | Make sure candidates are selected before calling |
+| Calling this from the browser directly | API key exposed in network tab | Always call through your backend |
+| Reusing the same token for a second session | Token expired error | Always request a fresh token |

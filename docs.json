@@ -175,6 +175,50 @@
         ]
       },
       {
+        "tab": "SmartAI Assessment SDK",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "smartai/introduction",
+              "smartai/authentication"
+            ]
+          },
+          {
+            "group": "REST API",
+            "pages": [
+              "smartai/session-endpoint"
+            ]
+          },
+          {
+            "group": "Backend SDK",
+            "pages": [
+              "smartai/sdk-create-session",
+              "smartai/sdk-get-webhook-events",
+              "smartai/sdk-acknowledge-events",
+              "smartai/sdk-list-assessments"
+            ]
+          },
+          {
+            "group": "Frontend SDK",
+            "pages": [
+              "smartai/frontend-open",
+              "smartai/frontend-close",
+              "smartai/frontend-is-open"
+            ]
+          },
+          {
+            "group": "Webhook & Data",
+            "pages": [
+              "smartai/webhook-setup",
+              "smartai/webhook-redis-internals",
+              "smartai/webhook-event-schema",
+              "smartai/suggested-db-schema"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "WhiteCollar Assessments",
         "groups": [
           {
@@ -193,6 +237,7 @@
               "whitecollar/save-reuse-configuration",
               "whitecollar/database-collections",
               "whitecollar/api-reference",
+              "whitecollar/client-api-reference",
               "whitecollar/frontend-step-flow",
               "whitecollar/postman-integration-guide",
               "whitecollar/candidate-test-flow",
