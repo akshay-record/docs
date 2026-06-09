@@ -1,0 +1,123 @@
+---
+title: "client.createSession()"
+description: "Create a session token for one or more candidates. Call this inside your session endpoint handler."
+---
+
+<Info>
+  This is a **Backend SDK method**, not an HTTP endpoint. Call it from your Node.js server — never from the browser.
+</Info>
+
+## Install
+
+```bash
+npm install @recordorg/smartai-assessment-backend
+```
+
+## Initialise
+
+```typescript
+const AssessmentClient = require('@recordorg/smartai-assessment-backend');
+
+const client = new AssessmentClient({
+  apiKey:    process.env.ASSESSMENT_API_KEY,    // required
+  secretKey: process.env.ASSESSMENT_SECRET_KEY, // required
+});
+```
+
+---
+
+## Signature
+
+```typescript
+client.createSession(options: CreateSessionOptions): Promise<SessionToken>
+```
+
+---
+
+## Parameters
+
+<ParamField body="users" type="array" required>
+  **Bulk mode (recommended).** One or more candidates to include in this session. All candidates share a single session token.
+
+  <Expandable title="User object">
+    <ParamField body="name" type="string" required>
+      Candidate's full name.
+    </ParamField>
+    <ParamField body="email" type="string" required>
+      Candidate's email address. Used as the unique identifier on the SmartAI platform.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="name" type="string">
+  **Single-candidate mode.** Candidate's full name. Use instead of `users` when assigning a single person.
+</ParamField>
+
+<ParamField body="email" type="string">
+  **Single-candidate mode.** Candidate's email. Required when using `name` instead of `users`.
+</ParamField>
+
+<ParamField body="candidateId" type="string">
+  Your internal candidate ID. Optional — stored on the SmartAI record for cross-reference.
+</ParamField>
+
+---
+
+## Return value
+
+<ResponseField name="token" type="string">
+  A session token (JWT). Pass this directly to `AssessmentPortal.open({ token })` in your frontend. Do not cache or store it — request a fresh one every time.
+</ResponseField>
+
+---
+
+<RequestExample>
+
+```typescript Bulk mode
+const session = await client.createSession({
+  users: [
+    { name: 'Priya Sharma', email: 'priya@example.com' },
+    { name: 'Rahul Verma',  email: 'rahul@example.com' },
+  ],
+});
+
+console.log(session.token); // → 'eyJhbGci...'
+```
+
+```typescript Single candidate
+const session = await client.createSession({
+  name:  'Priya Sharma',
+  email: 'priya@example.com',
+});
+```
+
+```typescript With internal candidate ID
+const session = await client.createSession({
+  users: [{ name: 'Priya Sharma', email: 'priya@example.com' }],
+  candidateId: 'your_internal_id_123',
+});
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Success
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiJzZXNzXzAxIn0.HMAC"
+}
+```
+
+</ResponseExample>
+
+---
+
+## Error cases
+
+| Condition | Error message |
+|---|---|
+| `users` is an empty array | `users must be a non-empty array` |
+| `name` missing in single mode | `name is required` |
+| `email` missing in single mode | `email is required` |
+| Invalid API key | HTTP 401 from SmartAI platform |
+| `ASSESSMENT_API_KEY` not set | `Missing API key` |

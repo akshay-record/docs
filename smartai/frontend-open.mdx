@@ -1,0 +1,268 @@
+---
+title: "AssessmentPortal.open()"
+description: "Open the SmartAI assessment modal inside your app. The candidate takes the test without leaving your page."
+---
+
+<Info>
+  This is a **Frontend SDK method**. It runs in the browser — import it in your React/Next.js component, not on the server.
+</Info>
+
+## Install
+
+```bash
+npm install @recordorg/smartai-assessment-frontend
+```
+
+---
+
+## How it works
+
+Two steps only:
+
+1. **Call your backend** to get a `token`
+2. **Call `AssessmentPortal.open({ token, apiKey })`** — the iframe opens and the candidate takes the test
+
+```
+Recruiter clicks "SmartAI Assessment"
+    │
+    ├─ Step 1: Call YOUR backend endpoint
+    │   POST /assessment/session
+    │   { users: [...] }
+    │   ◀── { success: true, data: { token } }
+    │
+    └─ Step 2: Open the portal
+        AssessmentPortal.open({ token, apiKey })
+        │
+        ┌──────────────────────────────────────────┐
+        │          IFRAME (full screen)             │
+        │                                           │
+        │   SmartAI Assessment UI loads here        │
+        │   Candidate takes the test                │
+        │   Results go to your backend via polling  │
+        │                                           │
+        └──────────────────────────────────────────┘
+```
+
+Results are collected **on your server** by polling — not via the `onDone` callback. The `onDone` / `onClose` callbacks are only for updating your UI (e.g. showing a toast message).
+
+---
+
+## Signature
+
+```typescript
+AssessmentPortal.open(options: AssessmentPortalOptions): void
+```
+
+---
+
+## Parameters
+
+<ParamField body="token" type="string" required>
+  The session token from your backend. This is `response?.data?.token` from your `assessmentApi.createSession()` call.
+
+  Never hardcode this — always fetch it fresh from your backend first.
+</ParamField>
+
+<ParamField body="apiKey" type="string">
+  Your SmartAI **public API key**. This tells the portal which environment to load (live or test).
+
+  **Where to get it:** Same key you use on the backend as `ASSESSMENT_API_KEY`. The difference is how you expose it:
+
+  | Variable | Used in | Safe to expose? |
+  |---|---|---|
+  | `ASSESSMENT_API_KEY` | Backend `.env` | Server only — never sent to browser |
+  | `NEXT_PUBLIC_ASSESSMENT_API_KEY` | Frontend `.env.local` | ✅ Safe — same key, public prefix |
+
+  **Setup — add this to your frontend `.env.local`:**
+  ```bash
+  # .env.local  (your Next.js frontend)
+  NEXT_PUBLIC_ASSESSMENT_API_KEY=wc_test_your_key_here
+  ```
+
+  **Use it in code:**
+  ```typescript
+  const apiKey = process.env.NEXT_PUBLIC_ASSESSMENT_API_KEY;
+  ```
+
+  <Warning>
+    Never add `ASSESSMENT_SECRET_KEY` to a `NEXT_PUBLIC_` variable. The secret key signs requests and must stay on the server only. Only the API key (not the secret) goes in the frontend env.
+  </Warning>
+</ParamField>
+
+<ParamField body="onDone" type="function">
+  `(result: { assessmentId: string }) => void`
+
+  Called when the candidate **successfully submits** the assessment. This is your signal to show a success message to the recruiter.
+
+  ```typescript
+  onDone: () => toast.success('Assessment sent successfully!')
+  ```
+</ParamField>
+
+<ParamField body="onClose" type="function">
+  `() => void`
+
+  Called when the candidate **closes** the portal without submitting. The assessment is **not complete** — no result will appear in the webhook queue.
+
+  ```typescript
+  onClose: () => {}  // or show a warning toast
+  ```
+</ParamField>
+
+<ParamField body="onError" type="function">
+  `(error: Error) => void`
+
+  Called when something goes wrong — invalid token, network failure, etc.
+
+  ```typescript
+  onError: (err: Error) => toast.error(err.message || 'Assessment failed')
+  ```
+</ParamField>
+
+<ParamField body="zIndex" type="number" default="9999">
+  CSS z-index of the overlay. Increase if your app has elements that appear on top of the iframe (sidebars, modals with very high z-index).
+</ParamField>
+
+---
+
+<RequestExample>
+
+```typescript Your actual implementation (ProfileList.tsx)
+const handleOpenAssessment = async () => {
+  setAssessmentLoading(true);
+
+  try {
+    // Step 1: Build the users list from your shortlisted candidates
+    const payload = {
+      users: data.map(c => ({
+        name:  c.name ?? c.fullName ?? '',
+        email: c.email ?? '',
+      })),
+    };
+
+    // Step 2: Call your backend to get a session token
+    const response = await assessmentApi.createSession(payload.users);
+    const token  = response?.data?.token;
+    const apiKey = process.env.NEXT_PUBLIC_ASSESSMENT_API_KEY;
+
+    // Step 3: Guard checks
+    if (!token)  throw new Error('No session token received');
+    if (!apiKey) throw new Error('Assessment API key is not configured');
+
+    // Step 4: Dynamically import (required for Next.js — avoids SSR error)
+    const { default: AssessmentPortal } = await import(
+      '@recordorg/smartai-assessment-frontend'
+    );
+
+    // Step 5: Open the portal
+    AssessmentPortal.open({
+      token,
+      apiKey,
+      onDone:  () => toast.success('Assessment sent successfully!'),
+      onClose: () => {},
+      onError: (err: Error) => toast.error(err.message || 'Assessment failed'),
+    });
+
+  } catch (error: any) {
+    toast.error(error?.message || 'Failed to open assessment');
+  } finally {
+    setAssessmentLoading(false);
+  }
+};
+```
+
+```typescript Minimal example (no loading state)
+async function openAssessment(candidates: { name: string; email: string }[]) {
+  const res = await fetch('/assessment/session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ users: candidates }),
+  });
+
+  const { data } = await res.json();
+
+  const { default: AssessmentPortal } = await import(
+    '@recordorg/smartai-assessment-frontend'
+  );
+
+  AssessmentPortal.open({
+    token:   data.token,
+    apiKey:  process.env.NEXT_PUBLIC_ASSESSMENT_API_KEY,
+    onDone:  ({ assessmentId }) => console.log('Done:', assessmentId),
+    onClose: () => console.log('Closed'),
+    onError: (err) => console.error(err.message),
+  });
+}
+```
+
+```tsx Button in your UI (from ProfileList.tsx)
+{isShortlistRoute && (
+  <button
+    onClick={handleOpenAssessment}
+    disabled={assessmentLoading}
+    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium
+               text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50
+               disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+  >
+    <BrainCircuit className="w-4 h-4" />
+    {assessmentLoading ? 'Loading...' : 'SmartAI Assessment'}
+  </button>
+)}
+```
+
+</RequestExample>
+
+---
+
+## Why `await import(...)` instead of a regular import?
+
+```typescript
+// ❌ This will crash in Next.js (server-side render error)
+import AssessmentPortal from '@recordorg/smartai-assessment-frontend';
+
+// ✅ This works — loads only in the browser, never on the server
+const { default: AssessmentPortal } = await import('@recordorg/smartai-assessment-frontend');
+```
+
+The frontend SDK uses `window` and `document`, which don't exist during Next.js server-side rendering. The dynamic import tells Next.js to load this package only when the code actually runs in the browser.
+
+---
+
+## TypeScript type declaration
+
+If your IDE shows "cannot find module" or type errors:
+
+```typescript
+// src/types/smartai-assessment-frontend.d.ts
+declare module '@recordorg/smartai-assessment-frontend' {
+  interface AssessmentPortalOptions {
+    token:    string;
+    apiKey?:  string;
+    baseUrl?: string;
+    zIndex?:  number;
+    onDone?:  (result: { assessmentId: string }) => void;
+    onClose?: () => void;
+    onError?: (error: Error) => void;
+  }
+
+  const AssessmentPortal: {
+    open(opts: AssessmentPortalOptions): void;
+    close(): void;
+    isOpen(): boolean;
+  };
+
+  export default AssessmentPortal;
+}
+```
+
+---
+
+## Common mistakes
+
+| Mistake | What happens | Fix |
+|---|---|---|
+| Static import in Next.js | `ReferenceError: window is not defined` | Use `await import(...)` instead |
+| Forgetting `apiKey` | Portal uses wrong environment | Pass `process.env.NEXT_PUBLIC_ASSESSMENT_API_KEY` |
+| Calling `open()` before getting the token | `token` is undefined | Always `await` your session API call first |
+| Not handling `onError` | Silent failure, user confused | Always show a toast or alert in `onError` |
+| Calling `open()` twice | Two overlapping iframes | Check `AssessmentPortal.isOpen()` first |

@@ -1,0 +1,376 @@
+---
+title: "Webhook Setup & Configuration"
+description: "Everything you need to configure so your server receives assessment results. What to pass, what comes back, and a complete working setup."
+---
+
+## How SmartAI delivers results
+
+SmartAI does **not** push results to a URL. Instead, it stores completed assessment events in a queue. Your server **polls** the queue — fetching and clearing events on a schedule.
+
+```
+SmartAI platform                   Your server
+     │                                  │
+     │  Candidate finishes assessment   │
+     │  ─────────────────────────────►  │
+     │  Event stored in queue           │
+     │                                  │
+     │          Every 30 seconds        │
+     │  ◄─────────────────────────────  │  client.getWebhookEvents()
+     │  Returns pending events          │
+     │  ─────────────────────────────►  │
+     │                                  │  You save to your DB
+     │  ◄─────────────────────────────  │  client.acknowledgeWebhookEvents()
+     │  Events removed from queue       │
+```
+
+You need to set up **two things**:
+1. The env vars on your server
+2. A background poller that runs every 30 seconds
+
+---
+
+## Step 1 — Environment variables
+
+Add these two lines to your **server** `.env` file:
+
+```bash
+# Server .env  (never put these in the frontend)
+ASSESSMENT_API_KEY=wc_test_your_key_here
+ASSESSMENT_SECRET_KEY=your_secret_key_here
+```
+
+| Variable | What it is | Where to get it |
+|---|---|---|
+| `ASSESSMENT_API_KEY` | Identifies your organisation | SmartAI dashboard → API Keys |
+| `ASSESSMENT_SECRET_KEY` | Signs every SDK request | SmartAI dashboard → API Keys |
+
+<Warning>
+  Both keys must be on your **server only**. Never add them to `NEXT_PUBLIC_` variables or commit them to git. If your secret key is ever leaked, rotate it immediately from the dashboard.
+</Warning>
+
+---
+
+## Step 2 — Initialise the client
+
+Create one `AssessmentClient` instance. You can do this once globally or once per poll call — both are fine.
+
+```typescript
+const AssessmentClient = require('@recordorg/smartai-assessment-backend');
+
+const client = new AssessmentClient({
+  apiKey:    process.env.ASSESSMENT_API_KEY,    // required
+  secretKey: process.env.ASSESSMENT_SECRET_KEY, // required
+});
+```
+
+---
+
+## Step 3 — What to pass to `getWebhookEvents()`
+
+```typescript
+client.getWebhookEvents(options)
+```
+
+<ParamField body="limit" type="number" default="50">
+  How many events to fetch in one call. Maximum is **100**.
+
+  ```typescript
+  // Fetch up to 50 events at once (recommended)
+  client.getWebhookEvents({ limit: 50 })
+  ```
+
+  Start with `50`. If you have a very high assessment volume (hundreds per hour), increase to `100`.
+</ParamField>
+
+<ParamField body="since" type="number">
+  A Unix timestamp in **milliseconds**. Only returns events that were stored **after** this time.
+
+  ```typescript
+  // Only fetch events from the last hour
+  const oneHourAgo = Date.now() - 60 * 60 * 1000;
+  client.getWebhookEvents({ since: oneHourAgo })
+  ```
+
+  Leave this out for normal polling — you don't need it unless you're backfilling a time window.
+</ParamField>
+
+### What comes back
+
+```typescript
+const { events, pendingCount } = await client.getWebhookEvents({ limit: 50 });
+```
+
+<ResponseField name="events" type="array">
+  Array of assessment result objects. Each one has all the candidate's result data.
+  See [Webhook Event Schema](/smartai/webhook-event-schema) for every field.
+</ResponseField>
+
+<ResponseField name="pendingCount" type="number">
+  How many events are **still waiting** in the queue after this batch.
+
+  - `0` → queue is empty, nothing more to process
+  - `> 0` → there are more events — call `getWebhookEvents` again to get the next batch
+</ResponseField>
+
+---
+
+## Step 4 — What to pass to `acknowledgeWebhookEvents()`
+
+```typescript
+client.acknowledgeWebhookEvents(eventIds)
+```
+
+<ParamField body="eventIds" type="string[]" required>
+  An array of `eventId` strings — one for each event you successfully saved to your database.
+
+  ```typescript
+  // After saving, pass the IDs you processed
+  await client.acknowledgeWebhookEvents(['evt_01J9XYZABC', 'evt_01J9XYZDEF'])
+
+  // In practice — collect from the events array
+  await client.acknowledgeWebhookEvents(events.map(e => e.eventId))
+  ```
+
+  Events you do not acknowledge stay in the queue and are returned again on the next poll.
+</ParamField>
+
+### What comes back
+
+<ResponseField name="acknowledged" type="number">
+  The number of events that were removed from the queue.
+
+  ```json
+  { "acknowledged": 2 }
+  ```
+</ResponseField>
+
+---
+
+## Step 5 — Complete poller setup
+
+Two event types come through the same queue. Your poller handles both:
+
+| `event` value | Meaning | What to do |
+|---|---|---|
+| `assessment.sent` | Assessment was sent to candidates | Store the invitation record, notify your app |
+| `assessment.completed` | Candidate submitted the exam | Store the result, notify recruiters |
+
+Copy this into your server. Place it in a file like `src/jobs/pollAssessments.ts` and call it when your server starts.
+
+```typescript
+// src/jobs/pollAssessments.ts
+const AssessmentClient = require('@recordorg/smartai-assessment-backend');
+
+async function pollAssessmentResults() {
+  const client = new AssessmentClient({
+    apiKey:    process.env.ASSESSMENT_API_KEY,
+    secretKey: process.env.ASSESSMENT_SECRET_KEY,
+  });
+
+  // ─── 1. Fetch pending events ─────────────────────────────────────
+  const { events, pendingCount } = await client.getWebhookEvents({ limit: 50 });
+
+  if (events.length === 0) return;
+
+  console.log(`Fetched ${events.length} events — ${pendingCount} still pending`);
+
+  // ─── 2. Route and save each event ────────────────────────────────
+  const processedIds: string[] = [];
+
+  for (const event of events) {
+    try {
+      if (event.event === 'assessment.sent') {
+        // Assessment was sent to candidates — store the invitation
+        await saveAssessmentSent(event);
+
+      } else if (event.event === 'assessment.completed') {
+        // Candidate submitted — store the result
+        await saveAssessmentResult(event);
+      }
+
+      processedIds.push(event.eventId);
+    } catch (err) {
+      console.error(`Failed to save event ${event.eventId}:`, err);
+      // Don't push — event stays in queue and retries next poll
+    }
+  }
+
+  // ─── 3. Acknowledge saved events ─────────────────────────────────
+  if (processedIds.length > 0) {
+    await client.acknowledgeWebhookEvents(processedIds);
+    console.log(`Acknowledged ${processedIds.length} events`);
+  }
+
+  // ─── 4. Drain if more events are waiting ─────────────────────────
+  if (pendingCount > 0) {
+    await pollAssessmentResults();
+  }
+}
+
+// ─── assessment.sent handler ──────────────────────────────────────────
+async function saveAssessmentSent(event: any) {
+  // event.candidates is an array — one record per candidate
+  for (const candidate of event.candidates) {
+    await db.assessmentInvitations.upsert({
+      where:  { eventId: event.eventId, candidateEmail: candidate.email },
+      create: {
+        eventId:       event.eventId,
+        assessmentId:  event.assessmentId,
+        assessmentUrl: event.assessmentUrl,  // URL to send to the candidate
+        jobTitle:      event.jobTitle,
+        orgId:         event.orgId,
+        candidateId:   candidate.id,
+        candidateName: candidate.name,
+        candidateEmail:candidate.email,
+        totalCandidates: event.totalCandidates,
+        storedAt:      new Date(event.storedAt),
+      },
+      update: {},
+    });
+  }
+}
+
+// ─── Start the poller when your server boots ─────────────────────────
+export function startAssessmentPoller() {
+  setInterval(async () => {
+    try {
+      await pollAssessmentResults();
+    } catch (err) {
+      console.error('Assessment poller error:', err);
+    }
+  }, 30_000);
+
+  pollAssessmentResults().catch(console.error);
+  console.log('✓ Assessment result poller started (every 30s)');
+}
+```
+
+**Call it when your Express server starts:**
+
+```typescript
+// src/index.ts  (your server entry point)
+import { startAssessmentPoller } from './jobs/pollAssessments';
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+
+  startAssessmentPoller(); // ← add this line
+});
+```
+
+---
+
+## Step 6 — Save function (what fields to store)
+
+```typescript
+// The fields you should save from each event
+async function saveAssessmentResult(event: any) {
+  await db.assessmentResults.upsert({
+    // ── Key (MUST be unique — prevents duplicate saves) ───────────
+    where: { eventId: event.eventId },
+
+    create: {
+      // Identity
+      eventId:        event.eventId,         // "evt_01J9XYZABC"   ← primary key
+      candidateEmail: event.candidateEmail,  // "priya@example.com" ← match to your user
+      candidateName:  event.candidateName,   // "Priya Sharma"
+
+      // Assessment info
+      assessmentId:   event.assessmentId,    // "asmt_xyz789"
+      assessmentName: event.assessmentName,  // "Full Stack Developer Assessment"
+      jobTitle:       event.jobTitle,        // "Senior Software Engineer"
+      skills:         event.skills,          // ["JavaScript", "React", "Node.js"]
+
+      // Result
+      score:          event.score,           // 78
+      totalMarks:     event.totalMarks,      // 100
+      passMarks:      event.passMarks,       // 60
+      passed:         event.passed,          // true
+      status:         event.status,          // "completed" | "timeout" | "abandoned"
+      submittedAt:    new Date(event.submittedAt),
+      durationMinutes: event.durationMinutes ?? null,
+
+      // AI feedback & links
+      aiFeedback:     event.aiFeedback ?? null,
+      reportUrl:      event.reportUrl,       // share this with recruiters
+
+      // Proctoring (integrity)
+      proctoringScore:          event.proctoring?.score ?? 100,
+      proctoringViolationCount: event.proctoring?.violationCount ?? 0,
+
+      // Recording
+      recordingUrl:   event.recording?.url ?? null,  // video of the session
+
+      storedAt:       new Date(event.storedAt),
+    },
+
+    update: {}, // if already saved — do nothing (idempotent)
+  });
+}
+```
+
+---
+
+## All options at a glance
+
+### `getWebhookEvents()` options
+
+| Option | Type | Default | Required | What it does |
+|---|---|---|---|---|
+| `limit` | `number` | `50` | No | Max events to return per call (max 100) |
+| `since` | `number` | — | No | Unix ms timestamp — only return events after this time |
+
+### `acknowledgeWebhookEvents()` options
+
+| Option | Type | Required | What it does |
+|---|---|---|---|
+| `eventIds` | `string[]` | **Yes** | IDs of events to remove from the queue |
+
+### Fields returned in each event
+
+| Field | Type | What you use it for |
+|---|---|---|
+| `eventId` | string | Primary key in your DB |
+| `candidateEmail` | string | Match to your user |
+| `candidateName` | string | Display name |
+| `score` | number | The result |
+| `totalMarks` | number | Always 100 |
+| `passMarks` | number | Threshold to pass |
+| `passed` | boolean | Quick pass/fail check |
+| `status` | string | completed / timeout / abandoned |
+| `submittedAt` | string | When they finished |
+| `reportUrl` | string | Share with recruiters |
+| `proctoring.score` | number | Integrity score 0–100 |
+| `proctoring.violationCount` | number | Number of violations |
+| `recording.url` | string | Video of the session |
+| `aiFeedback` | string | AI-written performance summary |
+| `questionAnswers` | array | Per-question breakdown |
+
+See the full [Webhook Event Schema](/smartai/webhook-event-schema) for every field with detailed descriptions.
+
+---
+
+## Polling interval guide
+
+| Your situation | Use this interval |
+|---|---|
+| Want results almost instantly | `10_000` (10 seconds) |
+| Normal production use | `30_000` (30 seconds) — **recommended** |
+| Low volume or batch processing | `300_000` (5 minutes) |
+
+<Warning>
+  Do not poll faster than every 5 seconds. The platform will rate-limit your calls.
+</Warning>
+
+---
+
+## Common configuration mistakes
+
+| Mistake | What happens | Fix |
+|---|---|---|
+| Forgot to call `startAssessmentPoller()` on server start | Results never arrive in your DB | Add the call in your server entry file |
+| Acknowledging before saving | If server crashes mid-save, event is lost forever | Always save first, acknowledge after |
+| Not using upsert on `eventId` | Duplicate rows if same event is fetched twice | Use `upsert where eventId = ...` |
+| `ASSESSMENT_API_KEY` not set in server `.env` | SDK throws `Missing API key` | Add both keys to your server `.env` |
+| Using `NEXT_PUBLIC_ASSESSMENT_SECRET_KEY` | Secret key exposed in browser | Secret key belongs in server `.env` only |
+| Ignoring `pendingCount > 0` | Misses events during high-volume periods | Drain the queue recursively or wait for next poll |

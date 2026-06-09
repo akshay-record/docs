@@ -1,0 +1,62 @@
+---
+title: "AssessmentPortal.close()"
+description: "Programmatically dismiss the assessment overlay from your application code."
+---
+
+<Info>
+  This is a **Frontend SDK method**. Calling it does not submit the assessment — it is equivalent to the candidate clicking close.
+</Info>
+
+## Signature
+
+```typescript
+AssessmentPortal.close(): void
+```
+
+No parameters. Returns `void`.
+
+---
+
+## When to use
+
+- Your app navigates away while the portal is open
+- A timeout forces the session to end
+- An error in your app requires dismissing the overlay
+
+---
+
+<RequestExample>
+
+```typescript Basic close
+AssessmentPortal.close();
+```
+
+```typescript React useEffect cleanup
+useEffect(() => {
+  return () => {
+    // Close the portal when the component unmounts
+    if (AssessmentPortal.isOpen()) {
+      AssessmentPortal.close();
+    }
+  };
+}, []);
+```
+
+```typescript Close on page navigation (Next.js)
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+export function useCloseAssessmentOnNavigate() {
+  const router = useRouter();
+
+  useEffect(() => {
+    return () => {
+      if (AssessmentPortal.isOpen()) {
+        AssessmentPortal.close();
+      }
+    };
+  }, [router]);
+}
+```
+
+</RequestExample>

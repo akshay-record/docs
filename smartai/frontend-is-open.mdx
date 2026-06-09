@@ -1,0 +1,66 @@
+---
+title: "AssessmentPortal.isOpen()"
+description: "Check whether the assessment overlay is currently mounted in the DOM."
+---
+
+<Info>
+  This is a **Frontend SDK method**.
+</Info>
+
+## Signature
+
+```typescript
+AssessmentPortal.isOpen(): boolean
+```
+
+Returns `true` if the overlay is currently visible, `false` otherwise.
+
+---
+
+<RequestExample>
+
+```typescript Guard against opening twice
+// Always check before calling open()
+if (!AssessmentPortal.isOpen()) {
+  AssessmentPortal.open({ token, onDone, onClose, onError });
+}
+```
+
+```typescript Conditionally show a banner in React
+function RecruiterDashboard() {
+  const [portalOpen, setPortalOpen] = useState(false);
+
+  async function startAssessment() {
+    // ... get token ...
+    AssessmentPortal.open({
+      token,
+      onDone:  () => setPortalOpen(false),
+      onClose: () => setPortalOpen(false),
+    });
+    setPortalOpen(true);
+  }
+
+  return (
+    <>
+      {portalOpen && <AssessmentInProgressBanner />}
+      <button onClick={startAssessment} disabled={portalOpen}>
+        Start Assessment
+      </button>
+    </>
+  );
+}
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Portal is open
+true
+```
+
+```json Portal is closed
+false
+```
+
+</ResponseExample>

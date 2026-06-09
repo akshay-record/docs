@@ -1,0 +1,158 @@
+---
+title: "SmartAI Assessment"
+description: "Plug-and-play AI-proctored assessment platform. Integrate in minutes using two npm packages."
+---
+
+## What is SmartAI Assessment?
+
+SmartAI Assessment lets you embed a fully-proctored, AI-generated assessment portal directly inside your own application. You install two packages — one on your server, one in your browser app — and the platform handles everything else.
+
+| Package | Runs on | Purpose |
+|---|---|---|
+| `@recordorg/smartai-assessment-backend` | Your Node.js server | Creates session tokens, polls results |
+| `@recordorg/smartai-assessment-frontend` | Your web app (browser) | Opens the assessment modal in an iframe |
+
+---
+
+## How the flow works
+
+```
+YOUR APPLICATION
+│
+├─ 1. Recruiter selects candidates and clicks "SmartAI Assessment"
+│
+├─ 2. Frontend calls your backend:
+│      POST /assessment/session
+│      { users: [{ name, email }, ...] }
+│
+├─ 3. Your backend calls SmartAI SDK:
+│      client.createSession({ users })
+│      ◀── { token }
+│
+├─ 4. Your backend returns the token to the frontend
+│
+├─ 5. Frontend opens the portal:
+│      AssessmentPortal.open({ token, apiKey })
+│      ══► full-screen iframe loads — candidate takes the test
+│
+├─ 6. Candidate finishes the assessment inside the iframe
+│
+├─ 7. Your backend polls results every 30 s:
+│      client.getWebhookEvents({ limit: 50 })
+│      ◀── { events, pendingCount }
+│
+└─ 8. Save results → client.acknowledgeWebhookEvents([...ids])
+```
+
+---
+
+## Quick start
+
+### 1. Get your API keys
+
+Log into the SmartAI dashboard and copy your **API key** and **Secret key**.
+
+- Prefix `wc_test_` → **test / staging** environment
+- Any other prefix → **live / production** environment
+
+```bash
+ASSESSMENT_API_KEY=wc_test_your_key_here
+ASSESSMENT_SECRET_KEY=your_secret_key_here
+```
+
+### 2. Install packages
+
+```bash
+# Server
+npm install @recordorg/smartai-assessment-backend
+
+# Browser / frontend
+npm install @recordorg/smartai-assessment-frontend
+```
+
+### 3. Add a session endpoint to your backend
+
+```typescript
+import express from 'express';
+const AssessmentClient = require('@recordorg/smartai-assessment-backend');
+
+app.post('/assessment/session', yourAuthMiddleware, async (req, res) => {
+  const client = new AssessmentClient({
+    apiKey:    process.env.ASSESSMENT_API_KEY,
+    secretKey: process.env.ASSESSMENT_SECRET_KEY,
+  });
+
+  const { users } = req.body;
+  if (!users?.length) {
+    return res.status(400).json({ success: false, message: 'No candidates provided' });
+  }
+
+  const session = await client.createSession({ users });
+  res.json({ success: true, data: session });
+});
+```
+
+### 4. Open the portal from your frontend
+
+Add `NEXT_PUBLIC_ASSESSMENT_API_KEY` to your frontend `.env.local`:
+
+```bash
+NEXT_PUBLIC_ASSESSMENT_API_KEY=wc_test_your_key_here
+```
+
+Then in your component, call your backend first to get the token, then open the portal:
+
+```typescript
+// 1. Call YOUR backend to get a session token
+const response = await assessmentApi.createSession(users);
+const token  = response?.data?.token;
+const apiKey = process.env.NEXT_PUBLIC_ASSESSMENT_API_KEY;
+
+// 2. Open the portal (dynamic import required for Next.js)
+const { default: AssessmentPortal } = await import('@recordorg/smartai-assessment-frontend');
+
+AssessmentPortal.open({
+  token,
+  apiKey,   // tells the portal: live vs test environment
+  onDone:  () => toast.success('Assessment sent successfully!'),
+  onClose: () => {},
+  onError: (err: Error) => toast.error(err.message || 'Assessment failed'),
+});
+```
+
+### 5. Poll for results in the background
+
+```typescript
+async function pollResults() {
+  const client = new AssessmentClient({
+    apiKey:    process.env.ASSESSMENT_API_KEY,
+    secretKey: process.env.ASSESSMENT_SECRET_KEY,
+  });
+
+  const { events } = await client.getWebhookEvents({ limit: 50 });
+
+  for (const event of events) {
+    await saveToDatabase(event);
+  }
+
+  if (events.length) {
+    await client.acknowledgeWebhookEvents(events.map(e => e.eventId));
+  }
+}
+
+setInterval(pollResults, 30_000);
+pollResults();
+```
+
+---
+
+## Integration checklist
+
+<Check>API key and secret key set as environment variables on your server</Check>
+<Check>Backend session endpoint created and protected by your own auth middleware</Check>
+<Check>Frontend calls your session endpoint before opening the portal</Check>
+<Check>`AssessmentPortal.open()` receives the token from your backend</Check>
+<Check>`onDone` and `onError` callbacks implemented</Check>
+<Check>Background poller running `getWebhookEvents()` every 30 seconds</Check>
+<Check>Results saved to your database with idempotent upsert on `eventId`</Check>
+<Check>`acknowledgeWebhookEvents()` called after every successful save batch</Check>

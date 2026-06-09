@@ -1,0 +1,509 @@
+---
+title: "Webhook Event — What You Receive"
+description: "Every field explained in plain English. This is the data you get after a candidate finishes an assessment."
+---
+
+## What is a webhook event?
+
+Think of it like a **notification your server receives** after something happens on the SmartAI platform.
+
+There are two types of events your server will receive:
+
+| Event | When it fires |
+|---|---|
+| `assessment.sent` | A recruiter sends an assessment to candidates (webhook mode) |
+| `assessment.completed` | A candidate submits the exam |
+
+Both come from `client.getWebhookEvents()` in the same queue. This page covers the `assessment.completed` event in detail. For `assessment.sent` see [What Gets Stored in Redis](/smartai/webhook-redis-internals).
+
+---
+
+When a candidate finishes (or times out on) an assessment, SmartAI puts a message in a queue. Your server picks it up by calling `client.getWebhookEvents()`. That message is called a **webhook event**.
+
+```
+Candidate submits assessment
+         ↓
+SmartAI stores the result in a queue
+         ↓
+Your server calls getWebhookEvents() every 30 seconds
+         ↓
+You receive an array of events like this:
+
+[
+  {
+    eventId: "evt_01J9XYZABC",
+    candidateName: "Priya Sharma",
+    score: 78,
+    passed: true,
+    ...
+  }
+]
+         ↓
+You save it to your database
+         ↓
+You call acknowledgeWebhookEvents(["evt_01J9XYZABC"])
+         ↓
+Done ✓
+```
+
+---
+
+## Quick reference — every field at a glance
+
+| Field | Type | What it tells you |
+|---|---|---|
+| `eventId` | string | Unique ID for this event — use as your DB primary key |
+| `event` | string | Always `"assessment.completed"` |
+| `assessmentId` | string | Which assessment template was used |
+| `candidateId` | string | SmartAI's internal ID for the candidate |
+| `candidateName` | string | Candidate's full name |
+| `candidateEmail` | string | Candidate's email — use to match them in your DB |
+| `assessmentName` | string | Name of the assessment |
+| `jobTitle` | string | Role the assessment was for |
+| `score` | number | How many marks the candidate got |
+| `totalMarks` | number | Total marks available (always 100) |
+| `passMarks` | number | Minimum marks needed to pass |
+| `passed` | boolean | `true` if score ≥ passMarks |
+| `status` | string | `completed` / `timeout` / `abandoned` |
+| `submittedAt` | string | When the candidate submitted |
+| `durationMinutes` | number | How long they took (in minutes) |
+| `aiFeedback` | string | AI-written summary of their performance |
+| `reportUrl` | string | Link to the full report page |
+| `skills` | string[] | Skills tested in this assessment |
+| `questionAnswers` | array | Every question + the candidate's answer |
+| `verification.imageUrl` | string | Selfie taken at the start (identity check) |
+| `proctoring` | object | Cheating/integrity data |
+| `recording.url` | string | Video recording of the session |
+| `storedAt` | string | When SmartAI put this in the queue |
+
+---
+
+## Field-by-field breakdown
+
+### Identity fields
+
+<ResponseField name="eventId" type="string" required>
+  A unique ID that SmartAI generates for every event.
+
+  **Why it matters:** Use this as your database primary key. If the same event gets delivered twice (which can happen if your server crashes mid-save), an upsert on `eventId` will prevent duplicate records.
+
+  ```
+  "evt_01J9XYZABC"
+  ```
+</ResponseField>
+
+<ResponseField name="event" type="string" required>
+  The type of event. Right now this is always `"assessment.completed"` — every event means a candidate finished (or was timed out from) an assessment.
+</ResponseField>
+
+<ResponseField name="assessmentId" type="string" required>
+  The ID of the **assessment template** that was used. One template can be used for many candidates, so this is not unique per candidate.
+</ResponseField>
+
+<ResponseField name="candidateId" type="string">
+  SmartAI's internal ID for this candidate. Not the same as your own user ID — use `candidateEmail` to match the candidate back to your database.
+</ResponseField>
+
+---
+
+### Candidate info
+
+<ResponseField name="candidateName" type="string">
+  The candidate's full name, exactly as you passed it when creating the session.
+
+  In your code: `c.name ?? c.fullName ?? ''`
+</ResponseField>
+
+<ResponseField name="candidateEmail" type="string" required>
+  The candidate's email address. **This is the most important field for matching** — use it to find the person in your own user table.
+
+  In your code: `c.email ?? ''`
+</ResponseField>
+
+---
+
+### Assessment info
+
+<ResponseField name="assessmentName" type="string">
+  The display name of the assessment template, e.g. `"Full Stack Developer Assessment"`.
+</ResponseField>
+
+<ResponseField name="jobTitle" type="string">
+  The job role this assessment was created for, e.g. `"Senior Software Engineer"`.
+</ResponseField>
+
+<ResponseField name="skills" type="string[]">
+  The skills that were tested. Example: `["JavaScript", "React", "Node.js"]`.
+</ResponseField>
+
+---
+
+### Result fields
+
+These four fields are what you'll use most often — they tell you the outcome.
+
+<ResponseField name="score" type="number" required>
+  The number of marks the candidate scored. Always between `0` and `totalMarks`.
+
+  Example: `78`
+</ResponseField>
+
+<ResponseField name="totalMarks" type="number" required>
+  The total marks available. Always `100`.
+</ResponseField>
+
+<ResponseField name="passMarks" type="number" required>
+  The minimum score needed to pass. Configured when the assessment was created.
+
+  Example: `60`
+</ResponseField>
+
+<ResponseField name="passed" type="boolean" required>
+  `true` if `score >= passMarks`, `false` otherwise.
+
+  This is pre-calculated for you — you don't need to compare `score` and `passMarks` yourself.
+
+  ```typescript
+  // Using it in code
+  if (event.passed) {
+    sendOfferEmail(event.candidateEmail);
+  } else {
+    sendRejectionEmail(event.candidateEmail);
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="status" type="string" required>
+  How the assessment ended.
+
+  | Value | What it means | Did we get a score? |
+  |---|---|---|
+  | `completed` | Candidate submitted normally | ✅ Yes |
+  | `timeout` | Time ran out — auto-submitted | ✅ Yes (partial) |
+  | `abandoned` | Candidate closed without submitting | ❌ No score |
+</ResponseField>
+
+---
+
+### Timing fields
+
+<ResponseField name="submittedAt" type="string" required>
+  The exact date and time the candidate submitted, in ISO-8601 format.
+
+  Example: `"2026-06-09T10:30:00.000Z"`
+
+  To display it in your UI: `new Date(event.submittedAt).toLocaleString()`
+</ResponseField>
+
+<ResponseField name="durationMinutes" type="number | null">
+  How many minutes the candidate spent on the assessment.
+
+  Example: `45` means they finished in 45 minutes.
+  `null` means timing wasn't tracked for this session.
+</ResponseField>
+
+<ResponseField name="storedAt" type="string">
+  When SmartAI put this event in the queue (slightly after `submittedAt`). Usually a few seconds difference.
+</ResponseField>
+
+---
+
+### AI feedback & report
+
+<ResponseField name="aiFeedback" type="string | null">
+  A short paragraph written by AI summarising how the candidate performed.
+
+  Example: `"Strong in algorithms; needs improvement in system design."`
+
+  This is `null` if AI feedback is not enabled for this assessment template.
+</ResponseField>
+
+<ResponseField name="reportUrl" type="string">
+  A direct URL to the full candidate report page on the SmartAI platform. Share this link with your recruiting team so they can review the detailed breakdown.
+
+  Example: `"https://platform.smartai.app/reports/evt_01J9XYZABC"`
+</ResponseField>
+
+---
+
+## `questionAnswers` — per-question breakdown
+
+This is an array with one entry per question. Use it if you want to show recruiters which specific questions the candidate got right or wrong.
+
+<ResponseField name="questionAnswers" type="array">
+  <Expandable title="Each question object contains these fields">
+    <ResponseField name="questionId" type="string">
+      Unique ID for this question. Same ID every time this template is used.
+    </ResponseField>
+    <ResponseField name="type" type="string">
+      The question format:
+      - `MCQ` — multiple choice
+      - `CODING` — write actual code
+      - `DESCRIPTIVE` — open-ended written answer
+    </ResponseField>
+    <ResponseField name="question" type="string">
+      The question text exactly as the candidate saw it.
+    </ResponseField>
+    <ResponseField name="options" type="string[]">
+      The answer options shown to the candidate (MCQ only). Empty array for coding and descriptive questions.
+    </ResponseField>
+    <ResponseField name="correctAnswer" type="string">
+      The correct answer. For MCQ this is the correct option text. For coding it's the expected output.
+    </ResponseField>
+    <ResponseField name="marks" type="number">
+      The maximum marks this question is worth.
+    </ResponseField>
+    <ResponseField name="difficulty" type="string">
+      `EASY`, `MEDIUM`, or `HARD` — set by the AI when generating the question.
+    </ResponseField>
+    <ResponseField name="candidateAnswer" type="string">
+      What the candidate actually answered.
+    </ResponseField>
+    <ResponseField name="isCorrect" type="boolean | null">
+      `true` = correct, `false` = wrong.
+      `null` for descriptive questions — those are evaluated separately by AI and don't have a simple right/wrong.
+    </ResponseField>
+    <ResponseField name="marksAwarded" type="number">
+      How many marks were given for this answer. `0` if wrong, up to `marks` if correct.
+    </ResponseField>
+    <ResponseField name="timeSpent" type="number">
+      How many **seconds** the candidate spent on this question before moving on.
+    </ResponseField>
+    <ResponseField name="order" type="number">
+      The question's position in the assessment (1 = first question).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## `verification` — identity check
+
+At the start of every assessment, the candidate takes a selfie. This confirms the right person is taking the test.
+
+<ResponseField name="verification" type="object">
+  <Expandable title="Verification fields">
+    <ResponseField name="imageUrl" type="string | null">
+      A URL to the selfie photo. Click it to see the photo.
+      `null` if identity verification was skipped for this assessment.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## `proctoring` — integrity monitoring
+
+The AI watches the candidate's webcam throughout the test and flags suspicious behaviour. This object summarises what was detected.
+
+<ResponseField name="proctoring" type="object">
+  <Expandable title="Proctoring fields">
+    <ResponseField name="score" type="number">
+      An overall **integrity score** from 0 to 100.
+      - `100` = no violations at all
+      - `80–99` = minor issues (a glance away, brief tab switch)
+      - `below 60` = significant violations — review the recording
+
+      Think of it like a trust percentage.
+    </ResponseField>
+    <ResponseField name="violationCount" type="number">
+      Total number of violations detected across the whole session.
+    </ResponseField>
+    <ResponseField name="tabSwitchCount" type="number">
+      How many times the candidate switched to a different browser tab or window. Even one switch is suspicious.
+    </ResponseField>
+    <ResponseField name="fullscreenExitCount" type="number">
+      How many times the candidate exited fullscreen mode. The assessment runs in fullscreen to prevent cheating.
+    </ResponseField>
+    <ResponseField name="noFaceCount" type="number">
+      Number of video frames where no face was detected. Could mean the candidate looked away, covered their camera, or left the room.
+    </ResponseField>
+    <ResponseField name="multipleFaceCount" type="number">
+      Number of frames where more than one face was visible. Could indicate someone else helping.
+    </ResponseField>
+    <ResponseField name="lookawayCount" type="number">
+      Number of times the candidate's eyes were detected looking away from the screen (e.g. at notes or a phone).
+    </ResponseField>
+    <ResponseField name="externalObjectCount" type="number">
+      Number of frames where an external device — phone, book, notepad — was visible in the frame.
+    </ResponseField>
+    <ResponseField name="recentViolations" type="array">
+      A list of individual violation events, each with:
+      <Expandable title="Violation object">
+        <ResponseField name="type" type="string">
+          What happened — e.g. `TAB_SWITCH`, `NO_FACE`, `MULTIPLE_FACES`, `FULLSCREEN_EXIT`, `LOOK_AWAY`, `EXTERNAL_OBJECT`.
+        </ResponseField>
+        <ResponseField name="severity" type="string">
+          How serious it is: `LOW`, `MEDIUM`, or `HIGH`.
+        </ResponseField>
+        <ResponseField name="timestamp" type="string">
+          Exactly when it happened. You can match this against the recording to find the moment.
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## `recording` — session video
+
+The entire assessment session is recorded (webcam + screen). This is the strongest evidence when reviewing a suspicious session.
+
+<ResponseField name="recording" type="object">
+  <Expandable title="Recording fields">
+    <ResponseField name="status" type="string">
+      - `available` — the video is ready, `url` has a link
+      - `processing` — still being uploaded/encoded, check again in a few minutes
+      - `unavailable` — recording failed or was disabled
+    </ResponseField>
+    <ResponseField name="url" type="string | null">
+      Direct URL to the `.mp4` recording file. `null` if status is not `available`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## How to use this data in your code
+
+Here's the pattern your backend should use — based on your actual implementation:
+
+```typescript
+// Run this every 30 seconds on your server
+async function pollAssessmentResults() {
+  const client = new AssessmentClient({
+    apiKey:    process.env.ASSESSMENT_API_KEY,
+    secretKey: process.env.ASSESSMENT_SECRET_KEY,
+  });
+
+  const { events } = await client.getWebhookEvents({ limit: 50 });
+
+  for (const event of events) {
+    // 1. event.candidateEmail  → find this person in your user table
+    // 2. event.passed          → did they pass?
+    // 3. event.score           → what was their score?
+    // 4. event.proctoring.score → were they trustworthy?
+    // 5. event.reportUrl       → share this link with your recruiter
+    // 6. event.recording.url   → watch if you need to investigate
+
+    await db.assessmentResults.upsert({
+      where:  { eventId: event.eventId },   // ← prevents duplicates
+      create: {
+        eventId:        event.eventId,
+        candidateEmail: event.candidateEmail,
+        candidateName:  event.candidateName,
+        score:          event.score,
+        totalMarks:     event.totalMarks,
+        passed:         event.passed,
+        status:         event.status,
+        proctoringScore:event.proctoring?.score ?? 100,
+        reportUrl:      event.reportUrl,
+        submittedAt:    new Date(event.submittedAt),
+      },
+      update: {}, // don't overwrite if already saved
+    });
+  }
+
+  // Remove processed events from the queue
+  if (events.length) {
+    await client.acknowledgeWebhookEvents(events.map(e => e.eventId));
+  }
+}
+
+setInterval(pollAssessmentResults, 30_000);
+pollAssessmentResults(); // run once immediately on startup
+```
+
+---
+
+## Complete example event
+
+This is exactly what one event object looks like:
+
+<ResponseExample>
+
+```json Complete WebhookEvent
+{
+  "eventId": "evt_01J9XYZABC",
+  "event": "assessment.completed",
+  "assessmentId": "asmt_xyz789",
+  "candidateId": "cand_abc123",
+  "candidateName": "Priya Sharma",
+  "candidateEmail": "priya@example.com",
+  "assessmentName": "Full Stack Developer Assessment",
+  "jobTitle": "Senior Software Engineer",
+  "score": 78,
+  "totalMarks": 100,
+  "passMarks": 60,
+  "passed": true,
+  "status": "completed",
+  "submittedAt": "2026-06-09T10:30:00.000Z",
+  "durationMinutes": 45,
+  "aiFeedback": "Strong in algorithms; needs improvement in system design.",
+  "reportUrl": "https://platform.smartai.app/reports/evt_01J9XYZABC",
+  "skills": ["JavaScript", "React", "Node.js"],
+  "questionAnswers": [
+    {
+      "questionId": "q_abc123",
+      "type": "MCQ",
+      "question": "What is the time complexity of binary search?",
+      "options": ["O(n)", "O(log n)", "O(n²)", "O(1)"],
+      "correctAnswer": "O(log n)",
+      "marks": 5,
+      "difficulty": "MEDIUM",
+      "candidateAnswer": "O(log n)",
+      "isCorrect": true,
+      "marksAwarded": 5,
+      "timeSpent": 45,
+      "order": 1
+    },
+    {
+      "questionId": "q_coding_01",
+      "type": "CODING",
+      "question": "Write a function to reverse a linked list.",
+      "options": [],
+      "correctAnswer": "See test cases",
+      "marks": 20,
+      "difficulty": "HARD",
+      "candidateAnswer": "function reverseList(head) { ... }",
+      "isCorrect": true,
+      "marksAwarded": 20,
+      "timeSpent": 420,
+      "order": 2
+    }
+  ],
+  "verification": {
+    "imageUrl": "https://cdn.smartai.app/selfies/cand_abc123.jpg"
+  },
+  "proctoring": {
+    "score": 88,
+    "violationCount": 2,
+    "tabSwitchCount": 1,
+    "fullscreenExitCount": 0,
+    "noFaceCount": 1,
+    "multipleFaceCount": 0,
+    "lookawayCount": 0,
+    "externalObjectCount": 0,
+    "recentViolations": [
+      {
+        "type": "TAB_SWITCH",
+        "severity": "LOW",
+        "timestamp": "2026-06-09T10:05:00.000Z"
+      },
+      {
+        "type": "NO_FACE",
+        "severity": "LOW",
+        "timestamp": "2026-06-09T10:12:30.000Z"
+      }
+    ]
+  },
+  "recording": {
+    "status": "available",
+    "url": "https://cdn.smartai.app/recordings/evt_01J9XYZABC.mp4"
+  },
+  "storedAt": "2026-06-09T10:31:00.000Z"
+}
+```
+
+</ResponseExample>

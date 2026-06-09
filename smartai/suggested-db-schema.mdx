@@ -1,0 +1,199 @@
+---
+title: "Suggested Database Schema"
+description: "What to store from each WebhookEvent — with idempotent save pattern and recommended indexes."
+---
+
+You don't need to store every field from the webhook event. This page shows a recommended flat record, a complete save-and-acknowledge pattern, and the database indexes to add.
+
+---
+
+## Recommended record
+
+| Column | Type | Source field | Notes |
+|---|---|---|---|
+| `event_id` | `varchar` PK | `eventId` | Unique key — enables idempotent upsert |
+| `candidate_email` | `varchar` | `candidateEmail` | Use to join back to your own users |
+| `candidate_name` | `varchar` | `candidateName` | |
+| `assessment_id` | `varchar` | `assessmentId` | |
+| `assessment_name` | `varchar` | `assessmentName` | |
+| `job_title` | `varchar` | `jobTitle` | |
+| `score` | `int` | `score` | |
+| `total_marks` | `int` | `totalMarks` | |
+| `pass_marks` | `int` | `passMarks` | |
+| `passed` | `bool` | `passed` | |
+| `status` | `varchar` | `status` | `completed` / `timeout` / `abandoned` |
+| `submitted_at` | `timestamp` | `submittedAt` | |
+| `duration_minutes` | `int` nullable | `durationMinutes` | |
+| `ai_feedback` | `text` nullable | `aiFeedback` | |
+| `report_url` | `varchar` | `reportUrl` | |
+| `proctoring_score` | `int` | `proctoring.score` | Quick filter without JSON parsing |
+| `proctoring_violation_count` | `int` | `proctoring.violationCount` | |
+| `stored_at` | `timestamp` | `storedAt` | |
+
+Store the full `questionAnswers` JSON if you need per-question drill-down in your UI. Store `proctoring.recentViolations` if you need to show recruiters a violation timeline.
+
+---
+
+## Minimum required fields
+
+At a minimum you need these five fields to be useful:
+
+```
+event_id       → idempotency
+candidate_email → link to your user
+score / totalMarks / passed → the result
+report_url      → link recruiter to full report
+```
+
+---
+
+## Complete save + acknowledge pattern
+
+<RequestExample>
+
+```typescript Prisma (PostgreSQL)
+async function pollAndSave() {
+  const { events } = await client.getWebhookEvents({ limit: 50 });
+  if (!events.length) return;
+
+  const processedIds: string[] = [];
+
+  for (const event of events) {
+    try {
+      await prisma.assessmentResult.upsert({
+        where:  { eventId: event.eventId },
+        create: {
+          eventId:                  event.eventId,
+          candidateEmail:           event.candidateEmail,
+          candidateName:            event.candidateName ?? '',
+          assessmentId:             event.assessmentId,
+          assessmentName:           event.assessmentName ?? '',
+          jobTitle:                 event.jobTitle ?? '',
+          score:                    event.score,
+          totalMarks:               event.totalMarks,
+          passMarks:                event.passMarks,
+          passed:                   event.passed,
+          status:                   event.status,
+          submittedAt:              new Date(event.submittedAt),
+          durationMinutes:          event.durationMinutes ?? null,
+          aiFeedback:               event.aiFeedback ?? null,
+          reportUrl:                event.reportUrl,
+          proctoringScore:          event.proctoring?.score ?? 0,
+          proctoringViolationCount: event.proctoring?.violationCount ?? 0,
+          storedAt:                 new Date(event.storedAt),
+        },
+        update: {}, // don't overwrite — idempotent
+      });
+
+      processedIds.push(event.eventId);
+    } catch (err) {
+      console.error('Failed to save event', event.eventId, err);
+      // Don't push to processedIds — will retry next poll
+    }
+  }
+
+  if (processedIds.length) {
+    await client.acknowledgeWebhookEvents(processedIds);
+  }
+}
+```
+
+```typescript MongoDB (Mongoose)
+async function pollAndSave() {
+  const { events } = await client.getWebhookEvents({ limit: 50 });
+  if (!events.length) return;
+
+  const processedIds: string[] = [];
+
+  for (const event of events) {
+    try {
+      await AssessmentResult.updateOne(
+        { eventId: event.eventId },
+        {
+          $setOnInsert: {
+            eventId:                  event.eventId,
+            candidateEmail:           event.candidateEmail,
+            candidateName:            event.candidateName,
+            assessmentId:             event.assessmentId,
+            score:                    event.score,
+            totalMarks:               event.totalMarks,
+            passMarks:                event.passMarks,
+            passed:                   event.passed,
+            status:                   event.status,
+            submittedAt:              new Date(event.submittedAt),
+            proctoringScore:          event.proctoring?.score ?? 0,
+            proctoringViolationCount: event.proctoring?.violationCount ?? 0,
+            reportUrl:                event.reportUrl,
+          },
+        },
+        { upsert: true }
+      );
+
+      processedIds.push(event.eventId);
+    } catch (err) {
+      console.error('Failed:', err);
+    }
+  }
+
+  if (processedIds.length) {
+    await client.acknowledgeWebhookEvents(processedIds);
+  }
+}
+```
+
+</RequestExample>
+
+---
+
+## Database indexes
+
+```sql
+-- Unique constraint for idempotency (required)
+CREATE UNIQUE INDEX idx_assessment_results_event_id
+  ON assessment_results (event_id);
+
+-- Fast lookup by candidate email (required)
+CREATE INDEX idx_assessment_results_candidate_email
+  ON assessment_results (candidate_email);
+
+-- Filter passed / failed quickly
+CREATE INDEX idx_assessment_results_passed
+  ON assessment_results (passed);
+
+-- Sort by submission date
+CREATE INDEX idx_assessment_results_submitted_at
+  ON assessment_results (submitted_at DESC);
+```
+
+---
+
+## Prisma schema reference
+
+```prisma
+model AssessmentResult {
+  id                       String    @id @default(cuid())
+  eventId                  String    @unique
+  candidateEmail           String
+  candidateName            String
+  assessmentId             String
+  assessmentName           String
+  jobTitle                 String
+  score                    Int
+  totalMarks               Int
+  passMarks                Int
+  passed                   Boolean
+  status                   String
+  submittedAt              DateTime
+  durationMinutes          Int?
+  aiFeedback               String?
+  reportUrl                String
+  proctoringScore          Int
+  proctoringViolationCount Int
+  storedAt                 DateTime
+  createdAt                DateTime  @default(now())
+
+  @@index([candidateEmail])
+  @@index([passed])
+  @@index([submittedAt(sort: Desc)])
+}
+```
