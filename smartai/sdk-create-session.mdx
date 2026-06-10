@@ -4,33 +4,69 @@ description: "Create a session token for one or more candidates. Call this insid
 ---
 
 <Info>
-  This is a **Backend SDK method**, not an HTTP endpoint. Call it from your Node.js server — never from the browser.
+  This is a **Backend SDK method**, not an HTTP endpoint. Call it from your server — never from the browser.
 </Info>
 
 ## Install
 
-```bash
+<CodeGroup>
+
+```bash Node.js
 npm install @recordorg/smartai-assessment-backend
 ```
 
+```bash Python
+pip install smartai-assessment-backend
+```
+
+</CodeGroup>
+
 ## Initialise
 
-```typescript
+<CodeGroup>
+
+```typescript Node.js
 const AssessmentClient = require('@recordorg/smartai-assessment-backend');
 
 const client = new AssessmentClient({
-  apiKey:    process.env.ASSESSMENT_API_KEY,    // required
-  secretKey: process.env.ASSESSMENT_SECRET_KEY, // required
+  apiKey:    process.env.ASSESSMENT_API_KEY,
+  secretKey: process.env.ASSESSMENT_SECRET_KEY,
 });
 ```
+
+```python Python
+from smartai_assessment_backend import AssessmentClient
+import os
+
+client = AssessmentClient(
+    api_key=os.getenv("ASSESSMENT_API_KEY"),
+    secret_key=os.getenv("ASSESSMENT_SECRET_KEY"),
+)
+```
+
+</CodeGroup>
 
 ---
 
 ## Signature
 
-```typescript
+<CodeGroup>
+
+```typescript Node.js
 client.createSession(options: CreateSessionOptions): Promise<SessionToken>
 ```
+
+```python Python
+client.create_session(
+    *,
+    name: str = None,
+    email: str = None,
+    candidate_id: str = None,
+    users: list = None,
+)
+```
+
+</CodeGroup>
 
 ---
 
@@ -57,7 +93,7 @@ client.createSession(options: CreateSessionOptions): Promise<SessionToken>
   **Single-candidate mode.** Candidate's email. Required when using `name` instead of `users`.
 </ParamField>
 
-<ParamField body="candidateId" type="string">
+<ParamField body="candidateId / candidate_id" type="string">
   Your internal candidate ID. Optional — stored on the SmartAI record for cross-reference.
 </ParamField>
 
@@ -73,7 +109,7 @@ client.createSession(options: CreateSessionOptions): Promise<SessionToken>
 
 <RequestExample>
 
-```typescript Bulk mode
+```typescript Bulk mode (Node.js)
 const session = await client.createSession({
   users: [
     { name: 'Priya Sharma', email: 'priya@example.com' },
@@ -84,18 +120,43 @@ const session = await client.createSession({
 console.log(session.token); // → 'eyJhbGci...'
 ```
 
-```typescript Single candidate
+```python Bulk mode (Python)
+session = client.create_session(
+    users=[
+        {"name": "Priya Sharma", "email": "priya@example.com"},
+        {"name": "Rahul Verma",  "email": "rahul@example.com"},
+    ]
+)
+
+print(session["token"])  # → 'eyJhbGci...'
+```
+
+```typescript Single candidate (Node.js)
 const session = await client.createSession({
   name:  'Priya Sharma',
   email: 'priya@example.com',
 });
 ```
 
-```typescript With internal candidate ID
+```python Single candidate (Python)
+session = client.create_session(
+    name="Priya Sharma",
+    email="priya@example.com",
+)
+```
+
+```typescript With candidate ID (Node.js)
 const session = await client.createSession({
   users: [{ name: 'Priya Sharma', email: 'priya@example.com' }],
   candidateId: 'your_internal_id_123',
 });
+```
+
+```python With candidate ID (Python)
+session = client.create_session(
+    users=[{"name": "Priya Sharma", "email": "priya@example.com"}],
+    candidate_id="your_internal_id_123",
+)
 ```
 
 </RequestExample>
@@ -116,7 +177,7 @@ const session = await client.createSession({
 
 | Condition | Error message |
 |---|---|
-| `users` is an empty array | `users must be a non-empty array` |
+| `users` is an empty array / list | `users must be a non-empty array` |
 | `name` missing in single mode | `name is required` |
 | `email` missing in single mode | `email is required` |
 | Invalid API key | HTTP 401 from SmartAI platform |

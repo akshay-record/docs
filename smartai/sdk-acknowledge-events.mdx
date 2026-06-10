@@ -13,16 +13,24 @@ description: "Remove processed events from the SmartAI queue. Always call this a
 
 ## Signature
 
-```typescript
+<CodeGroup>
+
+```typescript Node.js
 client.acknowledgeWebhookEvents(eventIds: string[]): Promise<AcknowledgeResult>
 ```
+
+```python Python
+client.acknowledge_webhook_events(event_ids: list)
+```
+
+</CodeGroup>
 
 ---
 
 ## Parameters
 
-<ParamField body="eventIds" type="string[]" required>
-  Array of `eventId` strings to remove from the queue. Get these from `event.eventId` inside the `getWebhookEvents` response.
+<ParamField body="eventIds / event_ids" type="string[]" required>
+  Array of `eventId` strings to remove from the queue. Get these from `event.eventId` (Node.js) or `event["eventId"]` (Python) inside the `getWebhookEvents` response.
 </ParamField>
 
 ---
@@ -37,27 +45,36 @@ client.acknowledgeWebhookEvents(eventIds: string[]): Promise<AcknowledgeResult>
 
 <RequestExample>
 
-```typescript Standard usage
+```typescript Standard usage (Node.js)
 const { events } = await client.getWebhookEvents({ limit: 50 });
 
 for (const event of events) {
-  await saveToYourDatabase(event); // save first
+  await saveToYourDatabase(event);
 }
 
-// Remove from queue only after saving
 await client.acknowledgeWebhookEvents(events.map(e => e.eventId));
 ```
 
-```typescript Safe partial acknowledgement
+```python Standard usage (Python)
+result = client.get_webhook_events(limit=50)
+events = result.get("events", [])
+
+for event in events:
+    save_to_your_database(event)
+
+if events:
+    client.acknowledge_webhook_events([e["eventId"] for e in events])
+```
+
+```typescript Safe partial acknowledgement (Node.js)
 const processedIds: string[] = [];
 
 for (const event of events) {
   try {
     await saveToYourDatabase(event);
-    processedIds.push(event.eventId); // only add on success
+    processedIds.push(event.eventId);
   } catch (err) {
     console.error('Failed to save', event.eventId, err);
-    // Skip — will be re-delivered next poll
   }
 }
 
@@ -66,13 +83,35 @@ if (processedIds.length) {
 }
 ```
 
-```typescript Idempotent database upsert (MongoDB)
-// Use this pattern so duplicate deliveries never cause double-writes
+```python Safe partial acknowledgement (Python)
+processed_ids = []
+
+for event in events:
+    try:
+        save_to_your_database(event)
+        processed_ids.append(event["eventId"])
+    except Exception as err:
+        print(f"Failed to save {event['eventId']}: {err}")
+        # Skip — will be re-delivered next poll
+
+if processed_ids:
+    client.acknowledge_webhook_events(processed_ids)
+```
+
+```typescript Idempotent upsert — MongoDB (Node.js)
 await db.collection('assessment_results').updateOne(
-  { eventId: event.eventId },       // match on unique key
-  { $setOnInsert: mapEvent(event) }, // only writes if no existing doc
+  { eventId: event.eventId },
+  { $setOnInsert: mapEvent(event) },
   { upsert: true }
 );
+```
+
+```python Idempotent upsert — MongoDB (Python)
+collection.update_one(
+    {"eventId": event["eventId"]},
+    {"$setOnInsert": map_event(event)},
+    upsert=True,
+)
 ```
 
 </RequestExample>
@@ -93,6 +132,6 @@ await db.collection('assessment_results').updateOne(
 
 | Condition | Error message |
 |---|---|
-| `eventIds` is not an array | `eventIds must be a non-empty array` |
-| `eventIds` is an empty array | `eventIds must be a non-empty array` |
+| `eventIds` / `event_ids` is not an array/list | `eventIds must be a non-empty array` |
+| `eventIds` / `event_ids` is empty | `eventIds must be a non-empty array` |
 | One or more IDs already acknowledged | Silently skipped — no error |

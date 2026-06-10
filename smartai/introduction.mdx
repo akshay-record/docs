@@ -1,16 +1,17 @@
 ---
 title: "SmartAI Assessment"
-description: "Plug-and-play AI-proctored assessment platform. Integrate in minutes using two npm packages."
+description: "Plug-and-play AI-proctored assessment platform. Integrate in minutes using our backend and frontend packages."
 ---
 
 ## What is SmartAI Assessment?
 
-SmartAI Assessment lets you embed a fully-proctored, AI-generated assessment portal directly inside your own application. You install two packages — one on your server, one in your browser app — and the platform handles everything else.
+SmartAI Assessment lets you embed a fully-proctored, AI-generated assessment portal directly inside your own application. You install a backend package and a frontend package — the platform handles everything else.
 
-| Package | Runs on | Purpose |
-|---|---|---|
-| `@recordorg/smartai-assessment-backend` | Your Node.js server | Creates session tokens, polls results |
-| `@recordorg/smartai-assessment-frontend` | Your web app (browser) | Opens the assessment modal in an iframe |
+| Package | Runs on | Language | Purpose |
+|---|---|---|---|
+| `@recordorg/smartai-assessment-backend` | Your server | Node.js | Creates session tokens, polls results |
+| `smartai-assessment-backend` | Your server | Python | Creates session tokens, polls results |
+| `@recordorg/smartai-assessment-frontend` | Your web app (browser) | JavaScript | Opens the assessment modal in an iframe |
 
 ---
 
@@ -52,28 +53,43 @@ YOUR APPLICATION
 
 Log into the SmartAI dashboard and copy your **API key** and **Secret key**.
 
-- Prefix `wc_test_` → **test / staging** environment
+- Prefix `wc_ak_test_` → **test / staging** environment
 - Any other prefix → **live / production** environment
 
 ```bash
-ASSESSMENT_API_KEY=wc_test_your_key_here
-ASSESSMENT_SECRET_KEY=your_secret_key_here
+ASSESSMENT_API_KEY=wc_ak_test_your_key_here
+ASSESSMENT_SECRET_KEY=wc_sk_test_your_secret_here
 ```
 
-### 2. Install packages
+---
+
+### 2. Install backend package
+
+<CodeGroup>
+
+```bash Node.js
+npm install @recordorg/smartai-assessment-backend
+```
+
+```bash Python
+pip install smartai-assessment-backend
+```
+
+</CodeGroup>
+
+### 3. Install frontend package
 
 ```bash
-# Server
-npm install @recordorg/smartai-assessment-backend
-
-# Browser / frontend
 npm install @recordorg/smartai-assessment-frontend
 ```
 
-### 3. Add a session endpoint to your backend
+---
 
-```typescript
-import express from 'express';
+### 4. Add a session endpoint to your backend
+
+<CodeGroup>
+
+```typescript Node.js (Express)
 const AssessmentClient = require('@recordorg/smartai-assessment-backend');
 
 app.post('/assessment/session', yourAuthMiddleware, async (req, res) => {
@@ -92,12 +108,46 @@ app.post('/assessment/session', yourAuthMiddleware, async (req, res) => {
 });
 ```
 
-### 4. Open the portal from your frontend
+```python Python (FastAPI)
+from fastapi import FastAPI, HTTPException
+from smartai_assessment_backend import AssessmentClient
+from pydantic import BaseModel
+import os
+
+app = FastAPI()
+
+client = AssessmentClient(
+    api_key=os.getenv("ASSESSMENT_API_KEY"),
+    secret_key=os.getenv("ASSESSMENT_SECRET_KEY"),
+)
+
+class User(BaseModel):
+    name: str
+    email: str
+
+class SessionRequest(BaseModel):
+    users: list[User]
+
+@app.post("/assessment/session")
+def create_session(body: SessionRequest):
+    if not body.users:
+        raise HTTPException(status_code=400, detail="No candidates provided")
+
+    users = [{"name": u.name, "email": u.email} for u in body.users]
+    session = client.create_session(users=users)
+    return {"success": True, "data": session}
+```
+
+</CodeGroup>
+
+---
+
+### 5. Open the portal from your frontend
 
 Add `NEXT_PUBLIC_ASSESSMENT_API_KEY` to your frontend `.env.local`:
 
 ```bash
-NEXT_PUBLIC_ASSESSMENT_API_KEY=wc_test_your_key_here
+NEXT_PUBLIC_ASSESSMENT_API_KEY=wc_ak_test_your_key_here
 ```
 
 Then in your component, call your backend first to get the token, then open the portal:
@@ -113,16 +163,20 @@ const { default: AssessmentPortal } = await import('@recordorg/smartai-assessmen
 
 AssessmentPortal.open({
   token,
-  apiKey,   // tells the portal: live vs test environment
+  apiKey,
   onDone:  () => toast.success('Assessment sent successfully!'),
   onClose: () => {},
   onError: (err: Error) => toast.error(err.message || 'Assessment failed'),
 });
 ```
 
-### 5. Poll for results in the background
+---
 
-```typescript
+### 6. Poll for results in the background
+
+<CodeGroup>
+
+```typescript Node.js
 async function pollResults() {
   const client = new AssessmentClient({
     apiKey:    process.env.ASSESSMENT_API_KEY,
@@ -143,6 +197,36 @@ async function pollResults() {
 setInterval(pollResults, 30_000);
 pollResults();
 ```
+
+```python Python
+import time
+from smartai_assessment_backend import AssessmentClient
+import os
+
+client = AssessmentClient(
+    api_key=os.getenv("ASSESSMENT_API_KEY"),
+    secret_key=os.getenv("ASSESSMENT_SECRET_KEY"),
+)
+
+def poll_results():
+    try:
+        result = client.get_webhook_events(limit=50)
+        events = result.get("events", [])
+
+        for event in events:
+            save_to_database(event)
+
+        if events:
+            client.acknowledge_webhook_events([e["eventId"] for e in events])
+    except Exception as err:
+        print(f"Poll failed: {err}")
+
+while True:
+    poll_results()
+    time.sleep(30)  # every 30 seconds
+```
+
+</CodeGroup>
 
 ---
 

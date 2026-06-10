@@ -42,8 +42,8 @@ Your Frontend calls AssessmentPortal.open({ token })
 Add these to your server's `.env` file before this endpoint will work:
 
 ```bash
-ASSESSMENT_API_KEY=wc_test_your_key_here
-ASSESSMENT_SECRET_KEY=your_secret_key_here
+ASSESSMENT_API_KEY=wc_ak_test_your_key_here
+ASSESSMENT_SECRET_KEY=wc_sk_test_your_secret_here
 ```
 
 <Warning>
@@ -136,7 +136,7 @@ const response = await assessmentApi.createSession(
 const token = response?.data?.token;
 ```
 
-```typescript Backend (your controller)
+```typescript Backend — Node.js (Express)
 // assessmentSession.controller.ts
 import { Response } from 'express';
 import catchAsync from '../../utils/catch-async';
@@ -147,7 +147,6 @@ export const createAssessmentSession = catchAsync(async (req: any, res: Response
   const apiKey    = process.env.ASSESSMENT_API_KEY;
   const secretKey = process.env.ASSESSMENT_SECRET_KEY;
 
-  // 1. Guard — make sure env vars are set
   if (!apiKey || !secretKey) {
     return res.status(500).json({
       success: false,
@@ -155,13 +154,9 @@ export const createAssessmentSession = catchAsync(async (req: any, res: Response
     });
   }
 
-  // 2. Create the SDK client
   const client = new AssessmentClient({ apiKey, secretKey });
-
-  // 3. Get the users array from the request body
   const users: { name: string; email: string }[] = req.body.users || [];
 
-  // 4. Guard — make sure at least one candidate was sent
   if (!users.length) {
     return res.status(400).json({
       success: false,
@@ -169,15 +164,43 @@ export const createAssessmentSession = catchAsync(async (req: any, res: Response
     });
   }
 
-  // 5. Create the session — this calls the SmartAI platform
   const session = await client.createSession({ users });
 
-  // 6. Return the token to your frontend
   res.status(200).json({
     success: true,
-    data: session, // { token, expiresAt }
+    data: session,
   });
 });
+```
+
+```python Backend — Python (FastAPI)
+from fastapi import FastAPI, HTTPException
+from smartai_assessment_backend import AssessmentClient
+from pydantic import BaseModel
+import os
+
+app = FastAPI()
+
+client = AssessmentClient(
+    api_key=os.getenv("ASSESSMENT_API_KEY"),
+    secret_key=os.getenv("ASSESSMENT_SECRET_KEY"),
+)
+
+class User(BaseModel):
+    name: str
+    email: str
+
+class SessionRequest(BaseModel):
+    users: list[User]
+
+@app.post("/assessment/session")
+def create_assessment_session(body: SessionRequest):
+    if not body.users:
+        raise HTTPException(status_code=400, detail="No candidates provided")
+
+    users = [{"name": u.name, "email": u.email} for u in body.users]
+    session = client.create_session(users=users)
+    return {"success": True, "data": session}
 ```
 
 </RequestExample>

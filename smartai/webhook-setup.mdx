@@ -35,8 +35,8 @@ Add these two lines to your **server** `.env` file:
 
 ```bash
 # Server .env  (never put these in the frontend)
-ASSESSMENT_API_KEY=wc_test_your_key_here
-ASSESSMENT_SECRET_KEY=your_secret_key_here
+ASSESSMENT_API_KEY=wc_ak_test_your_key_here
+ASSESSMENT_SECRET_KEY=wc_sk_test_your_secret_here
 ```
 
 | Variable | What it is | Where to get it |
@@ -54,14 +54,28 @@ ASSESSMENT_SECRET_KEY=your_secret_key_here
 
 Create one `AssessmentClient` instance. You can do this once globally or once per poll call — both are fine.
 
-```typescript
+<CodeGroup>
+
+```typescript Node.js
 const AssessmentClient = require('@recordorg/smartai-assessment-backend');
 
 const client = new AssessmentClient({
-  apiKey:    process.env.ASSESSMENT_API_KEY,    // required
-  secretKey: process.env.ASSESSMENT_SECRET_KEY, // required
+  apiKey:    process.env.ASSESSMENT_API_KEY,
+  secretKey: process.env.ASSESSMENT_SECRET_KEY,
 });
 ```
+
+```python Python
+from smartai_assessment_backend import AssessmentClient
+import os
+
+client = AssessmentClient(
+    api_key=os.getenv("ASSESSMENT_API_KEY"),
+    secret_key=os.getenv("ASSESSMENT_SECRET_KEY"),
+)
+```
+
+</CodeGroup>
 
 ---
 
@@ -157,7 +171,7 @@ Two event types come through the same queue. Your poller handles both:
 
 Copy this into your server. Place it in a file like `src/jobs/pollAssessments.ts` and call it when your server starts.
 
-```typescript
+```typescript Node.js
 // src/jobs/pollAssessments.ts
 const AssessmentClient = require('@recordorg/smartai-assessment-backend');
 
@@ -243,6 +257,76 @@ export function startAssessmentPoller() {
   pollAssessmentResults().catch(console.error);
   console.log('✓ Assessment result poller started (every 30s)');
 }
+```
+
+```python Python
+# jobs/poll_assessments.py
+from smartai_assessment_backend import AssessmentClient
+import os
+import time
+import threading
+
+client = AssessmentClient(
+    api_key=os.getenv("ASSESSMENT_API_KEY"),
+    secret_key=os.getenv("ASSESSMENT_SECRET_KEY"),
+)
+
+def poll_assessment_results():
+    result = client.get_webhook_events(limit=50)
+    events = result.get("events", [])
+    pending_count = result.get("pendingCount", 0)
+
+    if not events:
+        return
+
+    print(f"Fetched {len(events)} events — {pending_count} still pending")
+
+    processed_ids = []
+
+    for event in events:
+        try:
+            if event.get("event") == "assessment.sent":
+                save_assessment_sent(event)
+            elif event.get("event") == "assessment.completed":
+                save_assessment_result(event)
+
+            processed_ids.append(event["eventId"])
+        except Exception as err:
+            print(f"Failed to save event {event['eventId']}: {err}")
+
+    if processed_ids:
+        client.acknowledge_webhook_events(processed_ids)
+        print(f"Acknowledged {len(processed_ids)} events")
+
+    if pending_count > 0:
+        poll_assessment_results()  # drain remaining
+
+
+def start_assessment_poller():
+    def run():
+        while True:
+            try:
+                poll_assessment_results()
+            except Exception as err:
+                print(f"Assessment poller error: {err}")
+            time.sleep(30)
+
+    thread = threading.Thread(target=run, daemon=True)
+    thread.start()
+    print("✓ Assessment result poller started (every 30s)")
+```
+
+**Call it when your FastAPI server starts:**
+
+```python Python (FastAPI startup)
+from fastapi import FastAPI
+from jobs.poll_assessments import start_assessment_poller
+
+app = FastAPI()
+
+@app.on_event("startup")
+def startup():
+    start_assessment_poller()  # ← add this
 ```
 
 **Call it when your Express server starts:**
