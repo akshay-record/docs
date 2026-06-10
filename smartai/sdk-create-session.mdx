@@ -53,16 +53,15 @@ client = AssessmentClient(
 <CodeGroup>
 
 ```typescript Node.js
-client.createSession(options: CreateSessionOptions): Promise<SessionToken>
+client.createSession({ users, recruiterId?, recruiterEmail? }): Promise<SessionToken>
 ```
 
 ```python Python
 client.create_session(
     *,
-    name: str = None,
-    email: str = None,
-    candidate_id: str = None,
-    users: list = None,
+    users: list,
+    recruiter_id: str = None,
+    recruiter_email: str = None,
 )
 ```
 
@@ -73,28 +72,31 @@ client.create_session(
 ## Parameters
 
 <ParamField body="users" type="array" required>
-  **Bulk mode (recommended).** One or more candidates to include in this session. All candidates share a single session token.
+  Array of candidate objects. Must have at least one item.
 
-  <Expandable title="User object">
+  <Expandable title="Each user object" defaultOpen>
     <ParamField body="name" type="string" required>
-      Candidate's full name.
+      Candidate's full name. Shown in the assessment UI and result reports.
     </ParamField>
     <ParamField body="email" type="string" required>
-      Candidate's email address. Used as the unique identifier on the SmartAI platform.
+      Candidate's email address. Used as the unique identifier on the SmartAI platform. Match on this when you receive webhook results.
     </ParamField>
   </Expandable>
+
+  ```json Example
+  [
+    { "name": "Priya Sharma",  "email": "priya@example.com" },
+    { "name": "Rahul Verma",   "email": "rahul@example.com" }
+  ]
+  ```
 </ParamField>
 
-<ParamField body="name" type="string">
-  **Single-candidate mode.** Candidate's full name. Use instead of `users` when assigning a single person.
+<ParamField body="recruiterId / recruiter_id" type="string">
+  Your internal recruiter ID. You can pass this **or** `recruiterEmail` — at least one is required. You may pass both.
 </ParamField>
 
-<ParamField body="email" type="string">
-  **Single-candidate mode.** Candidate's email. Required when using `name` instead of `users`.
-</ParamField>
-
-<ParamField body="candidateId / candidate_id" type="string">
-  Your internal candidate ID. Optional — stored on the SmartAI record for cross-reference.
+<ParamField body="recruiterEmail / recruiter_email" type="string">
+  The recruiter's email address. You can pass this **or** `recruiterId` — at least one is required. You may pass both.
 </ParamField>
 
 ---
@@ -115,6 +117,7 @@ const session = await client.createSession({
     { name: 'Priya Sharma', email: 'priya@example.com' },
     { name: 'Rahul Verma',  email: 'rahul@example.com' },
   ],
+  recruiterEmail: 'admin@yourcompany.com',
 });
 
 console.log(session.token); // → 'eyJhbGci...'
@@ -125,39 +128,47 @@ session = client.create_session(
     users=[
         {"name": "Priya Sharma", "email": "priya@example.com"},
         {"name": "Rahul Verma",  "email": "rahul@example.com"},
-    ]
+    ],
+    recruiter_email="admin@yourcompany.com",
 )
 
 print(session["token"])  # → 'eyJhbGci...'
 ```
 
-```typescript Single candidate (Node.js)
+```typescript With recruiter ID (Node.js)
 const session = await client.createSession({
-  name:  'Priya Sharma',
-  email: 'priya@example.com',
+  users: [
+    { name: 'Priya Sharma', email: 'priya@example.com' },
+  ],
+  recruiterId: '122344344533',
 });
 ```
 
-```python Single candidate (Python)
-session = client.create_session(
-    name="Priya Sharma",
-    email="priya@example.com",
-)
-```
-
-```typescript With candidate ID (Node.js)
-const session = await client.createSession({
-  users: [{ name: 'Priya Sharma', email: 'priya@example.com' }],
-  candidateId: 'your_internal_id_123',
-});
-```
-
-```python With candidate ID (Python)
+```python With recruiter ID (Python)
 session = client.create_session(
     users=[{"name": "Priya Sharma", "email": "priya@example.com"}],
-    candidate_id="your_internal_id_123",
+    recruiter_id="122344344533",
 )
 ```
+
+```typescript Both recruiter fields (Node.js)
+const session = await client.createSession({
+  users: [
+    { name: 'Priya Sharma', email: 'priya@example.com' },
+  ],
+  recruiterId:    '122344344533',
+  recruiterEmail: 'admin@yourcompany.com',
+});
+```
+
+```python Both recruiter fields (Python)
+session = client.create_session(
+    users=[{"name": "Priya Sharma", "email": "priya@example.com"}],
+    recruiter_id="122344344533",
+    recruiter_email="admin@yourcompany.com",
+)
+```
+
 
 </RequestExample>
 
@@ -177,6 +188,7 @@ session = client.create_session(
 
 | Condition | Error message |
 |---|---|
+| Neither `recruiterId` nor `recruiterEmail` provided | `Provide at least one of recruiterId or recruiterEmail` — pass one or both |
 | `users` is an empty array / list | `users must be a non-empty array` |
 | `name` missing in single mode | `name is required` |
 | `email` missing in single mode | `email is required` |

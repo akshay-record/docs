@@ -27,7 +27,7 @@ YOUR APPLICATION
 │      { users: [{ name, email }, ...] }
 │
 ├─ 3. Your backend calls SmartAI SDK:
-│      client.createSession({ users })
+│      client.createSession({ users, recruiterId?, recruiterEmail? })
 │      ◀── { token }
 │
 ├─ 4. Your backend returns the token to the frontend
@@ -98,12 +98,23 @@ app.post('/assessment/session', yourAuthMiddleware, async (req, res) => {
     secretKey: process.env.ASSESSMENT_SECRET_KEY,
   });
 
-  const { users } = req.body;
+  // users — array of { name, email }
+  const { users, recruiterId, recruiterEmail } = req.body;
+
   if (!users?.length) {
     return res.status(400).json({ success: false, message: 'No candidates provided' });
   }
 
-  const session = await client.createSession({ users });
+  if (!recruiterId && !recruiterEmail) {
+    return res.status(400).json({ success: false, message: 'Provide at least one of recruiterId or recruiterEmail' });
+  }
+
+  const session = await client.createSession({
+    users,           // [{ name, email }, ...]
+    recruiterId,     // optional — pass one or both
+    recruiterEmail,  // optional — pass one or both
+  });
+
   res.json({ success: true, data: session });
 });
 ```
@@ -134,7 +145,11 @@ def create_session(body: SessionRequest):
         raise HTTPException(status_code=400, detail="No candidates provided")
 
     users = [{"name": u.name, "email": u.email} for u in body.users]
-    session = client.create_session(users=users)
+    session = client.create_session(
+        users=users,
+        recruiter_id=body.recruiter_id,         # pass recruiter_id
+        recruiter_email=body.recruiter_email,   # or recruiter_email — at least one required
+    )
     return {"success": True, "data": session}
 ```
 
