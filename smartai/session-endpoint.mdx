@@ -21,7 +21,7 @@ Your Frontend (ProfileList.tsx)
     ▼
 Your Backend (this endpoint)
     │
-    │  client.createSession({ users })
+    │  client.createSession({ users, recruiterId?, recruiterEmail? })
     │
     ▼
 SmartAI Platform
@@ -42,8 +42,8 @@ Your Frontend calls AssessmentPortal.open({ token })
 Add these to your server's `.env` file before this endpoint will work:
 
 ```bash
-ASSESSMENT_API_KEY=wc_test_your_key_here
-ASSESSMENT_SECRET_KEY=your_secret_key_here
+ASSESSMENT_API_KEY=wc_ak_test_your_key_here
+ASSESSMENT_SECRET_KEY=wc_sk_test_your_secret_here
 ```
 
 <Warning>
@@ -68,24 +68,32 @@ ASSESSMENT_SECRET_KEY=your_secret_key_here
 ### Body
 
 <ParamField body="users" type="array" required>
-  The list of candidates to include in this assessment session.
+  Array of candidate objects to include in this assessment session. Must have at least one item.
 
-  In your `ProfileList.tsx` this is built as:
-  ```typescript
-  users: data.map(c => ({
-    name:  c.name ?? c.fullName ?? '',
-    email: c.email ?? '',
-  }))
-  ```
-
-  <Expandable title="Each user object">
+  <Expandable title="Each user object" defaultOpen>
     <ParamField body="name" type="string" required>
-      Candidate's full name. Will appear in the assessment UI and result reports.
+      Candidate's full name. Shown in the assessment UI and result reports.
     </ParamField>
     <ParamField body="email" type="string" required>
-      Candidate's email address. SmartAI uses this as the unique identifier — when you receive webhook results, match on this email to find the candidate in your own database.
+      Candidate's email address. Used as the unique identifier on the SmartAI platform. Match on this email when you receive webhook results to find the candidate in your own database.
     </ParamField>
   </Expandable>
+
+  ```json
+  [
+    { "name": "Priya Sharma",  "email": "priya@example.com" },
+    { "name": "Rahul Verma",   "email": "rahul@example.com" },
+    { "name": "Aisha Khan",    "email": "aisha@example.com" }
+  ]
+  ```
+</ParamField>
+
+<ParamField body="recruiterId" type="string">
+  Your internal recruiter ID. Pass this **or** `recruiterEmail` — at least one is required.
+</ParamField>
+
+<ParamField body="recruiterEmail" type="string">
+  The recruiter's email address. Pass this **or** `recruiterId` — at least one is required.
 </ParamField>
 
 ---
@@ -136,48 +144,70 @@ const response = await assessmentApi.createSession(
 const token = response?.data?.token;
 ```
 
-```typescript Backend (your controller)
-// assessmentSession.controller.ts
-import { Response } from 'express';
-import catchAsync from '../../utils/catch-async';
-
+```typescript Backend — Node.js (Express)
 const AssessmentClient = require('@recordorg/smartai-assessment-backend');
 
-export const createAssessmentSession = catchAsync(async (req: any, res: Response) => {
-  const apiKey    = process.env.ASSESSMENT_API_KEY;
-  const secretKey = process.env.ASSESSMENT_SECRET_KEY;
-
-  // 1. Guard — make sure env vars are set
-  if (!apiKey || !secretKey) {
-    return res.status(500).json({
-      success: false,
-      message: 'SmartAI assessment credentials are not configured',
-    });
-  }
-
-  // 2. Create the SDK client
-  const client = new AssessmentClient({ apiKey, secretKey });
-
-  // 3. Get the users array from the request body
-  const users: { name: string; email: string }[] = req.body.users || [];
-
-  // 4. Guard — make sure at least one candidate was sent
-  if (!users.length) {
-    return res.status(400).json({
-      success: false,
-      message: 'No candidates provided',
-    });
-  }
-
-  // 5. Create the session — this calls the SmartAI platform
-  const session = await client.createSession({ users });
-
-  // 6. Return the token to your frontend
-  res.status(200).json({
-    success: true,
-    data: session, // { token, expiresAt }
+app.post('/assessment/session', yourAuthMiddleware, async (req, res) => {
+  const client = new AssessmentClient({
+    apiKey:    process.env.ASSESSMENT_API_KEY,
+    secretKey: process.env.ASSESSMENT_SECRET_KEY,
   });
+
+  const { users } = req.body;
+  if (!users?.length) {
+    return res.status(400).json({ success: false, message: 'No candidates provided' });
+  }
+
+  const session = await client.createSession({
+    users,
+    recruiterId:    req.user?.id,      // pass recruiterId
+    recruiterEmail: req.user?.email,   // or recruiterEmail — at least one required
+  });
+
+  res.json({ success: true, data: session });
 });
+```
+
+```python Backend — Python (FastAPI)
+from fastapi import FastAPI, HTTPException
+from smartai_assessment_backend import AssessmentClient
+from pydantic import BaseModel
+import os
+
+app = FastAPI()
+
+client = AssessmentClient(
+    api_key=os.getenv("ASSESSMENT_API_KEY"),
+    secret_key=os.getenv("ASSESSMENT_SECRET_KEY"),
+)
+
+class User(BaseModel):
+    name: str
+    email: str
+
+class SessionRequest(BaseModel):
+    users: list[User]
+    recruiter_id: str | None = None
+    recruiter_email: str | None = None
+
+@app.post("/assessment/session")
+def create_assessment_session(body: SessionRequest):
+    if not body.users:
+        raise HTTPException(status_code=400, detail="No candidates provided")
+
+    if not body.recruiter_id and not body.recruiter_email:
+        raise HTTPException(
+            status_code=400,
+            detail="Provide at least one of recruiter_id or recruiter_email",
+        )
+
+    users = [{"name": u.name, "email": u.email} for u in body.users]
+    session = client.create_session(
+        users=users,
+        recruiter_id=body.recruiter_id,
+        recruiter_email=body.recruiter_email,
+    )
+    return {"success": True, "data": session}
 ```
 
 </RequestExample>
@@ -217,5 +247,6 @@ export const createAssessmentSession = catchAsync(async (req: any, res: Response
 |---|---|---|
 | `ASSESSMENT_API_KEY` not set in `.env` | Returns 500 | Add the key to your server `.env` |
 | Sending `users: []` empty array | Returns 400 | Make sure candidates are selected before calling |
+| Neither `recruiterId` nor `recruiterEmail` sent | Returns 400 | Pass at least one recruiter field |
 | Calling this from the browser directly | API key exposed in network tab | Always call through your backend |
 | Reusing the same token for a second session | Token expired error | Always request a fresh token |

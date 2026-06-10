@@ -17,8 +17,8 @@ Every SmartAI Assessment account has two keys:
 </Warning>
 
 ```bash
-ASSESSMENT_API_KEY=wc_test_abc123
-ASSESSMENT_SECRET_KEY=9e345f2b48dd318d301a2bdd...
+ASSESSMENT_API_KEY=wc_ak_test_abc123
+ASSESSMENT_SECRET_KEY=wc_sk_test_9e345f2b48dd318d301a2bdd...
 ```
 
 ### Live vs test environments
@@ -27,7 +27,7 @@ The API key prefix determines which environment you're in:
 
 | Prefix | Environment | Notes |
 |---|---|---|
-| `wc_test_` | Test / staging | No real emails sent, safe to experiment |
+| `wc_ak_test_` | Test / staging | No real emails sent, safe to experiment |
 | Anything else | Live / production | Real candidate emails, full proctoring |
 
 ---
@@ -59,9 +59,11 @@ x-signature: <hmac-sha256-hex-digest>
 x-timestamp: 1717200000000
 ```
 
-### Node.js signing reference
+### Signing reference
 
-```typescript
+<CodeGroup>
+
+```typescript Node.js
 import crypto from 'crypto';
 
 function buildSignature(
@@ -87,6 +89,33 @@ function buildSignature(
 }
 ```
 
+```python Python
+import hashlib
+import hmac
+import json
+import time
+
+def build_signature(method, path, body, secret_key):
+    timestamp = str(int(time.time() * 1000))
+
+    sorted_body = (
+        json.dumps(body, sort_keys=True, separators=(",", ":"))
+        if body else ""
+    )
+
+    payload = f"{method}:{path}:{timestamp}:{sorted_body}"
+
+    signature = hmac.new(
+        secret_key.encode(),
+        payload.encode(),
+        hashlib.sha256,
+    ).hexdigest()
+
+    return {"signature": signature, "timestamp": timestamp}
+```
+
+</CodeGroup>
+
 ### Timestamp window
 
 | Environment | Window |
@@ -102,13 +131,27 @@ Requests outside the window are rejected with `403 Forbidden`.
 
 Instantiate once per request (or share a single instance per server process):
 
-```typescript
+<CodeGroup>
+
+```typescript Node.js
 const AssessmentClient = require('@recordorg/smartai-assessment-backend');
 
 const client = new AssessmentClient({
-  apiKey:    process.env.ASSESSMENT_API_KEY,    // required
-  secretKey: process.env.ASSESSMENT_SECRET_KEY, // required
+  apiKey:    process.env.ASSESSMENT_API_KEY,
+  secretKey: process.env.ASSESSMENT_SECRET_KEY,
 });
 ```
+
+```python Python
+from smartai_assessment_backend import AssessmentClient
+import os
+
+client = AssessmentClient(
+    api_key=os.getenv("ASSESSMENT_API_KEY"),
+    secret_key=os.getenv("ASSESSMENT_SECRET_KEY"),
+)
+```
+
+</CodeGroup>
 
 The SDK reads both keys and attaches the correct headers and HMAC signature to every outgoing request — you do not pass keys to the frontend or to candidates.

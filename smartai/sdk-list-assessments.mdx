@@ -9,9 +9,17 @@ description: "List all assessment templates configured for your organisation. Us
 
 ## Signature
 
-```typescript
+<CodeGroup>
+
+```typescript Node.js
 client.listAssessments(): Promise<Assessment[]>
 ```
+
+```python Python
+client.list_assessments()
+```
+
+</CodeGroup>
 
 No parameters required.
 
@@ -19,10 +27,10 @@ No parameters required.
 
 ## Return value
 
-Returns an array of assessment template objects.
+Returns an array / list of assessment template objects.
 
 <ResponseField name="assessmentId" type="string">
-  Unique identifier for the assessment template. Pass this when creating a session for a specific assessment.
+  Unique identifier for the assessment template.
 </ResponseField>
 
 <ResponseField name="name" type="string">
@@ -49,7 +57,7 @@ Returns an array of assessment template objects.
 
 <RequestExample>
 
-```typescript List and display
+```typescript List and display (Node.js)
 const assessments = await client.listAssessments();
 
 assessments.forEach(a => {
@@ -57,7 +65,14 @@ assessments.forEach(a => {
 });
 ```
 
-```typescript Build an API endpoint for your frontend picker
+```python List and display (Python)
+assessments = client.list_assessments()
+
+for a in assessments:
+    print(f"{a['name']} — {a['durationMinutes']} min, pass at {a['passMarks']}/{a['totalMarks']}")
+```
+
+```typescript API endpoint for frontend (Node.js)
 app.get('/assessments', yourAuthMiddleware, async (req, res) => {
   const client = new AssessmentClient({
     apiKey:    process.env.ASSESSMENT_API_KEY,
@@ -67,6 +82,23 @@ app.get('/assessments', yourAuthMiddleware, async (req, res) => {
   const assessments = await client.listAssessments();
   res.json({ success: true, data: assessments });
 });
+```
+
+```python API endpoint for frontend (Python — FastAPI)
+from fastapi import FastAPI
+from smartai_assessment_backend import AssessmentClient
+import os
+
+app = FastAPI()
+client = AssessmentClient(
+    api_key=os.getenv("ASSESSMENT_API_KEY"),
+    secret_key=os.getenv("ASSESSMENT_SECRET_KEY"),
+)
+
+@app.get("/assessments")
+def list_assessments():
+    assessments = client.list_assessments()
+    return {"success": True, "data": assessments}
 ```
 
 </RequestExample>

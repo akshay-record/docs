@@ -9,9 +9,17 @@ description: "Pull pending assessment-completion events from the SmartAI queue. 
 
 ## Signature
 
-```typescript
+<CodeGroup>
+
+```typescript Node.js
 client.getWebhookEvents(options?: GetWebhookEventsOptions): Promise<GetWebhookEventsResult>
 ```
+
+```python Python
+client.get_webhook_events(*, limit: int = 50, since: int = 0)
+```
+
+</CodeGroup>
 
 ---
 
@@ -34,14 +42,14 @@ client.getWebhookEvents(options?: GetWebhookEventsOptions): Promise<GetWebhookEv
 </ResponseField>
 
 <ResponseField name="pendingCount" type="number">
-  Total events still in the queue after this batch. If greater than `0`, call `getWebhookEvents` again to drain the rest.
+  Total events still in the queue after this batch. If greater than `0`, call again to drain the rest.
 </ResponseField>
 
 ---
 
 <RequestExample>
 
-```typescript Basic poll
+```typescript Basic poll (Node.js)
 const { events, pendingCount } = await client.getWebhookEvents({ limit: 50 });
 
 console.log(`Got ${events.length} events, ${pendingCount} still pending`);
@@ -50,13 +58,26 @@ for (const event of events) {
   await saveToYourDatabase(event);
 }
 
-// Always acknowledge after saving
 if (events.length) {
   await client.acknowledgeWebhookEvents(events.map(e => e.eventId));
 }
 ```
 
-```typescript Drain the full queue
+```python Basic poll (Python)
+result = client.get_webhook_events(limit=50)
+events = result.get("events", [])
+pending_count = result.get("pendingCount", 0)
+
+print(f"Got {len(events)} events, {pending_count} still pending")
+
+for event in events:
+    save_to_your_database(event)
+
+if events:
+    client.acknowledge_webhook_events([e["eventId"] for e in events])
+```
+
+```typescript Drain the full queue (Node.js)
 let hasMore = true;
 
 while (hasMore) {
@@ -74,7 +95,24 @@ while (hasMore) {
 }
 ```
 
-```typescript Scheduled poller (setInterval)
+```python Drain the full queue (Python)
+has_more = True
+
+while has_more:
+    result = client.get_webhook_events(limit=50)
+    events = result.get("events", [])
+    pending_count = result.get("pendingCount", 0)
+
+    for event in events:
+        save_to_your_database(event)
+
+    if events:
+        client.acknowledge_webhook_events([e["eventId"] for e in events])
+
+    has_more = pending_count > 0
+```
+
+```typescript Scheduled poller (Node.js)
 async function pollResults() {
   const client = new AssessmentClient({
     apiKey:    process.env.ASSESSMENT_API_KEY,
@@ -96,8 +134,35 @@ async function pollResults() {
   }
 }
 
-setInterval(pollResults, 30_000); // every 30 seconds
-pollResults();                     // once on startup
+setInterval(pollResults, 30_000);
+pollResults();
+```
+
+```python Scheduled poller (Python)
+import time
+from smartai_assessment_backend import AssessmentClient
+
+client = AssessmentClient(
+    api_key=os.getenv("ASSESSMENT_API_KEY"),
+    secret_key=os.getenv("ASSESSMENT_SECRET_KEY"),
+)
+
+def poll_results():
+    try:
+        result = client.get_webhook_events(limit=50)
+        events = result.get("events", [])
+
+        for event in events:
+            save_to_database(event)
+
+        if events:
+            client.acknowledge_webhook_events([e["eventId"] for e in events])
+    except Exception as err:
+        print(f"Poll failed: {err}")
+
+while True:
+    poll_results()
+    time.sleep(30)  # every 30 seconds
 ```
 
 </RequestExample>
