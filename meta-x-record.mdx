@@ -1,185 +1,164 @@
 ---
 title: "Meta X Record"
+description: "Record Playground Meta WhatsApp Business configuration guide"
 ---
 
-# **Record Playground - Meta WhatsApp Business Configuration Guide**
+# Meta X Record
 
-\
-**WhatsApp Business Integration**
+## Record Playground - Meta WhatsApp Business Configuration Guide
 
-To enable WhatsApp communication through your own WhatsApp Business Account, a few Meta configurations are required. Once these are completed, our team will connect your WhatsApp Business Account with the Record Platform.
+This guide explains how to connect your WhatsApp Business Account with the Record Platform.
 
-# **1. Information Required from Your Team**
+Once the required Meta configurations are completed, the Record team will configure the integration, verify the setup, and activate WhatsApp communication for your account.
+
+---
+
+## 1. Information Required from Your Team
 
 Please share the following details after your Meta WhatsApp Business Account has been configured.
 
-| **Required Item** | **Description** |
-| :-- | :-- |
-| **Phone Number ID** | The Phone Number ID associated with your WhatsApp Business number. |
-| **Permanent Access Token** | A permanent access token generated from your Meta Business Account. |
-| **WhatsApp Business Account ID (Optional)** | Helpful for verification and future support. |
+| Required Item | Description |
+| --- | --- |
+| Phone Number ID | Phone Number ID associated with your WhatsApp Business number |
+| Permanent Access Token | No-expiration access token generated from your Meta Business Account |
+| WhatsApp Business Account ID | Optional, but helpful for verification and support |
+| Approved Template Names | Template names approved in Meta WhatsApp Manager |
 
-# **Generating a Permanent Access Token**
+---
 
-To allow the Record Platform to securely send WhatsApp messages on behalf of your WhatsApp Business Account, you must generate a **Permanent (No Expiration) Access Token** from your Meta Business Account.
+## 2. Generate Permanent Access Token
 
-**Note:** We recommend generating a dedicated access token specifically for the Record Platform. This makes future management, auditing, and permission control much easier.
+To allow Record to send WhatsApp messages through your WhatsApp Business Account, you need to generate a permanent access token.
 
-## **Step 1 – Open Meta Business Settings**
+We recommend creating a dedicated System User and token for Record. This makes access management, auditing, and future maintenance easier.
 
-Sign in to your **Meta Business Manager** and navigate to:
+### Step 1: Open Business Settings
 
-**Business Settings → Users → System Users**
+Go to:
 
-Here, you can either:
+```text
+business.facebook.com/settings
+```
 
-- Create a **new System User** specifically for the Record Platform (Recommended), or
-- Use an existing System User if one has already been configured for your organization.
+Then navigate to:
 
-## **Step 2 – Assign the WhatsApp Application**
+```text
+Users → System Users
+```
 
-After selecting the System User, ensure that the appropriate WhatsApp application is assigned.
+Create a new System User for Record, or use an existing System User if already configured.
 
-You have two options:
+### Step 2: Assign the App
 
-- **Option 1 (Recommended):** Create a dedicated application for the Record Platform.
-- **Option 2:** Use your existing WhatsApp Business application if you prefer to manage all integrations within the same project.
+Select the System User and assign the WhatsApp application.
 
-Both approaches are supported. However, using a dedicated application provides better separation of environments and simplifies future maintenance.
+You can either:
 
-## **Step 3 – Verify Permissions**
+- Create a dedicated Meta application for Record
+- Use your existing WhatsApp application
 
-Before generating the token, confirm that the System User has the required permissions for the assigned WhatsApp Business application.
+Using a dedicated application is recommended for better separation and easier management.
 
-The System User should have access to:
+### Step 3: Generate Token
 
-- WhatsApp Business Account
-- WhatsApp Phone Number
-- Application Management
-- Messaging Permissions (Full Access)
+Click **Generate Token** and select the WhatsApp application.
 
-These permissions are required for the Record Platform to send WhatsApp messages, manage templates, and receive delivery status updates.
+Choose the required WhatsApp permissions and generate the token with **No Expiration**.
 
-## **Step 4 – Generate the Access Token**
+### Step 4: Share Token with Record
 
-Once the application has been assigned:
+Please securely share the following details with the Record team:
 
-1. Select the **System User**.
-2. Click **Generate Token**.
-3. Choose the WhatsApp application that will be integrated with the Record Platform.
-4. Select the required permissions.
-5. Generate the token.
+- Permanent Access Token
+- Phone Number ID
+- WhatsApp Business Account ID, if available
 
-When generating the token, **choose a Permanent (No Expiration) Access Token**.
+---
 
-This ensures uninterrupted communication between your WhatsApp Business Account and the Record Platform without requiring periodic token updates.
+## 3. Webhook Configuration
 
-## **Step 5 – Share the Token with Record**
+Please configure the Record webhook in your Meta Developer Console.
 
-Once the token has been generated, securely share the following details with the Record implementation team:
+### Callback URL
 
-- **Permanent Access Token**
-- **Phone Number ID**
-- **WhatsApp Business Account ID (if available)**
+The Record team will share the webhook callback URL during onboarding.
 
-Our team will securely configure these credentials within the Record Platform to complete the integration.
+```text
+<RECORD_CALLBACK_URL>
+```
 
-## **Best Practice**
+Example:
 
-For improved security and easier management, we recommend creating a **dedicated System User and a dedicated application** exclusively for the Record Platform.
+```text
+https://your-domain.com/api/v1/webhooks/whatsapp
+```
 
-This approach provides several benefits:
+### Verify Token
 
-- Isolates Record Platform access from other business integrations.
-- Simplifies permission management.
-- Makes future token rotation easier, if required.
-- Prevents disruptions to other WhatsApp integrations within your Meta Business Account.
-- Provides better operational control and auditability.
+The Record team will also share the verify token.
 
-**Note:** If you already have an existing WhatsApp application in production, you may continue using it by generating a new **Permanent (No Expiration) Access Token** for the Record Platform.
+```text
+<RECORD_VERIFY_TOKEN>
+```
 
-# **2. Webhook Configuration**
+### Webhook Events
 
-Please configure the following webhook in your Meta Developer Console.
-
-### **Callback URL**
-
-Our team will provide this URL during onboarding.
-
-\<RECORD\_CALLBACK\_URL\>
-
-Example
-
-[https://your-domain.com/api/v1/webhooks/whatsapp](https://your-domain.com/api/v1/webhooks/whatsapp)
-
-### **Verify Token**
-
-Our team will also provide the Verify Token.
-
-Example
-
-RECORD\_VERIFY\_TOKEN
-
-### **Webhook Events**
-
-Please subscribe to the following events.
+Please subscribe to the following webhook events:
 
 - messages
 - message\_status
 - message\_template\_status\_update
 
-Once completed, please click **Verify and Save**.
+After entering the Callback URL and Verify Token, click **Verify and Save**.
 
-## **Meta Developer Account Configuration**
+---
 
-To connect your WhatsApp Business Account with the Record Platform, please complete the following steps in your Meta Developer account.
+## 4. Meta Developer Configuration Flow
 
-### **Step 1 - Access Meta Developers**
+### Step 1: Open Meta Developers
 
-Sign in to your Meta Developer account at [**developers.facebook.com**](http://developers.facebook.com) using the Meta Business account associated with your WhatsApp Business Account.
+Go to:
 
-### **Step 2 - Open Your App**
+```text
+developers.facebook.com
+```
 
-Navigate to your application dashboard.
+Sign in using the Meta Business account connected with your WhatsApp Business Account.
 
-From the left navigation menu, open the **Dashboard** and locate the **Use Cases** section.
+### Step 2: Open App Dashboard
 
-Select **Connect with customers through WhatsApp** to begin the WhatsApp Business setup.
+Open your Meta application dashboard.
 
-### **Step 3 - Complete the Production Setup**
+From the dashboard, go to **Use Cases** and select:
 
-During the production setup, Meta will ask for your webhook configuration.
+```text
+Connect with customers through WhatsApp
+```
 
-Please enter the following details provided by the Record team:
+### Step 3: Complete Production Setup
 
-- **Callback URL** - This will be shared by the Record implementation team during onboarding.
-- **Verify Token** - This will also be shared by the Record implementation team.
+Under the WhatsApp production setup, add the Record backend webhook URL and verify token.
 
-After entering both values, click **Verify and Save** to complete the webhook configuration.\
+After verification is successful, continue with the remaining WhatsApp setup.
 
-\
-\
-\
+### Step 4: Register WhatsApp Number
 
-\
-\
+Complete the following setup items:
 
-### **Step 4 - Register Your WhatsApp Business Number**
+- Register your WhatsApp Business phone number
+- Complete business verification, if required
+- Add payment method, if required by Meta
+- Complete phone number registration
 
-Once the webhook has been successfully verified, complete the remaining WhatsApp Business setup by:
+Once completed, your WhatsApp number will be ready for integration with Record.
 
-- Registering your WhatsApp Business phone number.
-- Completing the business verification process (if applicable).
-- Adding your payment method for WhatsApp conversations, if required by Meta.
-- Completing the phone number registration.
+---
 
-Once these steps are complete, your WhatsApp Business Account will be ready for integration with the Record Platform.
+## 5. WhatsApp Template Setup
 
-### **Step 5 - Create WhatsApp Message Templates**
+Create the required templates inside Meta WhatsApp Manager.
 
-After your WhatsApp Business Account is fully configured, create the required WhatsApp message templates in your WhatsApp Business Manager.
-
-We recommend creating templates for the following supported languages:
+Please create templates for the following languages:
 
 - English
 - Tamil
@@ -188,231 +167,193 @@ We recommend creating templates for the following supported languages:
 - Kannada
 - Malayalam
 
-Once Meta approves your templates, please share the **approved template names** with the Record implementation team.
+After Meta approves the templates, share the approved template names with the Record team.
 
-Our team will map these templates within the Record Platform to ensure that the correct language template is automatically used while communicating with candidates.
+---
 
-### **Step 6 - Share the Required Details with Record**
+## 6. Recommended Template Names
 
-Once your setup is complete, please share the following information with our team:
+### Job Interest Template
 
-- Phone Number ID
-- Permanent Access Token
-- Confirmation that the webhook has been successfully configured
-- Approved WhatsApp template names (for all required languages)
+```text
+job_interest_en
+job_interest_ta
+job_interest_te
+job_interest_hi
+job_interest_kn
+job_interest_ml
+```
 
-After receiving these details, the Record implementation team will complete the platform configuration, connect your WhatsApp Business Account with the Record Platform, perform end-to-end testing, and notify you once your integration is ready for production use.
+### Skill Assessment Template
 
-# **3. WhatsApp Message Templates**
+```text
+skill_assessment_en
+skill_assessment_ta
+skill_assessment_te
+skill_assessment_hi
+skill_assessment_kn
+skill_assessment_ml
+```
 
-Create the following templates inside your Meta WhatsApp Manager.
+### Application Completed Template
 
-The approved template names should be shared with the Record team so that they can be configured within the platform.
+```text
+application_completed_en
+application_completed_ta
+application_completed_te
+application_completed_hi
+application_completed_kn
+application_completed_ml
+```
 
-Please create separate templates for each supported language.
+### Not Interested Template
 
-[<u>Supported Languages</u>](https://app.notion.com/p/Tempalates-Copy-for-Multi-language-395b8ad10d1480bb9a33c40f2e00eeaf)
+```text
+not_interested_en
+not_interested_ta
+not_interested_te
+not_interested_hi
+not_interested_kn
+not_interested_ml
+```
 
-- English
-- Tamil
-- Telugu
-- Hindi
-- Kannada
-- Malayalam
+---
 
-Recommended Naming Convention
+## 7. Recommended WhatsApp Templates
 
-job\_interest\_en
+### Template 1: Job Interest
 
-job\_interest\_ta
+**Category:** Utility
 
-job\_interest\_te
+**Body:**
 
-job\_interest\_hi
-
-job\_interest\_kn
-
-job\_interest\_ml
-
-**Template 2**
-
-skill\_assessment\_en
-
-skill\_assessment\_ta
-
-skill\_assessment\_te
-
-skill\_assessment\_hi
-
-skill\_assessment\_kn
-
-skill\_assessment\_ml
-
-\
-**Template 3**
-
-application\_completed\_en
-
-application\_completed\_ta
-
-application\_completed\_te
-
-application\_completed\_hi
-
-application\_completed\_kn
-
-application\_completed\_ml
-
-\
-**Template 4**
-
-not\_interested\_en
-
-not\_interested\_ta
-
-not\_interested\_te
-
-not\_interested\_hi
-
-not\_interested\_kn
-
-not\_interested\_ml
-
-Please share the final approved template names with the Record team after Meta approval.
-
-# **4. Recommended WhatsApp Templates**
-
-## **Template 1 - Job Interest**
-
-**Category**
-
-Utility
-
-**Header**
-
-None
-
-**Body**
-
+```text
 Hi {{1}},
 
 We have a job opportunity for you.
 
 Are you currently looking for work?
 
-**Buttons**
+Reply STOP to opt out of future messages.
+```
 
-- Yes, interested
-- No, not now
+**Buttons:**
 
-**Footer**
+```text
+Yes, interested
+No, not now
+```
 
-Reply STOP to opt out
+**Variables:**
 
-**Variables**
+| Variable | Description |
+| --- | --- |
+| `{{1}}` | Candidate Name |
 
-| **Variable** | **Description** |
-| :-- | :-- |
-| {{1}} | Candidate Name |
+---
 
-## **Template 2 - Yes reply - Skill Assessment Invitation**
+### Template 2: Skill Assessment Invitation
 
-**Category**
+**Category:** Utility
 
-**Utility**
+**Body:**
 
-Body
-
+```text
 Thanks for confirming!
 
 {{1}} would like you to complete a quick skill check for the {{2}} role.
 
-It only takes about 5 - 10 minutes. Simply answer a few questions in your own words.
+It takes about 5-10 minutes. Simply answer a few questions in your own words.
 
-Tap below to begin. {{3}}\
-Thanks!
+Tap here to begin:
+{{3}}
 
-**Variables**
+Thank you!
+```
 
-| **Variable** | **Description** |
-| :-- | :-- |
-|  |  |
-| {{1}} | Company Name |
-| {{2}} | Job Role |
-| {{3}} | Assessment URL |
+**Variables:**
 
-Example URL
+| Variable | Description |
+| --- | --- |
+| `{{1}}` | Company Name |
+| `{{2}}` | Job Role |
+| `{{3}}` | Assessment URL |
 
-[<u>https://verification.userecord.io/verification?id=2357</u>](https://verification.userecord.io/verification?id=2357)
+Example URL:
 
-## **Template 3 - Not Interested**
+```text
+https://verification.userecord.io/verification?id=2357
+```
 
-**Category**
+---
 
-Utility
+### Template 3: Not Interested
 
-**Body**
+**Category:** Utility
 
-Hi ,
+**Body:**
 
-No worries, thanks for letting us know.
+```text
+No worries.
 
-We'll keep your profile in mind if a suitable opportunity comes up in the future.
+Thanks for letting us know.
+
+We'll keep your profile in mind if a suitable opportunity comes up.
 
 Wishing you all the best!
 
-**Footer**
-
 Reply STOP to opt out of future messages.
+```
 
-## **Template 4 - Assessment Completed**
+---
 
-**Category**
+### Template 4: Assessment Completed
 
-Utility
+**Category:** Utility
 
-**Body**
+**Body:**
 
-Hi {{1}},
-
-Thanks, you're all done!
+```text
+Thank you {{1}}!
 
 We've received your responses.
 
-Our recruitment team will review them and contact you if there's a next step in your application.
+If there's a next step in your application, our team will get in touch with you.
 
-We appreciate your time and wish you the very best.
+We appreciate your time and wish you all the best.
+```
 
-# **5. Best Practices**
+**Variables:**
 
-This is in case you are adding your own message in the WhatsApp template.
+| Variable | Description |
+| --- | --- |
+| `{{1}}` | Candidate Name |
 
-To improve message delivery and candidate engagement, we recommend the following.
+---
 
-- Keep messages conversational and friendly.
-- Avoid phrases such as "Profile Verification" or "Employment Verification" that resemble phishing or KYC scams.
-- Use branded messaging wherever possible.
-- Avoid exposing technical query parameters in links outside of Meta's Call-to-Action button.
-- Always include an opt-out message:
-  - Reply STOP to opt out of future messages.
-- Keep templates concise and easy to understand.
-- Use localized language for each supported region instead of direct word-for-word translations.
+## 8. Best Practices
 
-# **6. Information to Share with Record**
+To improve message delivery and candidate engagement:
 
-Once everything is ready, please share the following with the Record implementation team.
+- Keep messages short, clear, and conversational.
+- Avoid words like “profile verification” or “employment verification”.
+- Avoid long raw URLs in the message body wherever possible.
+- Use CTA buttons for links when available.
+- Always include opt-out text.
+- Use localized language instead of direct word-for-word translation.
+- Share the final approved template names with Record after Meta approval.
+
+---
+
+## 9. Final Details to Share with Record
+
+Once the setup is complete, please share:
 
 - Phone Number ID
 - Permanent Access Token
-- Webhook successfully configured
-- Callback URL verified
-- Verify Token configured
-- Approved WhatsApp Template Names (all languages)
-- Confirmation that the WhatsApp Business number is ready for integration
+- WhatsApp Business Account ID, if available
+- Confirmation that webhook is verified
+- Approved template names for all required languages
+- Confirmation that the WhatsApp Business number is registered and ready
 
-After receiving these details, the Record team will complete the platform configuration and activate WhatsApp messaging for your account.
-
-\
-\
-
-\
+After receiving these details, the Record team will complete the configuration and activate WhatsApp messaging.
