@@ -247,6 +247,12 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Meta Config",
+        "pages": [
+          "meta-x-record"
+        ]
       }
     ]
   },
