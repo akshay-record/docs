@@ -4,13 +4,7 @@ description: "Configure your Meta WhatsApp Business Account for integration with
 icon: "whatsapp"
 ---
 
-# Meta WhatsApp Business Configuration Guide
-
-This guide explains how to configure your Meta WhatsApp Business Account for integration with the Record Platform.
-
 To enable WhatsApp communication through your own WhatsApp Business Account, a few Meta configurations are required. Once these configurations are completed, the Record implementation team will connect your WhatsApp Business Account with the Record Platform.
-
----
 
 ## 1. Information Required from Your Team
 
@@ -21,8 +15,6 @@ Please share the following details after your Meta WhatsApp Business Account has
 | Phone Number ID | The Phone Number ID associated with your WhatsApp Business number. |
 | Permanent Access Token | A permanent access token generated from your Meta Business Account. |
 | WhatsApp Business Account ID | Optional, but helpful for verification and future support. |
-
----
 
 ## 2. Generating a Permanent Access Token
 
@@ -91,8 +83,6 @@ To allow the Record Platform to securely send WhatsApp messages on behalf of you
   </Step>
 </Steps>
 
----
-
 ## 3. Best Practice for Access Token Setup
 
 For improved security and easier management, we recommend creating a **dedicated System User** and a **dedicated application** exclusively for the Record Platform.
@@ -108,8 +98,6 @@ This approach provides several benefits:
 <Note>
   If you already have an existing WhatsApp application in production, you may continue using it by generating a new Permanent / No Expiration Access Token for the Record Platform.
 </Note>
-
----
 
 ## 4. Webhook Configuration
 
@@ -146,8 +134,6 @@ Please subscribe to the following events:
 - `message_template_status_update`
 
 Once completed, click **Verify and Save**.
-
----
 
 ## Steps - Meta Developer Account Configuration
 
@@ -216,8 +202,6 @@ To connect your WhatsApp Business Account with the Record Platform, complete the
   </Step>
 </Steps>
 
----
-
 ## 5. WhatsApp Message Templates
 
 Create the following templates inside your Meta WhatsApp Manager.
@@ -284,8 +268,6 @@ not_interested_ml
 <Note>
   Please share the final approved template names with the Record team after Meta approval.
 </Note>
-
----
 
 ## 6. Recommended WhatsApp Templates
 
