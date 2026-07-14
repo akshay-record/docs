@@ -255,7 +255,10 @@
         ]
       },
       {
-        "tab": "Policies and Data Security"
+        "tab": "Policies and Data Security",
+        "pages": [
+          "terms-and-conditions"
+        ]
       }
     ]
   },
