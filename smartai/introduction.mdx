@@ -138,11 +138,19 @@ class User(BaseModel):
 
 class SessionRequest(BaseModel):
     users: list[User]
+    recruiter_id: str | None = None
+    recruiter_email: str | None = None
 
 @app.post("/assessment/session")
 def create_session(body: SessionRequest):
     if not body.users:
         raise HTTPException(status_code=400, detail="No candidates provided")
+
+    if not body.recruiter_id and not body.recruiter_email:
+        raise HTTPException(
+            status_code=400,
+            detail="Provide at least one of recruiter_id or recruiter_email",
+        )
 
     users = [{"name": u.name, "email": u.email} for u in body.users]
     session = client.create_session(
@@ -225,14 +233,19 @@ client = AssessmentClient(
 
 def poll_results():
     try:
-        result = client.get_webhook_events(limit=50)
-        events = result.get("events", [])
+        has_more = True
+        while has_more:
+            result = client.get_webhook_events(limit=50)
+            events = result.get("events", [])
+            pending_count = result.get("pendingCount", 0)
 
-        for event in events:
-            save_to_database(event)
+            for event in events:
+                save_to_database(event)
 
-        if events:
-            client.acknowledge_webhook_events([e["eventId"] for e in events])
+            if events:
+                client.acknowledge_webhook_events([e["eventId"] for e in events])
+
+            has_more = pending_count > 0
     except Exception as err:
         print(f"Poll failed: {err}")
 
