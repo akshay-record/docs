@@ -139,6 +139,7 @@ pollResults();
 ```
 
 ```python Scheduled poller (Python)
+import os
 import time
 from smartai_assessment_backend import AssessmentClient
 
@@ -149,14 +150,19 @@ client = AssessmentClient(
 
 def poll_results():
     try:
-        result = client.get_webhook_events(limit=50)
-        events = result.get("events", [])
+        has_more = True
+        while has_more:
+            result = client.get_webhook_events(limit=50)
+            events = result.get("events", [])
+            pending_count = result.get("pendingCount", 0)
 
-        for event in events:
-            save_to_database(event)
+            for event in events:
+                save_to_database(event)
 
-        if events:
-            client.acknowledge_webhook_events([e["eventId"] for e in events])
+            if events:
+                client.acknowledge_webhook_events([e["eventId"] for e in events])
+
+            has_more = pending_count > 0
     except Exception as err:
         print(f"Poll failed: {err}")
 
