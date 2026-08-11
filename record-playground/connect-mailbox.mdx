@@ -1,0 +1,147 @@
+---
+title: "How to Connect Mailbox"
+description: "Send campaign emails from an org's own address via SMTP, instead of Record's shared sender."
+---
+
+By default, candidate emails send from Record's shared AWS SES sender. An org can instead connect their own mailbox — campaign emails then send from their own address via SMTP, with automatic fallback to Record's sender if that mailbox ever fails.
+
+## Endpoints
+
+All under `/api/v1/settings/mailbox`, JWT-authenticated, restricted to org owner/admin/superadmin. `orgId` passed as a query param.
+
+```
+GET    /settings/mailbox            -> current config, or null (password never returned)
+GET    /settings/mailbox/suggest    -> { host, port } guessed from the email's domain
+POST   /settings/mailbox            -> verify + create (409 if one already exists)
+PATCH  /settings/mailbox            -> re-verify + update (blank password = keep existing)
+POST   /settings/mailbox/test       -> re-verify AND send a real test email to the mailbox itself
+DELETE /settings/mailbox            -> disconnect
+```
+
+## Connect flow
+
+1. Sender name, from-email, and password (or app password) entered in the UI
+2. On blur of the email field, `GET /suggest` looks up the domain's MX records (or a known-provider table) and pre-fills SMTP host/port — never an IMAP port like 993
+3. On submit, the backend opens a real SMTP connection with `nodemailer` and calls `verify()` — a genuine handshake and login, 15s timeout, nothing sent
+4. On success: password encrypted with AES-256-GCM, saved to Mongo (`status: "connected"`)
+5. On failure: the raw SMTP error is mapped to a plain-English message (below) and returned as a `400`
+
+## Error mapping
+
+| SMTP condition | Message shown |
+|---|---|
+| `535`, Microsoft host, or response mentions "basic authentication is disabled" | Microsoft has permanently disabled password-based sign-in for sending email on this account. No password will work here. |
+| `535`, Gmail host | Google rejected this password. If 2-Step Verification is on, generate an App Password and use that instead. |
+| `535`, Zoho host | Zoho rejected this password. Check that SMTP access is enabled for this account, and use an app-specific password if 2FA is on. |
+| `EAUTH` + `534` / response mentions "app password" | Your provider requires an app password. Regular passwords won't work here. |
+| `EAUTH`, anything else | That password wasn't accepted. Try an app password instead. |
+| `ECONNREFUSED` / `ETIMEDOUT` / `ENOTFOUND` | We couldn't reach that mail server. Check the SMTP host and port. |
+| `ESOCKET` / TLS mismatch | The server rejected the secure connection. Try port 587 instead of 465. |
+| `550` / relay denied | Your provider won't let this account send from that address. |
+
+## Provider notes
+
+The most common failure isn't a bug in the flow above — it's a provider that rejects the account's regular login password over SMTP outright, regardless of whether it's typed correctly. Every mainstream provider except Microsoft has a fix (an app-specific password); Microsoft has none.
+
+### Gmail / Google Workspace
+
+Google stopped accepting a regular account password for SMTP in 2022. Any attempt with the normal login password returns `535-5.7.8 ... BadCredentials` — that message fires the same way whether the password is right or wrong.
+
+<Steps>
+  <Step title="Turn on 2-Step Verification">
+    Sign in as the account you want to connect, go to [myaccount.google.com/security](https://myaccount.google.com/security), and turn on **2-Step Verification** under "How you sign in to Google." You'll need a phone number or an authenticator app — App Passwords do not exist until this is on.
+  </Step>
+  <Step title="Open App Passwords">
+    Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords).
+
+    If instead you see *"The setting you are looking for is not available for your account"* — this is a **Google Workspace (school/company-managed) account**, and an org admin has disabled App Passwords entirely. No amount of 2-Step Verification on your end unlocks it; you need the Workspace admin to enable App Passwords, or use a different, personal mailbox instead.
+  </Step>
+  <Step title="Generate the password">
+    Name it (e.g. "Record") and create it. Google shows a 16-character code in four groups of four letters — copy it, spaces can be included or omitted.
+  </Step>
+  <Step title="Use it in Record">
+    Paste that 16-character code into the **Password** field — not the Google account login password. Leave SMTP host/port as the auto-filled `smtp.gmail.com` / `465` and click Connect.
+  </Step>
+</Steps>
+
+### Zoho Mail
+
+Confirmed against a live custom domain account. Two-factor authentication must already be turned on — Zoho won't offer app passwords otherwise.
+
+<Steps>
+  <Step title="Sign in to Zoho Accounts">
+    Go to [accounts.zoho.com](https://accounts.zoho.com) and sign in with the mailbox you're connecting — it routes to the correct regional data center (e.g. India) automatically.
+  </Step>
+  <Step title="Open App Passwords">
+    In the left sidebar, click **Security**, then find **App Passwords** (sometimes labeled "Application-Specific Passwords").
+
+    If it doesn't appear at all even with 2FA on: this is a custom-domain/organization account, and a Zoho org admin may have the option disabled. Check the [Zoho Mail Admin Console](https://mailadmin.zoho.com) for that policy.
+  </Step>
+  <Step title="Generate the password">
+    Click **Generate New Password**, name it (e.g. "Record Mailbox"), and confirm. Zoho shows the generated password once — copy it immediately, it can't be viewed again afterward (only regenerated).
+  </Step>
+  <Step title="Use it in Record">
+    Paste it into the **Password** field — not the regular Zoho login password. SMTP host is `smtppro.zoho.<region>` (e.g. `smtppro.zoho.in`) — check the account's own Mail Accounts settings page for the exact value rather than assuming; reaching the AUTH step on a guessed host is not proof that host is correct. Port `465`, click Connect.
+  </Step>
+</Steps>
+
+<Note>
+Separately from app passwords: SMTP access can also be switched off per-account or per-org in the [Zoho Mail Admin Console](https://mailadmin.zoho.com) (Mail Settings → POP/IMAP/SMTP access policy). A persistent `535` with a password that's definitely correct usually means this toggle, not the credentials.
+</Note>
+
+### Yahoo Mail
+
+Not yet tested against a live account in this project, but Yahoo follows the same app-password pattern as Gmail and Zoho.
+
+<Steps>
+  <Step title="Sign in and open Account Security">
+    Go to [login.yahoo.com](https://login.yahoo.com), then Account Info → **Account Security**.
+  </Step>
+  <Step title="Turn on Two-step verification">
+    Same hard prerequisite as Gmail/Zoho — required before app passwords are offered.
+  </Step>
+  <Step title="Generate an app password">
+    Scroll to the app password section, choose **Generate and manage app passwords**, pick "Other App," label it (e.g. "Record"), and generate.
+  </Step>
+  <Step title="Use it in Record">
+    Paste the generated password into the **Password** field — not the regular Yahoo login password. SMTP host `smtp.mail.yahoo.com`, port `465`, click Connect.
+  </Step>
+</Steps>
+
+### Outlook / Microsoft 365 / Hotmail / Live — no fix exists
+
+<Warning>
+Microsoft retired password-based SMTP entirely, for personal and business accounts alike (final cutover April 2026). No app password and no admin setting brings it back — it fires the same `535 5.7.139 ... basic authentication is disabled` whether the domain is custom or default, and whether or not the plan includes Teams. The only real path is [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/user-sendmail) sending via an [Azure AD app registration](https://portal.azure.com) with `Mail.Send` permission, admin-consented on the tenant — a separate integration, not yet built.
+</Warning>
+
+## Host auto-suggestion
+
+`GET /suggest` resolves MX records to detect the actual mail platform behind a custom domain — the SMTP host is the *provider's* server, not derivable from the domain itself.
+
+| Provider | MX signature | Suggested host |
+|---|---|---|
+| Google Workspace | `*.google.com` | `smtp.gmail.com` |
+| Microsoft 365 | `*.outlook.com` | `smtp.office365.com` |
+| Zoho (region-aware) | `mx*.zoho.<region>` | `smtppro.zoho.<region>` |
+| Hostinger | `*.hostinger.com` | `smtp.hostinger.com` |
+| Titan Email (Hostinger's paid upgrade, plus HostGator, Bluehost, Register.com, ...) | `*.titan.email` | `smtp.titan.email` |
+| GoDaddy Workspace Email | `*.secureserver.net` | `smtpout.secureserver.net` |
+| Namecheap Private Email | `*.privateemail.com` | `mail.privateemail.com` |
+| Unrecognized (self-hosted / cPanel) | — | `mail.<domain>` (cPanel's documented default) |
+
+<Note>
+Zoho's suggested host tracks the actual data-center region from the MX record (`.in`, `.eu`, `.com`, ...) — defaulting every custom domain to `.com` is wrong for accounts provisioned elsewhere, and is exactly the kind of mismatch that produces a confusing auth rejection.
+</Note>
+
+## Send-time behavior
+
+Every campaign email calls `emailService.sendEmail({ orgId, ... })`:
+
+- No connected mailbox → sends via AWS SES (Record's default), unchanged from before this feature existed
+- Connected mailbox → sends via a pooled `nodemailer` transporter for that org (reused across sends, not reconnected per email — avoids provider rate limits)
+- Send fails on an auth error (535/534) → mailbox flipped to `status: "failing"`, and this send falls back to SES so the candidate still receives it
+- A `failing` mailbox shows an amber badge in Settings until reconnected (Edit Configuration, or Send test email)
+
+## Credential storage
+
+The password is never stored in plaintext. AES-256-GCM, key from `MAILBOX_CREDENTIALS_ENC_KEY` (server env only — never alongside the ciphertext in the database). Decrypted in memory only when actually needed (verify, send, edit-reuse). No API response — including the org's own `GET /settings/mailbox` — ever returns it.

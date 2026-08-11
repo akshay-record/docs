@@ -116,7 +116,7 @@ webhook:index:{keyId}              ← sorted set of all eventIds for this API k
 | `webhook:events:{keyId}:{eventId}` | String | Full JSON of the event | **30 days** |
 | `webhook:index:{keyId}` | Sorted Set | All pending `eventId`s, scored by Unix ms timestamp | **30 days** |
 
-**`keyId`** = your API key's internal ID (from `ApiKeyModel` — not the `wc_test_xxx` value itself, but the `keyId` field on the key document).
+**`keyId`** = your API key's internal ID (from `ApiKeyModel` — not the `VFN_TEST_xxx` value itself, but the `keyId` field on the key document).
 
 **`eventId`** = a `randomUUID()` generated at store time.
 

@@ -17,8 +17,8 @@ Every SmartAI Assessment account has two keys:
 </Warning>
 
 ```bash
-ASSESSMENT_API_KEY=wc_ak_test_abc123
-ASSESSMENT_SECRET_KEY=wc_sk_test_9e345f2b48dd318d301a2bdd...
+ASSESSMENT_API_KEY=VFN_TEST_24D67D244DC03E7691654336913EF84B
+ASSESSMENT_SECRET_KEY=VFN_SK_TEST_2BA620C5C940D87AF80700B4EE85B4621F516BE8C4F89563
 ```
 
 ### Live vs test environments
@@ -27,8 +27,8 @@ The API key prefix determines which environment you're in:
 
 | Prefix | Environment | Notes |
 |---|---|---|
-| `wc_ak_test_` | Test / staging | No real emails sent, safe to experiment |
-| Anything else | Live / production | Real candidate emails, full proctoring |
+| `VFN_TEST_` | Test / staging | No real emails sent, safe to experiment |
+| `VFN_LIVE_` | Live / production | Real candidate emails, full proctoring |
 
 ---
 
@@ -54,7 +54,7 @@ Rules:
 ### Headers sent on every request
 
 ```
-x-api-key:   wc_test_abc123
+x-api-key:   VFN_TEST_24D67D244DC03E7691654336913EF84B
 x-signature: <hmac-sha256-hex-digest>
 x-timestamp: 1717200000000
 ```

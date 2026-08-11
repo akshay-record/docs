@@ -53,12 +53,12 @@ YOUR APPLICATION
 
 Log into the SmartAI dashboard and copy your **API key** and **Secret key**.
 
-- Prefix `wc_ak_test_` → **test / staging** environment
-- Any other prefix → **live / production** environment
+- Prefix `VFN_TEST_` → **test / staging** environment
+- Prefix `VFN_LIVE_` → **live / production** environment
 
 ```bash
-ASSESSMENT_API_KEY=wc_ak_test_your_key_here
-ASSESSMENT_SECRET_KEY=wc_sk_test_your_secret_here
+ASSESSMENT_API_KEY=VFN_TEST_your_key_here
+ASSESSMENT_SECRET_KEY=VFN_SK_TEST_your_secret_here
 ```
 
 ---
@@ -170,7 +170,7 @@ def create_session(body: SessionRequest):
 Add `NEXT_PUBLIC_ASSESSMENT_API_KEY` to your frontend `.env.local`:
 
 ```bash
-NEXT_PUBLIC_ASSESSMENT_API_KEY=wc_ak_test_your_key_here
+NEXT_PUBLIC_ASSESSMENT_API_KEY=VFN_TEST_your_key_here
 ```
 
 Then in your component, call your backend first to get the token, then open the portal:

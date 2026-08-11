@@ -1,0 +1,218 @@
+info port 3000 is already in use. trying 3001 instead
+[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+⠋ preparing local preview...
+[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+⠙ preparing local preview...
+[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+⠹ preparing local preview...
+[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+⠸ preparing local preview...
+[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+⠼ preparing local preview...
+[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+⠴ preparing local preview...
+[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+⠦ preparing local preview...
+[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+⠧ preparing local preview...
+[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+⠇ preparing local preview...
+[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+⠏ preparing local preview...
+[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+⠋ preparing local preview...
+[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+⠙ preparing local preview...
+[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+⠹ preparing local preview...
+[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+⠸ preparing local preview...
+[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+✓ preview ready
+
+  local   → http://localhost:3002
+  network → http://192.168.1.22:3002
+
+press ctrl+c to exit the preview
+
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G
+info port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+✓ preview ready
+
+  local   → http://localhost:3002
+  network → http://192.168.1.22:3002
+
+press ctrl+c to exit the preview
+
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+✓ preview ready
+
+  local   → http://localhost:3002
+  network → http://192.168.1.22:3002
+
+press ctrl+c to exit the preview
+
+± changes
+deleted record-studio\introduction.mdx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[Error: ENOENT: no such file or directory, open 'C:\Users\HP\Record_Files\docs\record-studio\introduction.mdx'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\HP\\Record_Files\\docs\\record-studio\\introduction.mdx'
+}
+info port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+✓ preview ready
+
+  local   → http://localhost:3002
+  network → http://192.168.1.22:3002
+
+press ctrl+c to exit the preview
+
+± changes
+deleted record-studio\introduction.mdx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+✓ preview ready
+
+  local   → http://localhost:3002
+  network → http://192.168.1.22:3002
+
+press ctrl+c to exit the preview
+
+± changes
+deleted record-studio\introduction.mdx
+info processed docs.json in 18.72s (docsConfig)
+edited docs.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+✓ preview ready
+
+  local   → http://localhost:3002
+  network → http://192.168.1.22:3002
+
+press ctrl+c to exit the preview
+
+± changes
+deleted record-studio\introduction.mdx
+info processed docs.json in 18.72s (docsConfig)
+edited docs.json
+info processed record-studio\connect-mailbox.mdx in 1.51s (page)
+edited record-studio\connect-mailbox.mdx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+✓ preview ready
+
+  local   → http://localhost:3002
+  network → http://192.168.1.22:3002
+
+press ctrl+c to exit the preview
+
+± changes
+deleted record-studio\introduction.mdx
+info processed docs.json in 18.72s (docsConfig)
+edited docs.json
+info processed record-studio\connect-mailbox.mdx in 1.51s (page)
+edited record-studio\connect-mailbox.mdx
+info processed record-studio\connect-mailbox.mdx in 2.18s (page)
+edited record-studio\connect-mailbox.mdx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+✓ preview ready
+
+  local   → http://localhost:3002
+  network → http://192.168.1.22:3002
+
+press ctrl+c to exit the preview
+
+± changes
+deleted record-studio\introduction.mdx
+info processed docs.json in 18.72s (docsConfig)
+edited docs.json
+info processed record-studio\connect-mailbox.mdx in 1.51s (page)
+edited record-studio\connect-mailbox.mdx
+info processed record-studio\connect-mailbox.mdx in 2.18s (page)
+edited record-studio\connect-mailbox.mdx
+deleted record-studio\connect-mailbox.mdx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+✓ preview ready
+
+  local   → http://localhost:3002
+  network → http://192.168.1.22:3002
+
+press ctrl+c to exit the preview
+
+± changes
+deleted record-studio\introduction.mdx
+info processed docs.json in 18.72s (docsConfig)
+edited docs.json
+info processed record-studio\connect-mailbox.mdx in 1.51s (page)
+edited record-studio\connect-mailbox.mdx
+info processed record-studio\connect-mailbox.mdx in 2.18s (page)
+edited record-studio\connect-mailbox.mdx
+deleted record-studio\connect-mailbox.mdx
+added record-playground\connect-mailbox.mdx
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+✓ preview ready
+
+  local   → http://localhost:3002
+  network → http://192.168.1.22:3002
+
+press ctrl+c to exit the preview
+
+± changes
+deleted record-studio\introduction.mdx
+info processed docs.json in 18.72s (docsConfig)
+edited docs.json
+info processed record-studio\connect-mailbox.mdx in 1.51s (page)
+edited record-studio\connect-mailbox.mdx
+info processed record-studio\connect-mailbox.mdx in 2.18s (page)
+edited record-studio\connect-mailbox.mdx
+deleted record-studio\connect-mailbox.mdx
+added record-playground\connect-mailbox.mdx
+info processed docs.json in 10.45s (docsConfig)
+edited docs.json
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[Ginfo port 3000 is already in use. trying 3001 instead
+info port 3001 is already in use. trying 3002 instead
+✓ preview ready
+
+  local   → http://localhost:3002
+  network → http://192.168.1.22:3002
+
+press ctrl+c to exit the preview
+
+± changes
+deleted record-studio\introduction.mdx
+info processed docs.json in 18.72s (docsConfig)
+edited docs.json
+info processed record-studio\connect-mailbox.mdx in 1.51s (page)
+edited record-studio\connect-mailbox.mdx
+info processed record-studio\connect-mailbox.mdx in 2.18s (page)
+edited record-studio\connect-mailbox.mdx
+deleted record-studio\connect-mailbox.mdx
+added record-playground\connect-mailbox.mdx
+info processed docs.json in 10.45s (docsConfig)
+edited docs.json
+info processed record-playground\connect-mailbox.mdx in 6.23s (page)
+edited record-playground\connect-mailbox.mdx

@@ -64,7 +64,11 @@
           },
           {
             "group": "Support",
-            "pages": ["guides/sandbox", "guides/faq"]
+            "pages": [
+              "guides/sandbox",
+              "guides/faq",
+              "record-playground/connect-mailbox"
+            ]
           },
           {
             "group": "Legals",
