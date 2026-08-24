@@ -15,18 +15,7 @@
   },
   "navigation": {
     "global": {
-      "anchors": [
-        {
-          "anchor": "Swagger UI",
-          "icon": "brackets-curly",
-          "href": "https://api.example.com/api-docs"
-        },
-        {
-          "anchor": "GitHub",
-          "icon": "github",
-          "href": "https://github.com/your-org/skills-api"
-        }
-      ]
+      "anchors": []
     },
     "tabs": [
       {
