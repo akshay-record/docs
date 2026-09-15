@@ -17,9 +17,9 @@
     "global": {
       "anchors": []
     },
-    "versions": [
+    "tabs": [
       {
-        "version": "Guides",
+        "tab": "Guides",
         "groups": [
           {
             "group": "Overview",
@@ -72,7 +72,7 @@
         ]
       },
       {
-        "version": "Skills Verification",
+        "tab": "Skills Verification",
         "groups": [
           {
             "group": "Overview",
@@ -168,7 +168,7 @@
         ]
       },
       {
-        "version": "Skills Issuance",
+        "tab": "Skills Issuance",
         "groups": [
           {
             "group": "Issuance API",
@@ -184,7 +184,7 @@
         ]
       },
       {
-        "version": "SmartAI Assessment SDK",
+        "tab": "SmartAI Assessment SDK",
         "groups": [
           {
             "group": "Getting Started",
@@ -228,7 +228,7 @@
         ]
       },
       {
-        "version": "WhiteCollar Assessments",
+        "tab": "WhiteCollar Assessments",
         "hidden": true,
         "groups": [
           {
@@ -258,13 +258,13 @@
         ]
       },
       {
-        "version": "Meta Config",
+        "tab": "Meta Config",
         "pages": [
           "meta-x-record"
         ]
       },
       {
-        "version": "Policies and Data Security",
+        "tab": "Policies and Data Security",
         "pages": [
           "terms-and-conditions",
           "privacy",
@@ -272,7 +272,7 @@
         ]
       },
       {
-        "version": "Changelog",
+        "tab": "Changelog",
         "pages": [
           "changelog"
         ]
