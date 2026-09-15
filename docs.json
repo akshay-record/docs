@@ -17,9 +17,9 @@
     "global": {
       "anchors": []
     },
-    "tabs": [
+    "versions": [
       {
-        "tab": "Guides",
+        "version": "Guides",
         "groups": [
           {
             "group": "Overview",
@@ -49,7 +49,10 @@
           },
           {
             "group": "Advanced",
-            "pages": ["guides/edge-cases", "guides/touchpoints"]
+            "pages": [
+              "guides/edge-cases",
+              "guides/touchpoints"
+            ]
           },
           {
             "group": "Support",
@@ -61,20 +64,27 @@
           },
           {
             "group": "Legals",
-            "pages": ["guides/terms-of-service", "guides/privacy-policy"]
+            "pages": [
+              "guides/terms-of-service",
+              "guides/privacy-policy"
+            ]
           }
         ]
       },
       {
-        "tab": "Skills Verification",
+        "version": "Skills Verification",
         "groups": [
           {
             "group": "Overview",
-            "pages": ["api-reference/introduction"]
+            "pages": [
+              "api-reference/introduction"
+            ]
           },
           {
             "group": "Skills",
-            "pages": ["api-reference/endpoint/search"]
+            "pages": [
+              "api-reference/endpoint/search"
+            ]
           },
           {
             "group": "Selected Skills",
@@ -86,7 +96,9 @@
           },
           {
             "group": "Admin",
-            "pages": ["api-reference/endpoint/counts"]
+            "pages": [
+              "api-reference/endpoint/counts"
+            ]
           },
           {
             "group": "Skill Verification",
@@ -105,7 +117,9 @@
           },
           {
             "group": "Step 2 — Verification Method",
-            "pages": ["api-reference/verification/step2-method"]
+            "pages": [
+              "api-reference/verification/step2-method"
+            ]
           },
           {
             "group": "Step 3 — Source Items",
@@ -147,12 +161,14 @@
           },
           {
             "group": "Metadata",
-            "pages": ["api-reference/verification/metadata-user-skills"]
+            "pages": [
+              "api-reference/verification/metadata-user-skills"
+            ]
           }
         ]
       },
       {
-        "tab": "Skills Issuance",
+        "version": "Skills Issuance",
         "groups": [
           {
             "group": "Issuance API",
@@ -168,7 +184,7 @@
         ]
       },
       {
-        "tab": "SmartAI Assessment SDK",
+        "version": "SmartAI Assessment SDK",
         "groups": [
           {
             "group": "Getting Started",
@@ -212,7 +228,7 @@
         ]
       },
       {
-        "tab": "WhiteCollar Assessments",
+        "version": "WhiteCollar Assessments",
         "hidden": true,
         "groups": [
           {
@@ -242,17 +258,23 @@
         ]
       },
       {
-        "tab": "Meta Config",
+        "version": "Meta Config",
         "pages": [
           "meta-x-record"
         ]
       },
       {
-        "tab": "Policies and Data Security",
+        "version": "Policies and Data Security",
         "pages": [
           "terms-and-conditions",
           "privacy",
           "cookie-policy"
+        ]
+      },
+      {
+        "version": "Changelog",
+        "pages": [
+          "changelog"
         ]
       }
     ]
