@@ -1,0 +1,1350 @@
+---
+title: "Job mandates"
+description: "Step 2. The job Record verifies candidates against: skills, screening questions and checks."
+---
+
+A mandate is the job Record checks candidates against: its skills, screening questions and checks. Record writes the questions in the background.
+
+| Needs | You get | Scope |
+|---|---|---|
+| `workflow_id` from [step 1](/partner-api/guides/workflows) | `mandate_id`, then wait for `status: ready` | `mandates:write` to change, `mandates:read` to read |
+
+Before you create one, pick its [skills](/partner-api/guides/skills) and, if you want, its [place, employment type and shift](/partner-api/guides/lookups).
+
+## Rules the server checks
+
+- 5–10 skills (max 10). Fewer than 5 is accepted with a warning.
+- At most 3 skills with `verify: true`, and only skills that are `verifiable`.
+- At most 5 screening questions, of type `yes_no` or `voice`. The schema also lists `single_choice`, `number`, `short_text` and `options`; they are not supported yet and answer `400 VALIDATION_FAILED`.
+- If `skill_verification` is on, you need at least 1 verified skill.
+- If `data_enrichment` is on, you need at least 1 question.
+- The job is in India (`location`) **or** abroad (`location_type: "abroad"` + 1–10 `countries`), never both.
+- Experience is whole years, 0–50.
+
+## Preparing and ready
+
+A new mandate answers `202 Accepted` with `status: "preparing"` while Record writes the skill questions:
+
+```text
+preparing  →  ready      (or failed)
+```
+
+Repeat `GET /mandates/{mandate_id}` until `status` is `ready`. A campaign created while the mandate is still preparing waits and goes out by itself once it is ready. Each change makes a new `flow_version`.
+
+## After it is created: what can you change?
+
+| Part of the mandate | Replace it? | How |
+|---|---|---|
+| Whole mandate | Yes | `PUT /mandates/{mandate_id}` with the full body. |
+| Skills | Yes | `PUT …/skills` |
+| Screening questions | Yes | `PUT …/questions` or `PUT …/enrichment-questions` (1–5, your own text) |
+| Which checks run | Yes | `PUT …/methods` |
+| Skill questions (the 3 Record writes) | Regenerate only | `PUT …/questions` with `skill_questions.regenerate`: all 3 or chosen slots. Record writes the new text; you cannot supply or edit it. Changing which skills have `verify: true` also regenerates them. Read them with `GET …/questions`. |
+| Interest questions | No | A fixed prompt per language ("Apart from the job, what other work have you done?"). You can only switch it on or off by adding or removing `interest_collection` in `methods`. |
+
+Any change is refused with `409 CONFLICT` while the mandate is `preparing` (wait for `Retry-After`), and a mandate takes at most 10 changes an hour. Only mandates created through the API can be changed; playground mandates answer `403 FORBIDDEN`.
+
+## Close the job
+
+Archive the mandate when the job is filled: no new campaigns start, running ones finish, and results stay readable. `DELETE` does the same. Nothing is erased.
+
+## Endpoints
+
+### Create a job mandate
+
+`POST /mandates`
+
+Create the job Record verifies candidates against. Returns `mandate_id`; questions are prepared in the background.
+
+**Scope:** `mandates:write` · **Idempotency-Key:** required
+
+| Field | Type | Description |
+|---|---|---|
+| `workflow_id` | `string` | **Required.** From step 1. |
+| `title`, `company_name` | `string` | **Required.** Plain text, up to 200 characters. |
+| `skills` | `array<object>` | **Required.** `{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). 5–10 recommended, max 10; max 3 with `verify: true`. |
+| `methods` | `array<string>` | Which checks run. Leave out to use the workflow’s `default_methods`. |
+| `enrichment_questions` | `array<object>` | 1–5 items `{ key, type: yes_no \| voice, text, knockout: yes \| no, required }`. Needed when `data_enrichment` is on. |
+| `job_id` | `string` | Your own job id. If you send it, it must not be in use. |
+| `location_type` | `string` | `india` (default) or `abroad`. Same as the playground’s Abroad option. |
+| `location` | `object` | A place in India: `{ city, state?, pincode? }` (find it with `GET /locations`). Not allowed when `location_type` is `abroad`. |
+| `countries` | `array<string>` | **With `abroad`.** Needed when `location_type` is `abroad`: 1–10 different ISO 3166-1 alpha-2 codes such as `SG` (list them with `GET /countries`; lower case is accepted and stored upper case). India (`IN`) cannot be picked. Not allowed for an India job. |
+| `experience` | `object` | `{ min_years, max_years }`, whole years 0–50, `max_years` at least `min_years`. Send both. Leave it out to clear it on a replace. |
+| `employment_type`, `shift` | `string` | Pick from `GET /employment-types` (Full-time, Part-time, Contract, …) and `GET /shifts` (Day shift, Night shift, Rotational, General). Other text up to 100 characters is kept as sent. |
+| `openings`, `salary`, `description`, `owner` | `integer`, `object`, `string` | Job details. `description` up to 1,500 characters. |
+| `interest_collection` | `object` | `other_roles` is only saved and returned. It does not change what candidates are asked: the interest prompt is fixed, and `methods` switches it on or off. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("POST", "/api/v1/partner/mandates", {
+  "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+  "title": "Warehouse Associate (Forklift)",
+  "company_name": "Acme Logistics Pvt Ltd",
+  "location_type": "india",
+  "location": { "city": "Chennai", "state": "Tamil Nadu", "pincode": "600001" },
+  "experience": { "min_years": 1, "max_years": 5 },
+  "openings": 12,
+  "salary": { "min": 18000, "max": 24000, "currency": "INR", "period": "month" },
+  "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
+  "shift": "Day shift",
+  "employment_type": "Full-time",
+  "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
+  "methods": ["data_enrichment", "skill_verification", "interest_collection"],
+  "skills": [
+    { "skill_id": "sk_36440", "verify": true },
+    { "skill_id": "sk_38973", "verify": true },
+    { "skill_id": "sk_38824", "verify": true },
+    { "skill_id": "sk_2338" },
+    { "skill_id": "sk_2452" },
+    { "name": "Reach Truck Operation", "pending": true }
+  ],
+  "enrichment_questions": [
+    {
+      "key": "has_licence",
+      "type": "yes_no",
+      "text": "Do you hold a valid forklift licence?",
+      "knockout": "no",
+      "required": true
+    },
+    {
+      "key": "why_this_job",
+      "type": "voice",
+      "text": "Tell us in your own words why you want this job.",
+      "required": false
+    }
+  ],
+  "interest_collection": {
+    "other_roles": ["Forklift Operator", "Store Keeper"]
+  }
+});
+const { data } = await res.json();
+```
+
+```python Python
+res = call("POST", "/api/v1/partner/mandates", {
+    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+    "title": "Warehouse Associate (Forklift)",
+    "company_name": "Acme Logistics Pvt Ltd",
+    "location_type": "india",
+    "location": {"city": "Chennai", "state": "Tamil Nadu", "pincode": "600001"},
+    "experience": {"min_years": 1, "max_years": 5},
+    "openings": 12,
+    "salary": {"min": 18000, "max": 24000, "currency": "INR", "period": "month"},
+    "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
+    "shift": "Day shift",
+    "employment_type": "Full-time",
+    "owner": {"external_user_id": "recruiter_1042", "name": "Priya Nair"},
+    "methods": ["data_enrichment", "skill_verification", "interest_collection"],
+    "skills": [
+        {"skill_id": "sk_36440", "verify": True},
+        {"skill_id": "sk_38973", "verify": True},
+        {"skill_id": "sk_38824", "verify": True},
+        {"skill_id": "sk_2338"},
+        {"skill_id": "sk_2452"},
+        {"name": "Reach Truck Operation", "pending": True}
+    ],
+    "enrichment_questions": [
+        {
+            "key": "has_licence",
+            "type": "yes_no",
+            "text": "Do you hold a valid forklift licence?",
+            "knockout": "no",
+            "required": True
+        },
+        {
+            "key": "why_this_job",
+            "type": "voice",
+            "text": "Tell us in your own words why you want this job.",
+            "required": False
+        }
+    ],
+    "interest_collection": {
+        "other_roles": ["Forklift Operator", "Store Keeper"]
+    }
+})
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall POST "/api/v1/partner/mandates" '{
+  "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+  "title": "Warehouse Associate (Forklift)",
+  "company_name": "Acme Logistics Pvt Ltd",
+  "location_type": "india",
+  "location": { "city": "Chennai", "state": "Tamil Nadu", "pincode": "600001" },
+  "experience": { "min_years": 1, "max_years": 5 },
+  "openings": 12,
+  "salary": { "min": 18000, "max": 24000, "currency": "INR", "period": "month" },
+  "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
+  "shift": "Day shift",
+  "employment_type": "Full-time",
+  "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
+  "methods": ["data_enrichment", "skill_verification", "interest_collection"],
+  "skills": [
+    { "skill_id": "sk_36440", "verify": true },
+    { "skill_id": "sk_38973", "verify": true },
+    { "skill_id": "sk_38824", "verify": true },
+    { "skill_id": "sk_2338" },
+    { "skill_id": "sk_2452" },
+    { "name": "Reach Truck Operation", "pending": true }
+  ],
+  "enrichment_questions": [
+    {
+      "key": "has_licence",
+      "type": "yes_no",
+      "text": "Do you hold a valid forklift licence?",
+      "knockout": "no",
+      "required": true
+    },
+    {
+      "key": "why_this_job",
+      "type": "voice",
+      "text": "Tell us in your own words why you want this job.",
+      "required": false
+    }
+  ],
+  "interest_collection": {
+    "other_roles": ["Forklift Operator", "Store Keeper"]
+  }
+}'
+```
+
+```json 202 Response
+{
+  "success": true,
+  "data": {
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": null,
+    "status": "preparing",
+    "flow_version": 1,
+    "methods": ["data_enrichment", "skill_verification", "interest_collection"],
+    "changed": true,
+    "warnings": []
+  }
+}
+```
+
+</CodeGroup>
+
+Save `data.mandate_id` for the next step.
+
+| Error | When |
+|---|---|
+| 400 `VALIDATION_FAILED` | Unknown skill, `verify` on a skill that cannot be verified, repeated skill / question key, a check without its data, `abroad` without `countries` (or with `location`), `countries` on an India job, an unknown or non-selectable country code, or experience above 50 years. |
+| 422 `LIMIT_EXCEEDED` | More than 10 skills, 3 verified skills or 5 questions. |
+| 404 `NOT_FOUND` | `workflow_id` not found. |
+| 403 `FORBIDDEN` | That workflow was made in the playground. |
+| 409 `CONFLICT` | Workflow is archived, or `job_id` is already used. |
+
+Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/create-a-job-mandate)
+
+---
+
+### Get a job mandate
+
+`GET /mandates/{mandate_id}`
+
+Read the mandate. Repeat until `status` is `ready` (questions prepared) before expecting candidates to be contacted. `location_type` says where the job is: for `india`, `location` holds the place; for `abroad`, `countries` lists `{ code, name }` and `location` is null. `location_names` is every place or country name as the playground shows it.
+
+**Scope:** `mandates:read` or `mandates:write` · **Idempotency-Key:** not used
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+    "status": "preparing",
+    "flow_version": 1,
+    "methods": ["data_enrichment", "skill_verification", "interest_collection"],
+    "title": "Warehouse Associate (Forklift)",
+    "company_name": "Acme Logistics Pvt Ltd",
+    "location_type": "india",
+    "location": { "city": "Chennai", "state": "Tamil Nadu", "pincode": "600001" },
+    "countries": [],
+    "location_names": ["Chennai, Tamil Nadu"],
+    "experience": { "min_years": 1, "max_years": 5 },
+    "openings": 12,
+    "salary": { "min": 18000, "max": 24000, "currency": "INR", "period": "month" },
+    "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
+    "shift": "Day shift",
+    "employment_type": "Full-time",
+    "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
+    "skills": [
+      {
+        "skill_id": "sk_36440",
+        "name": "Forklift Basic Operation",
+        "verify": true,
+        "status": "active"
+      },
+      {
+        "skill_id": "sk_38973",
+        "name": "Pallet Jack Safety Check",
+        "verify": true,
+        "status": "active"
+      },
+      {
+        "skill_id": "sk_38824",
+        "name": "Packing Station Setup",
+        "verify": true,
+        "status": "active"
+      },
+      {
+        "skill_id": "sk_2338",
+        "name": "Order Picking",
+        "verify": false,
+        "status": "active"
+      },
+      {
+        "skill_id": "sk_2452",
+        "name": "Loading And Unloading",
+        "verify": false,
+        "status": "active"
+      },
+      {
+        "skill_id": null,
+        "name": "Reach Truck Operation",
+        "verify": false,
+        "status": "pending"
+      }
+    ],
+    "enrichment_questions": [
+      {
+        "key": "has_licence",
+        "type": "yes_no",
+        "text": "Do you hold a valid forklift licence?",
+        "knockout": "no",
+        "required": true
+      },
+      {
+        "key": "why_this_job",
+        "type": "voice",
+        "text": "Tell us in your own words why you want this job.",
+        "knockout": null,
+        "required": false
+      }
+    ],
+    "interest_collection": {
+      "other_roles": ["Forklift Operator", "Store Keeper"]
+    },
+    "warnings": [
+      "Pending skills are kept on the mandate but cannot be verified until resolved"
+    ],
+    "is_external": true,
+    "created_at": "2026-10-09T10:16:12.456Z",
+    "updated_at": "2026-10-09T10:16:12.456Z"
+  }
+}
+```
+
+</CodeGroup>
+
+For a job abroad, `location` is `null` and `countries` lists each country:
+
+```json
+{
+  "location_type": "abroad",
+  "location": null,
+  "countries": [{ "code": "SG", "name": "Singapore" }, { "code": "AE", "name": "United Arab Emirates" }],
+  "location_names": ["Singapore", "United Arab Emirates"]
+}
+```
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such `mandate_id`. |
+
+Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/get-a-job-mandate)
+
+---
+
+### List job mandates
+
+`GET /mandates`
+
+List your organisation’s job mandates (made here or in the playground).
+
+**Scope:** `mandates:read` or `mandates:write` · **Idempotency-Key:** not used
+
+| Query | Type | Description |
+|---|---|---|
+| `status` | `string` | One of `preparing`, `ready`, `failed`, `archived`. |
+| `owner` | `string` | owner.external_user_id. |
+| `workflow_id` | `string` | At most 64 characters. |
+| `updated_since` | `string` | ISO 8601 date-time. |
+| `limit` | `integer` | 1 to 100, default 50. |
+| `cursor` | `string` | The next_cursor of the previous page. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/mandates?limit=50");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/mandates?limit=50")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/mandates?limit=50"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+        "job_id": "job-10452",
+        "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+        "status": "ready",
+        "flow_version": 1,
+        "methods": ["data_enrichment", "skill_verification", "interest_collection"],
+        "title": "Warehouse Associate (Forklift)",
+        "company_name": "Acme Logistics Pvt Ltd",
+        "location_type": "india",
+        "location": { "city": "Chennai", "state": "Tamil Nadu", "pincode": "600001" },
+        "countries": [],
+        "location_names": ["Chennai, Tamil Nadu"],
+        "experience": { "min_years": 1, "max_years": 5 },
+        "openings": 12,
+        "salary": { "min": 18000, "max": 24000, "currency": "INR", "period": "month" },
+        "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
+        "shift": "Day shift",
+        "employment_type": "Full-time",
+        "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
+        "skills": [
+          {
+            "skill_id": "sk_36440",
+            "name": "Forklift Basic Operation",
+            "verify": true,
+            "status": "active"
+          },
+          {
+            "skill_id": "sk_38973",
+            "name": "Pallet Jack Safety Check",
+            "verify": true,
+            "status": "active"
+          },
+          {
+            "skill_id": "sk_38824",
+            "name": "Packing Station Setup",
+            "verify": true,
+            "status": "active"
+          },
+          {
+            "skill_id": "sk_2338",
+            "name": "Order Picking",
+            "verify": false,
+            "status": "active"
+          },
+          {
+            "skill_id": "sk_2452",
+            "name": "Loading And Unloading",
+            "verify": false,
+            "status": "active"
+          },
+          {
+            "skill_id": null,
+            "name": "Reach Truck Operation",
+            "verify": false,
+            "status": "pending"
+          }
+        ],
+        "enrichment_questions": [
+          {
+            "key": "has_licence",
+            "type": "yes_no",
+            "text": "Do you hold a valid forklift licence?",
+            "knockout": "no",
+            "required": true
+          },
+          {
+            "key": "why_this_job",
+            "type": "voice",
+            "text": "Tell us in your own words why you want this job.",
+            "knockout": null,
+            "required": false
+          }
+        ],
+        "interest_collection": {
+          "other_roles": ["Forklift Operator", "Store Keeper"]
+        },
+        "warnings": [],
+        "is_external": true,
+        "created_at": "2026-10-09T10:16:12.456Z",
+        "updated_at": "2026-10-09T10:16:12.456Z"
+      }
+    ],
+    "count": 1,
+    "total": 1,
+    "next_cursor": null,
+    "has_more": false
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 400 `VALIDATION_FAILED` | Bad `cursor`, date, or `limit` above 100. |
+
+Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/list-job-mandates)
+
+---
+
+### Get mandate questions
+
+`GET /mandates/{mandate_id}/questions`
+
+See what a candidate will be asked, in `en` `ta` `hi` `kn` `te` or `ml` (English where a translation is not ready). Read-only: change them with `PUT …/questions`.
+
+**Scope:** `mandates:read` or `mandates:write` · **Idempotency-Key:** not used
+
+| Query | Type | Description |
+|---|---|---|
+| `language` | `string` | One of `en`, `ta`, `hi`, `kn`, `te`, `ml`. Default `"en"`. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/questions?language=en");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/questions?language=en")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/questions?language=en"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "status": "ready",
+    "flow_version": 1,
+    "language": "en",
+    "enrichment_questions": [
+      {
+        "key": "has_licence",
+        "type": "yes_no",
+        "text": "Do you hold a valid forklift licence?"
+      },
+      {
+        "key": "why_this_job",
+        "type": "voice",
+        "text": "Tell us in your own words why you want this job."
+      }
+    ],
+    "skill_questions": [
+      {
+        "index": 0,
+        "question": "A pallet starts to tilt while you lift it. What do you do?",
+        "skill": "Forklift Basic Operation"
+      }
+    ],
+    "interest_questions": [
+      { "key": "current_role", "topic": "The candidate's current role" },
+      { "key": "experience_years", "topic": "Years of experience in it" },
+      {
+        "key": "other_roles",
+        "topic": "Other roles the candidate is open to (voice answer)"
+      }
+    ]
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such mandate. |
+| 400 `VALIDATION_FAILED` | Unsupported `language`. |
+
+Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/get-mandate-questions)
+
+---
+
+### Update mandate questions
+
+`PUT /mandates/{mandate_id}/questions`
+
+The write side of `GET …/questions`: replace the screening questions, or ask Record to write new skill questions. One part per call.
+
+**Scope:** `mandates:write` · **Idempotency-Key:** required
+
+| Field | Type | Description |
+|---|---|---|
+| `enrichment_questions` | `array<object>` | **One of the two.** Replaces the screening questions (1–5), exactly like `PUT …/enrichment-questions`. Send this part alone. Each item is `{ key, type, text, knockout, required }`, as in Create a job mandate. |
+| `skill_questions.regenerate` | `object` | **One of the two.** `"all"` or the slots to write again, e.g. `[0, 2]` (the `index` in `GET …/questions`). Record writes the new text; you cannot supply or edit it. Send this part alone. |
+| `interest questions` | — | **Not editable.** A fixed prompt per language. Switch it on or off with `methods`. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/questions", {
+  "skill_questions": { "regenerate": "all" }
+});
+const { data } = await res.json();
+```
+
+```python Python
+res = call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/questions", {
+    "skill_questions": {"regenerate": "all"}
+})
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/questions" '{
+  "skill_questions": { "regenerate": "all" }
+}'
+```
+
+```json 202 Response
+{
+  "success": true,
+  "data": {
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "status": "preparing",
+    "flow_version": 2,
+    "methods": ["data_enrichment", "skill_verification", "interest_collection"],
+    "changed": true,
+    "warnings": []
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 400 `VALIDATION_FAILED` | Both parts or neither, repeated or out-of-range slots, extra fields (such as your own question text), or `skill_verification` is not on this mandate. |
+| 422 `LIMIT_EXCEEDED` | More than 5 screening questions. |
+| 404 `NOT_FOUND` | No such mandate. |
+| 403 `FORBIDDEN` | Mandate was made in the playground. |
+| 409 `CONFLICT` | Archived, still `preparing` (wait Retry-After), or over 10 changes this hour. |
+
+Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/update-mandate-questions)
+
+---
+
+### Replace a job mandate
+
+`PUT /mandates/{mandate_id}`
+
+Replace the whole mandate (send the full body again). An identical resend changes nothing.
+
+**Scope:** `mandates:write` · **Idempotency-Key:** optional
+
+| Field | Type | Description |
+|---|---|---|
+| `workflow_id` | `string` | **Required.** One of your workflows. |
+| `title` | `string` | **Required.** 1 to 200 characters. |
+| `company_name` | `string` | **Required.** 1 to 200 characters. |
+| `location_type` | `string` | Where the job is: "india" (default; give `location`) or "abroad" (give `countries`). Same as the playground's Abroad option. |
+| `location` | `object` | A place in India (find it with GET /locations). Leave it out for an abroad job. Fields: `city`, `state`, `pincode`. |
+| `countries` | `array<string>` | Only with location_type "abroad": 1 to 10 ISO 3166-1 alpha-2 codes such as SG (list them with GET /countries). India is not selectable. |
+| `experience` | `object` | Whole years, 0 to 50. Fields: `min_years`, `max_years`. |
+| `openings` | `integer` | 1 to 100000. |
+| `salary` | `object` | Fields: `min`, `max`, `currency`, `period`. |
+| `description` | `string` | Up to 1,500 characters (the question generator's limit). |
+| `shift` | `string` | Use a value from GET /shifts so the playground shows it as a choice; any other text is kept as sent. |
+| `employment_type` | `string` | Use a value from GET /employment-types so the playground shows it as a choice; any other text is kept as sent. |
+| `owner` | `object` | The recruiter in your ATS; defaults to x-on-behalf-of. Fields: `external_user_id`, `name`. |
+| `methods` | `array<string>` | Any non-empty mix; candidates always go enrichment → skills → interest. Omit to use the workflow's default. Each one of `data_enrichment`, `skill_verification`, `interest_collection`. |
+| `skills` | `array<object>` | **Required.** 5 to 10 recommended; fewer than 5 is a warning. Fields: `skill_id`, `verify`, `name`, `pending`. |
+| `enrichment_questions` | `array<object>` | 0 to 5 enrichment questions. Fields: `key`, `type`, `text`, `options`, `knockout`, `required`. |
+| `interest_collection` | `object` | Fields: `other_roles`. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4", {
+  "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+  "title": "Warehouse Associate (Forklift)",
+  "company_name": "Acme Logistics Pvt Ltd",
+  "location_type": "india",
+  "location": { "city": "Chennai", "state": "Tamil Nadu", "pincode": "600001" },
+  "experience": { "min_years": 1, "max_years": 5 },
+  "openings": 12,
+  "salary": { "min": 18000, "max": 24000, "currency": "INR", "period": "month" },
+  "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
+  "shift": "Day shift",
+  "employment_type": "Full-time",
+  "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
+  "methods": ["data_enrichment", "skill_verification", "interest_collection"],
+  "skills": [
+    { "skill_id": "sk_36440", "verify": true },
+    { "skill_id": "sk_38973", "verify": true },
+    { "skill_id": "sk_38824", "verify": true },
+    { "skill_id": "sk_2338" },
+    { "skill_id": "sk_2452" },
+    { "name": "Reach Truck Operation", "pending": true }
+  ],
+  "enrichment_questions": [
+    {
+      "key": "has_licence",
+      "type": "yes_no",
+      "text": "Do you hold a valid forklift licence?",
+      "knockout": "no",
+      "required": true
+    },
+    {
+      "key": "why_this_job",
+      "type": "voice",
+      "text": "Tell us in your own words why you want this job.",
+      "required": false
+    }
+  ],
+  "interest_collection": {
+    "other_roles": ["Forklift Operator", "Store Keeper"]
+  }
+});
+const { data } = await res.json();
+```
+
+```python Python
+res = call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4", {
+    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+    "title": "Warehouse Associate (Forklift)",
+    "company_name": "Acme Logistics Pvt Ltd",
+    "location_type": "india",
+    "location": {"city": "Chennai", "state": "Tamil Nadu", "pincode": "600001"},
+    "experience": {"min_years": 1, "max_years": 5},
+    "openings": 12,
+    "salary": {"min": 18000, "max": 24000, "currency": "INR", "period": "month"},
+    "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
+    "shift": "Day shift",
+    "employment_type": "Full-time",
+    "owner": {"external_user_id": "recruiter_1042", "name": "Priya Nair"},
+    "methods": ["data_enrichment", "skill_verification", "interest_collection"],
+    "skills": [
+        {"skill_id": "sk_36440", "verify": True},
+        {"skill_id": "sk_38973", "verify": True},
+        {"skill_id": "sk_38824", "verify": True},
+        {"skill_id": "sk_2338"},
+        {"skill_id": "sk_2452"},
+        {"name": "Reach Truck Operation", "pending": True}
+    ],
+    "enrichment_questions": [
+        {
+            "key": "has_licence",
+            "type": "yes_no",
+            "text": "Do you hold a valid forklift licence?",
+            "knockout": "no",
+            "required": True
+        },
+        {
+            "key": "why_this_job",
+            "type": "voice",
+            "text": "Tell us in your own words why you want this job.",
+            "required": False
+        }
+    ],
+    "interest_collection": {
+        "other_roles": ["Forklift Operator", "Store Keeper"]
+    }
+})
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4" '{
+  "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+  "title": "Warehouse Associate (Forklift)",
+  "company_name": "Acme Logistics Pvt Ltd",
+  "location_type": "india",
+  "location": { "city": "Chennai", "state": "Tamil Nadu", "pincode": "600001" },
+  "experience": { "min_years": 1, "max_years": 5 },
+  "openings": 12,
+  "salary": { "min": 18000, "max": 24000, "currency": "INR", "period": "month" },
+  "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
+  "shift": "Day shift",
+  "employment_type": "Full-time",
+  "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
+  "methods": ["data_enrichment", "skill_verification", "interest_collection"],
+  "skills": [
+    { "skill_id": "sk_36440", "verify": true },
+    { "skill_id": "sk_38973", "verify": true },
+    { "skill_id": "sk_38824", "verify": true },
+    { "skill_id": "sk_2338" },
+    { "skill_id": "sk_2452" },
+    { "name": "Reach Truck Operation", "pending": true }
+  ],
+  "enrichment_questions": [
+    {
+      "key": "has_licence",
+      "type": "yes_no",
+      "text": "Do you hold a valid forklift licence?",
+      "knockout": "no",
+      "required": true
+    },
+    {
+      "key": "why_this_job",
+      "type": "voice",
+      "text": "Tell us in your own words why you want this job.",
+      "required": false
+    }
+  ],
+  "interest_collection": {
+    "other_roles": ["Forklift Operator", "Store Keeper"]
+  }
+}'
+```
+
+```json 202 Response
+{
+  "success": true,
+  "data": {
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "status": "preparing",
+    "flow_version": 1,
+    "methods": ["data_enrichment", "skill_verification", "interest_collection"],
+    "changed": true,
+    "warnings": [
+      "Pending skills are kept on the mandate but cannot be verified until resolved"
+    ]
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such mandate. |
+| 403 `FORBIDDEN` | Mandate was made in the playground. |
+| 409 `CONFLICT` | Archived; `workflow_id` differs; still `preparing` (wait Retry-After); or over 10 changes this hour. |
+| 422 `LIMIT_EXCEEDED` | More than 10 skills, 3 verified skills or 5 questions. |
+| 400 `VALIDATION_FAILED` | Same field rules as create. |
+
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/replace-a-job-mandate)
+
+---
+
+### Update mandate checks
+
+`PUT /mandates/{mandate_id}/methods`
+
+Change only which checks run on the mandate.
+
+**Scope:** `mandates:write` · **Idempotency-Key:** optional
+
+| Field | Type | Description |
+|---|---|---|
+| `methods` | `array<string>` | **Required.** Any non-empty mix; candidates always go enrichment → skills → interest. Omit to use the workflow's default. Each one of `data_enrichment`, `skill_verification`, `interest_collection`. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/methods", {
+  "methods": ["data_enrichment", "skill_verification"]
+});
+const { data } = await res.json();
+```
+
+```python Python
+res = call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/methods", {
+    "methods": ["data_enrichment", "skill_verification"]
+})
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/methods" '{
+  "methods": ["data_enrichment", "skill_verification"]
+}'
+```
+
+```json 202 Response
+{
+  "success": true,
+  "data": {
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "status": "preparing",
+    "flow_version": 2,
+    "methods": ["data_enrichment", "skill_verification"],
+    "changed": true,
+    "warnings": []
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such mandate. |
+| 403 `FORBIDDEN` | Mandate was made in the playground. |
+| 409 `CONFLICT` | Archived, still `preparing`, or too many changes this hour. |
+| 400 `VALIDATION_FAILED` | Empty / repeated methods, or a check without its data. |
+
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/update-mandate-checks)
+
+---
+
+### Replace mandate skills
+
+`PUT /mandates/{mandate_id}/skills`
+
+Replace only the skill list. Changing the verified skills regenerates the skill questions.
+
+**Scope:** `mandates:write` · **Idempotency-Key:** optional
+
+| Field | Type | Description |
+|---|---|---|
+| `skills` | `array<object>` | **Required.** 5 to 10 recommended; fewer than 5 is a warning. Fields: `skill_id`, `verify`, `name`, `pending`. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/skills", {
+  "skills": [
+    { "skill_id": "sk_36440", "verify": true },
+    { "skill_id": "sk_38973", "verify": true },
+    { "skill_id": "sk_38824", "verify": true },
+    { "skill_id": "sk_2338" },
+    { "skill_id": "sk_2452" },
+    { "name": "Reach Truck Operation", "pending": true }
+  ]
+});
+const { data } = await res.json();
+```
+
+```python Python
+res = call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/skills", {
+    "skills": [
+        {"skill_id": "sk_36440", "verify": True},
+        {"skill_id": "sk_38973", "verify": True},
+        {"skill_id": "sk_38824", "verify": True},
+        {"skill_id": "sk_2338"},
+        {"skill_id": "sk_2452"},
+        {"name": "Reach Truck Operation", "pending": True}
+    ]
+})
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/skills" '{
+  "skills": [
+    { "skill_id": "sk_36440", "verify": true },
+    { "skill_id": "sk_38973", "verify": true },
+    { "skill_id": "sk_38824", "verify": true },
+    { "skill_id": "sk_2338" },
+    { "skill_id": "sk_2452" },
+    { "name": "Reach Truck Operation", "pending": true }
+  ]
+}'
+```
+
+```json 202 Response
+{
+  "success": true,
+  "data": {
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "status": "preparing",
+    "flow_version": 2,
+    "methods": ["data_enrichment", "skill_verification", "interest_collection"],
+    "changed": true,
+    "warnings": []
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such mandate. |
+| 403 `FORBIDDEN` | Mandate was made in the playground. |
+| 409 `CONFLICT` | Archived, still `preparing`, or too many changes this hour. |
+| 422 `LIMIT_EXCEEDED` | More than 10 skills or 3 verified. |
+| 400 `VALIDATION_FAILED` | Unknown or repeated skill. |
+
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/replace-mandate-skills)
+
+---
+
+### Replace screening questions
+
+`PUT /mandates/{mandate_id}/enrichment-questions`
+
+Replace only the screening questions (1 to 5).
+
+**Scope:** `mandates:write` · **Idempotency-Key:** optional
+
+| Field | Type | Description |
+|---|---|---|
+| `enrichment_questions` | `array<object>` | **Required.** 0 to 5 enrichment questions. Fields: `key`, `type`, `text`, `options`, `knockout`, `required`. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/enrichment-questions", {
+  "enrichment_questions": [
+    {
+      "key": "has_licence",
+      "type": "yes_no",
+      "text": "Do you hold a valid forklift licence?",
+      "knockout": "no",
+      "required": true
+    },
+    {
+      "key": "why_this_job",
+      "type": "voice",
+      "text": "Tell us in your own words why you want this job.",
+      "required": false
+    }
+  ]
+});
+const { data } = await res.json();
+```
+
+```python Python
+res = call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/enrichment-questions", {
+    "enrichment_questions": [
+        {
+            "key": "has_licence",
+            "type": "yes_no",
+            "text": "Do you hold a valid forklift licence?",
+            "knockout": "no",
+            "required": True
+        },
+        {
+            "key": "why_this_job",
+            "type": "voice",
+            "text": "Tell us in your own words why you want this job.",
+            "required": False
+        }
+    ]
+})
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/enrichment-questions" '{
+  "enrichment_questions": [
+    {
+      "key": "has_licence",
+      "type": "yes_no",
+      "text": "Do you hold a valid forklift licence?",
+      "knockout": "no",
+      "required": true
+    },
+    {
+      "key": "why_this_job",
+      "type": "voice",
+      "text": "Tell us in your own words why you want this job.",
+      "required": false
+    }
+  ]
+}'
+```
+
+```json 202 Response
+{
+  "success": true,
+  "data": {
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "status": "preparing",
+    "flow_version": 2,
+    "methods": ["data_enrichment", "skill_verification", "interest_collection"],
+    "changed": true,
+    "warnings": []
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such mandate. |
+| 403 `FORBIDDEN` | Mandate was made in the playground. |
+| 409 `CONFLICT` | Archived, still `preparing`, or too many changes this hour. |
+| 422 `LIMIT_EXCEEDED` | More than 5 questions. |
+| 400 `VALIDATION_FAILED` | Type other than `yes_no` / `voice`, or repeated `key`. |
+
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/replace-screening-questions)
+
+---
+
+### Archive a job mandate
+
+`POST /mandates/{mandate_id}/archive`
+
+Close the job when it is filled: no new campaigns start, running ones finish, results stay readable.
+
+**Scope:** `mandates:write` · **Idempotency-Key:** required
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("POST", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/archive");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("POST", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/archive")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall POST "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/archive"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+    "status": "archived",
+    "flow_version": 1,
+    "methods": ["data_enrichment", "skill_verification", "interest_collection"],
+    "title": "Warehouse Associate (Forklift)",
+    "company_name": "Acme Logistics Pvt Ltd",
+    "location_type": "india",
+    "location": { "city": "Chennai", "state": "Tamil Nadu", "pincode": "600001" },
+    "countries": [],
+    "location_names": ["Chennai, Tamil Nadu"],
+    "experience": { "min_years": 1, "max_years": 5 },
+    "openings": 12,
+    "salary": { "min": 18000, "max": 24000, "currency": "INR", "period": "month" },
+    "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
+    "shift": "Day shift",
+    "employment_type": "Full-time",
+    "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
+    "skills": [
+      {
+        "skill_id": "sk_36440",
+        "name": "Forklift Basic Operation",
+        "verify": true,
+        "status": "active"
+      },
+      {
+        "skill_id": "sk_38973",
+        "name": "Pallet Jack Safety Check",
+        "verify": true,
+        "status": "active"
+      },
+      {
+        "skill_id": "sk_38824",
+        "name": "Packing Station Setup",
+        "verify": true,
+        "status": "active"
+      },
+      {
+        "skill_id": "sk_2338",
+        "name": "Order Picking",
+        "verify": false,
+        "status": "active"
+      },
+      {
+        "skill_id": "sk_2452",
+        "name": "Loading And Unloading",
+        "verify": false,
+        "status": "active"
+      },
+      {
+        "skill_id": null,
+        "name": "Reach Truck Operation",
+        "verify": false,
+        "status": "pending"
+      }
+    ],
+    "enrichment_questions": [
+      {
+        "key": "has_licence",
+        "type": "yes_no",
+        "text": "Do you hold a valid forklift licence?",
+        "knockout": "no",
+        "required": true
+      },
+      {
+        "key": "why_this_job",
+        "type": "voice",
+        "text": "Tell us in your own words why you want this job.",
+        "knockout": null,
+        "required": false
+      }
+    ],
+    "interest_collection": {
+      "other_roles": ["Forklift Operator", "Store Keeper"]
+    },
+    "warnings": [],
+    "is_external": true,
+    "created_at": "2026-10-09T10:16:12.456Z",
+    "updated_at": "2026-10-09T12:00:00.000Z"
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such mandate. |
+| 403 `FORBIDDEN` | Mandate was made in the playground. |
+
+Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/archive-a-job-mandate)
+
+---
+
+### Delete a job mandate
+
+`DELETE /mandates/{mandate_id}`
+
+Same as archive. Nothing is erased; collected results stay readable.
+
+**Scope:** `mandates:write` · **Idempotency-Key:** optional
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("DELETE", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("DELETE", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall DELETE "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+    "status": "archived",
+    "flow_version": 1,
+    "methods": ["data_enrichment", "skill_verification", "interest_collection"],
+    "title": "Warehouse Associate (Forklift)",
+    "company_name": "Acme Logistics Pvt Ltd",
+    "location_type": "india",
+    "location": { "city": "Chennai", "state": "Tamil Nadu", "pincode": "600001" },
+    "countries": [],
+    "location_names": ["Chennai, Tamil Nadu"],
+    "experience": { "min_years": 1, "max_years": 5 },
+    "openings": 12,
+    "salary": { "min": 18000, "max": 24000, "currency": "INR", "period": "month" },
+    "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
+    "shift": "Day shift",
+    "employment_type": "Full-time",
+    "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
+    "skills": [
+      {
+        "skill_id": "sk_36440",
+        "name": "Forklift Basic Operation",
+        "verify": true,
+        "status": "active"
+      },
+      {
+        "skill_id": "sk_38973",
+        "name": "Pallet Jack Safety Check",
+        "verify": true,
+        "status": "active"
+      },
+      {
+        "skill_id": "sk_38824",
+        "name": "Packing Station Setup",
+        "verify": true,
+        "status": "active"
+      },
+      {
+        "skill_id": "sk_2338",
+        "name": "Order Picking",
+        "verify": false,
+        "status": "active"
+      },
+      {
+        "skill_id": "sk_2452",
+        "name": "Loading And Unloading",
+        "verify": false,
+        "status": "active"
+      },
+      {
+        "skill_id": null,
+        "name": "Reach Truck Operation",
+        "verify": false,
+        "status": "pending"
+      }
+    ],
+    "enrichment_questions": [
+      {
+        "key": "has_licence",
+        "type": "yes_no",
+        "text": "Do you hold a valid forklift licence?",
+        "knockout": "no",
+        "required": true
+      },
+      {
+        "key": "why_this_job",
+        "type": "voice",
+        "text": "Tell us in your own words why you want this job.",
+        "knockout": null,
+        "required": false
+      }
+    ],
+    "interest_collection": {
+      "other_roles": ["Forklift Operator", "Store Keeper"]
+    },
+    "warnings": [],
+    "is_external": true,
+    "created_at": "2026-10-09T10:16:12.456Z",
+    "updated_at": "2026-10-09T12:00:00.000Z"
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such mandate. |
+| 403 `FORBIDDEN` | Mandate was made in the playground. |
+
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/delete-a-job-mandate)

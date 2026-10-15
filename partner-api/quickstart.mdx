@@ -1,0 +1,190 @@
+---
+title: "Quickstart"
+description: "From an API key to your first candidate result in six calls."
+---
+
+<Warning>
+  Use a TEST key while you build. Campaigns contact real people even in test mode, and live campaigns spend credits.
+</Warning>
+
+<Steps>
+  <Step title="Set up signing">
+    Copy the `call()` helper for your language from [Authentication](/partner-api/authentication#signing-helper), then check your key with a read:
+
+    <CodeGroup>
+
+    ```javascript JavaScript
+    const res = await call("GET", "/api/v1/partner/workflows?limit=1");
+    console.log(res.status, await res.json());
+    ```
+
+    ```python Python
+    res = call("GET", "/api/v1/partner/workflows?limit=1")
+    print(res.status_code, res.json())
+    ```
+
+    </CodeGroup>
+
+    A `200` with `"success": true` means you are ready.
+  </Step>
+
+  <Step title="Create a workflow">
+    A workflow sets how and when candidates are contacted. Create it once and reuse it for every job.
+
+    <CodeGroup>
+
+    ```javascript JavaScript
+    const res = await call("POST", "/api/v1/partner/workflows", {
+      name: "Warehouse associates - Chennai",
+      default_methods: ["data_enrichment", "skill_verification"],
+      delivery: { whatsapp: true, voice_call: true, sms_backup: false },
+      schedule: { start_time: "09:00", end_time: "19:00", timezone: "Asia/Kolkata" },
+    });
+    const { workflow_id } = (await res.json()).data;
+    ```
+
+    ```python Python
+    res = call("POST", "/api/v1/partner/workflows", {
+        "name": "Warehouse associates - Chennai",
+        "default_methods": ["data_enrichment", "skill_verification"],
+        "delivery": {"whatsapp": True, "voice_call": True, "sms_backup": False},
+        "schedule": {"start_time": "09:00", "end_time": "19:00", "timezone": "Asia/Kolkata"},
+    })
+    workflow_id = res.json()["data"]["workflow_id"]
+    ```
+
+    </CodeGroup>
+  </Step>
+
+  <Step title="Create a job mandate">
+    The mandate is the job: 5 to 10 skills (at most 3 with `verify: true`) and up to 5 screening questions. Find skill ids with [`GET /skills/search`](/partner-api/guides/skills#search-skills).
+
+    <CodeGroup>
+
+    ```javascript JavaScript
+    const res = await call("POST", "/api/v1/partner/mandates", {
+      workflow_id,
+      title: "Warehouse Associate (Forklift)",
+      company_name: "Acme Logistics Pvt Ltd",
+      location: { city: "Chennai", state: "Tamil Nadu" },
+      skills: [
+        { skill_id: "sk_36440", verify: true },
+        { skill_id: "sk_38973", verify: true },
+        { skill_id: "sk_38824", verify: true },
+        { skill_id: "sk_2338" },
+        { skill_id: "sk_2452" },
+      ],
+      enrichment_questions: [
+        { key: "has_licence", type: "yes_no", text: "Do you hold a valid forklift licence?", knockout: "no" },
+      ],
+    });
+    const { mandate_id } = (await res.json()).data; // status: "preparing"
+    ```
+
+    ```python Python
+    res = call("POST", "/api/v1/partner/mandates", {
+        "workflow_id": workflow_id,
+        "title": "Warehouse Associate (Forklift)",
+        "company_name": "Acme Logistics Pvt Ltd",
+        "location": {"city": "Chennai", "state": "Tamil Nadu"},
+        "skills": [
+            {"skill_id": "sk_36440", "verify": True},
+            {"skill_id": "sk_38973", "verify": True},
+            {"skill_id": "sk_38824", "verify": True},
+            {"skill_id": "sk_2338"},
+            {"skill_id": "sk_2452"},
+        ],
+        "enrichment_questions": [
+            {"key": "has_licence", "type": "yes_no", "text": "Do you hold a valid forklift licence?", "knockout": "no"},
+        ],
+    })
+    mandate_id = res.json()["data"]["mandate_id"]  # status: "preparing"
+    ```
+
+    </CodeGroup>
+
+    The answer is `202 Accepted` with `status: "preparing"` while Record writes the skill questions. `GET /api/v1/partner/mandates/{mandate_id}` shows `ready` when they are done. You do not have to wait: a campaign created now goes out by itself once the mandate is ready.
+  </Step>
+
+  <Step title="Register a webhook">
+    Give Record an HTTPS URL. Each finished candidate's result is posted there, signed with your secret. See [Webhooks](/partner-api/guides/webhooks) to verify the signature.
+
+    <CodeGroup>
+
+    ```javascript JavaScript
+    await call("POST", "/api/v1/partner/webhooks/endpoints", {
+      url: "https://ats.example.com/hooks/record",
+      event_types: ["candidate.result"],
+    });
+    ```
+
+    ```python Python
+    call("POST", "/api/v1/partner/webhooks/endpoints", {
+        "url": "https://ats.example.com/hooks/record",
+        "event_types": ["candidate.result"],
+    })
+    ```
+
+    </CodeGroup>
+  </Step>
+
+  <Step title="Create a campaign">
+    Send the candidates. With a TEST key, use only the phone numbers Record listed for your key.
+
+    <CodeGroup>
+
+    ```javascript JavaScript
+    const res = await call("POST", "/api/v1/partner/campaigns", {
+      mandate_id,
+      name: "Warehouse Associate - October batch",
+      start: "now",
+      candidates: [{ external_id: "cand-88231", name: "Ravi Kumar", phone: "+91 98765 43210" }],
+    });
+    const { campaign, accepted, rejected } = (await res.json()).data;
+    ```
+
+    ```python Python
+    res = call("POST", "/api/v1/partner/campaigns", {
+        "mandate_id": mandate_id,
+        "name": "Warehouse Associate - October batch",
+        "start": "now",
+        "candidates": [{"external_id": "cand-88231", "name": "Ravi Kumar", "phone": "+91 98765 43210"}],
+    })
+    data = res.json()["data"]
+    campaign_id = data["campaign"]["campaign_id"]
+    ```
+
+    </CodeGroup>
+
+    Numbers that cannot be used come back in `rejected` with a reason. The rest go ahead.
+  </Step>
+
+  <Step title="Receive results">
+    When a candidate finishes, your webhook receives a `candidate.result` event with their [result record](/partner-api/guides/results). To catch up or check, read them directly:
+
+    <CodeGroup>
+
+    ```javascript JavaScript
+    const res = await call("GET", `/api/v1/partner/campaigns/${campaign.campaign_id}/results`);
+    const { items } = (await res.json()).data;
+    ```
+
+    ```python Python
+    res = call("GET", f"/api/v1/partner/campaigns/{campaign_id}/results")
+    items = res.json()["data"]["items"]
+    ```
+
+    </CodeGroup>
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Job mandates" icon="briefcase" href="/partner-api/guides/job-mandates">
+    Skills, questions, locations and what you can change later.
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation" href="/partner-api/reference/errors">
+    Every error code and what to do about it.
+  </Card>
+</CardGroup>

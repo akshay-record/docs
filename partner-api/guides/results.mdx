@@ -1,0 +1,528 @@
+---
+title: "Results"
+description: "Step 4. What Record collected from each candidate, and how to get it."
+---
+
+A result is what Record **collected** from the candidate: the answers to your screening questions, the skill-verification verdict and score, and other roles they are open to. It comes as one record per candidate. The best way to get it is the [webhook](/partner-api/guides/webhooks); these endpoints are for catching up and checking.
+
+| Needs | You get | Scope |
+|---|---|---|
+| `campaign_id` from [step 3](/partner-api/guides/campaigns) | a record with `status` and `output` | `results:read` |
+
+## Status
+
+| Status | Meaning |
+|---|---|
+| `pending` | Invited or answering; not finished. Read endpoints only, never sent by webhook. |
+| `completed` | Finished. `output` holds what Record collected. |
+| `declined` | The candidate said they are not interested. |
+| `failed` | No result could be got. `reason` is `undeliverable` (the invite could not be delivered) or `no_response` (every attempt went unanswered). |
+
+## The record
+
+```json
+{
+  "candidate_id": "a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01",
+  "external_id": "cand-88231",
+  "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+  "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+  "job_id": "job-10452",
+  "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+  "name": "Ravi Kumar",
+  "status": "completed",
+  "reason": null,
+  "attempts": 3,
+  "language": "tamil",
+  "location_name": "Coimbatore",
+  "metadata": { "ats_application_id": "app_991" },
+  "started_at": "2026-10-05T09:30:00.000Z",
+  "completed_at": "2026-10-05T12:41:10.000Z",
+  "updated_at": "2026-10-05T12:41:10.000Z",
+  "output": {
+    "enrichment": {
+      "qualified": true,
+      "answers": {
+        "Do you hold a valid forklift licence?": "yes",
+        "Tell us in your own words why you want this job.": "I want a stable job near home"
+      }
+    },
+    "skill_verification": {
+      "verdict": "Good Fit",
+      "total_score": 78,
+      "is_partial": false,
+      "answered": 3,
+      "total": 3,
+      "skills": [{ "name": "Forklift Basic Operation", "rating": "Strong" }],
+      "videos": [{ "question_index": 1, "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4", "duration_seconds": 42 }],
+      "call_recording_url": null,
+      "answers": [
+        {
+          "skill": "Forklift Basic Operation",
+          "question": "What do you check before lifting a load?",
+          "answer": "I check the load weight against the forklift rating.",
+          "answer_native": null,
+          "rating": "Strong",
+          "summary": "Mentions weight limit.",
+          "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4"
+        }
+      ]
+    },
+    "interest_collection": {
+      "current_role": "Forklift Operator",
+      "other_roles": [{ "role": "Store Keeper", "years": "1 to 2 years" }]
+    }
+  }
+}
+```
+
+- **Your own fields.** Send up to 10 fields of your own as `metadata` (with `external_id`) when you add a candidate: they come back unchanged on every result.
+- **Sections.** A section of `output` appears only once its data exists and only if that check ran for the job.
+- **Screening answers** are keyed by the question text. `qualified` is `true` when every yes/no answer is the wanted one (the opposite of its `knockout`, or `yes` when no knockout is set), and `null` when there is no yes/no answer to judge. `answers_native` holds the original-language text of voice answers.
+- **Skill verification** gives the `verdict`, `total_score`, a `rating` per skill, how many questions were `answered` of `total`, and recordings: one video per question, or `call_recording_url` when the candidate verified by phone.
+- **Location.** `location_name` is the town the candidate was in when they allowed location on the verification link (`null` when they denied it, it could not be looked up, or they verified by phone call); coordinates are never returned.
+- **Privacy.** Phone numbers are never returned.
+
+## Endpoints
+
+### List mandate campaigns
+
+`GET /mandates/{mandate_id}/campaigns`
+
+List the campaigns that were sent for one job.
+
+**Scope:** `results:read` · **Idempotency-Key:** not used
+
+| Query | Type | Description |
+|---|---|---|
+| `limit` | `integer` | 1 to 100, default 50. |
+| `cursor` | `string` | The next_cursor of the previous page. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/campaigns?limit=50");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/campaigns?limit=50")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/campaigns?limit=50"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+        "name": "Warehouse Associate - October batch",
+        "status": "sent",
+        "candidate_count": 240,
+        "sent_at": "2026-10-05T09:30:00.000Z",
+        "created_at": "2026-10-05T09:12:44.000Z"
+      }
+    ],
+    "count": 1,
+    "total": 1,
+    "next_cursor": null,
+    "has_more": false
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such mandate. |
+
+Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/results/list-mandate-campaigns)
+
+---
+
+### List campaign results
+
+`GET /campaigns/{campaign_id}/results`
+
+One record per candidate: `status` (pending, completed, declined, failed) and `output` with what Record collected. Prefer the webhook; use this to catch up or check.
+
+**Scope:** `results:read` · **Idempotency-Key:** not used
+
+| Query | Type | Description |
+|---|---|---|
+| `status` | `string` | One of `pending`, `completed`, `declined`, `failed`. |
+| `updated_since` | `string` | ISO 8601 date-time. |
+| `limit` | `integer` | 1 to 100, default 50. |
+| `cursor` | `string` | The next_cursor of the previous page. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/results?limit=50");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/results?limit=50")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/results?limit=50"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "candidate_id": "a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01",
+        "external_id": "cand-88231",
+        "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+        "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+        "job_id": "job-10452",
+        "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+        "name": "Ravi Kumar",
+        "status": "completed",
+        "reason": null,
+        "attempts": 3,
+        "language": "tamil",
+        "location_name": "Coimbatore",
+        "metadata": { "ats_application_id": "app_991" },
+        "started_at": "2026-10-05T09:30:00.000Z",
+        "completed_at": "2026-10-05T12:41:10.000Z",
+        "updated_at": "2026-10-05T12:41:10.000Z",
+        "output": {
+          "enrichment": {
+            "qualified": true,
+            "answers": {
+              "Do you have a valid driving licence?": "yes",
+              "Why do you want this job?": "I want a stable job near home"
+            }
+          },
+          "skill_verification": {
+            "verdict": "Good Fit",
+            "total_score": 78,
+            "is_partial": false,
+            "answered": 3,
+            "total": 3,
+            "skills": [
+              { "name": "Forklift Basic Operation", "rating": "Strong" }
+            ],
+            "videos": [
+              {
+                "question_index": 1,
+                "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
+                "duration_seconds": 42
+              }
+            ],
+            "call_recording_url": null,
+            "answers": [
+              {
+                "skill": "Forklift Basic Operation",
+                "question": "What do you check before lifting a load?",
+                "answer": "I check the load weight against the forklift rating and that the forks are level.",
+                "answer_native": null,
+                "rating": "Strong",
+                "summary": "Mentions weight limit and fork position.",
+                "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4"
+              }
+            ]
+          },
+          "interest_collection": {
+            "current_role": "Forklift Operator",
+            "other_roles": [
+              { "role": "Store Keeper", "years": "1 to 2 years" }
+            ]
+          }
+        }
+      }
+    ],
+    "count": 1,
+    "total": null,
+    "next_cursor": null,
+    "has_more": false
+  }
+}
+```
+
+</CodeGroup>
+
+Save `data.items[0].candidate_id` for the next step.
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such campaign. |
+| 400 `VALIDATION_FAILED` | Unknown `status`, bad date, or `limit` above 100. |
+
+Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/results/list-campaign-results)
+
+---
+
+### Get a result
+
+`GET /results/{candidate_id}`
+
+The same record the webhook delivers for this candidate.
+
+**Scope:** `results:read` · **Idempotency-Key:** not used
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/results/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/results/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/results/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "candidate_id": "a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01",
+    "external_id": "cand-88231",
+    "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+    "name": "Ravi Kumar",
+    "status": "completed",
+    "reason": null,
+    "attempts": 3,
+    "language": "tamil",
+    "location_name": "Coimbatore",
+    "metadata": { "ats_application_id": "app_991" },
+    "started_at": "2026-10-05T09:30:00.000Z",
+    "completed_at": "2026-10-05T12:41:10.000Z",
+    "updated_at": "2026-10-05T12:41:10.000Z",
+    "output": {
+      "enrichment": {
+        "qualified": true,
+        "answers": {
+          "Do you have a valid driving licence?": "yes",
+          "Why do you want this job?": "I want a stable job near home"
+        }
+      },
+      "skill_verification": {
+        "verdict": "Good Fit",
+        "total_score": 78,
+        "is_partial": false,
+        "answered": 3,
+        "total": 3,
+        "skills": [
+          { "name": "Forklift Basic Operation", "rating": "Strong" }
+        ],
+        "videos": [
+          {
+            "question_index": 1,
+            "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
+            "duration_seconds": 42
+          }
+        ],
+        "call_recording_url": null,
+        "answers": [
+          {
+            "skill": "Forklift Basic Operation",
+            "question": "What do you check before lifting a load?",
+            "answer": "I check the load weight against the forklift rating and that the forks are level.",
+            "answer_native": null,
+            "rating": "Strong",
+            "summary": "Mentions weight limit and fork position.",
+            "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4"
+          }
+        ]
+      },
+      "interest_collection": {
+        "current_role": "Forklift Operator",
+        "other_roles": [
+          { "role": "Store Keeper", "years": "1 to 2 years" }
+        ]
+      }
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such `candidate_id` for this key. |
+
+Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/results/get-a-result)
+
+## Candidate rows and verdicts
+
+One row per candidate with progress, verdict and score, and one candidate's full result with a rating per skill.
+
+### List campaign candidates
+
+`GET /campaigns/{campaign_id}/candidates`
+
+One row per candidate: `candidate_id`, interested or not, progress, verdict and score, plus `delivery` (queued, sent, failed) and `can_resend`, so you can see who needs their link sent again. Phone numbers are never returned. A key with only `campaigns:write` gets the rows with `verdict`, `total_score` and `report_url` left null.
+
+**Scope:** `results:read` or `campaigns:write` · **Idempotency-Key:** not used
+
+| Query | Type | Description |
+|---|---|---|
+| `status` | `string` | One of `interested`, `not_interested`, `no_answer_yet`, `unreachable`. |
+| `progress` | `string` | One of `not_yet_started`, `in_progress`, `completed`. |
+| `updated_since` | `string` | ISO 8601 date-time. |
+| `limit` | `integer` | 1 to 200, default 100. |
+| `cursor` | `string` | The next_cursor of the previous page. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates?limit=100");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates?limit=100")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates?limit=100"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "candidate_id": "a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01",
+        "external_id": "cand-88231",
+        "name": "Ravi Kumar",
+        "status": "interested",
+        "progress": "completed",
+        "verdict": "Good Fit",
+        "total_score": 78,
+        "language": "ta",
+        "sent_at": "2026-10-05T09:30:00.000Z",
+        "completed_at": "2026-10-05T12:41:10.000Z",
+        "updated_at": "2026-10-05T12:41:10.000Z",
+        "report_url": "https://example.com/r/7Hk2p9",
+        "delivery": "sent",
+        "can_resend": false
+      }
+    ],
+    "count": 1,
+    "total": 240,
+    "next_cursor": "eyJpZCI6IjY2YTEifQ",
+    "has_more": true
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such campaign. |
+| 400 `VALIDATION_FAILED` | Unknown `status` / `progress`, bad date, or `limit` above 200. |
+
+Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/results/list-campaign-candidates)
+
+---
+
+### Get a candidate verdict
+
+`GET /candidates/{candidate_id}/result`
+
+Verdict, score, a rating per skill and a report link. Add `include=answers` to also get what they said.
+
+**Scope:** `results:read` · **Idempotency-Key:** not used
+
+| Query | Type | Description |
+|---|---|---|
+| `include` | `string` | `answers` adds what the candidate said. Needs the `results:answers` scope. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/candidates/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01/result?include=answers");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/candidates/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01/result?include=answers")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/candidates/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01/result?include=answers"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "candidate": {
+      "candidate_id": "a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01",
+      "external_id": "cand-88231",
+      "name": "Ravi Kumar"
+    },
+    "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "status": "interested",
+    "progress": "completed",
+    "methods": {
+      "data_enrichment": {
+        "status": "completed",
+        "qualified": true,
+        "answers": [
+          {
+            "key": "has_licence",
+            "question": "Do you hold a valid forklift licence?",
+            "type": "yes_no",
+            "answer": "yes",
+            "answer_native": "ஆம்"
+          }
+        ]
+      },
+      "skill_verification": {
+        "status": "completed",
+        "verdict": "Good Fit",
+        "total_score": 78,
+        "is_partial": false,
+        "answered": 3,
+        "total": 3,
+        "skills": [
+          { "name": "Forklift Basic Operation", "rating": "Strong" },
+          { "name": "Pallet Jack Safety Check", "rating": "Medium" }
+        ]
+      }
+    },
+    "ready_to_hire": true,
+    "completed_at": "2026-10-05T12:41:10.000Z",
+    "report_url": "https://example.com/r/7Hk2p9"
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such `candidate_id`. |
+| 403 `SCOPE_MISSING` | `include=answers` also needs the `results:answers` scope. |
+
+Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/results/get-a-candidate-verdict)

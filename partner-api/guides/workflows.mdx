@@ -1,0 +1,430 @@
+---
+title: "Workflows"
+description: "Step 1. The reusable template for how and when candidates are contacted."
+---
+
+A workflow is a reusable template: how candidates are reached and when. Create it once; every job mandate points at it.
+
+| You send | You get | Scope |
+|---|---|---|
+| `name`, channels, send window | `workflow_id` | `workflows:write` to change, `workflows:read` to read |
+
+## How workflows work
+
+- **Defaults for jobs.** `default_methods` are the checks a mandate runs when it sends no `methods` of its own. Changing them later affects only mandates that send none; existing mandates keep theirs.
+- **Channels and timing.** `delivery` picks WhatsApp, voice call and SMS backup. `schedule` sets the daily send window, the days, the time zone and how often to retry.
+- **Verification methods.** Every workflow answers with `verification_methods`. Record switches both on for every workflow; you cannot set or change them.
+- **Changing.** `PATCH` changes only the fields you send. Send `start_time` and `end_time` together; other `schedule` keys merge, and `days` is replaced as a whole list.
+- **Archiving.** `DELETE` archives the workflow; nothing is erased. It answers `409 WORKFLOW_IN_USE` while the workflow still has open mandates.
+- **Playground workflows.** `GET /workflows` lists every workflow in your organisation, including ones made in the Record playground. `is_external` is `true` for the ones made through the API. You can read all of them, but only change the ones you created through the API; the others answer `403 FORBIDDEN`.
+
+## Endpoints
+
+### Create a workflow
+
+`POST /workflows`
+
+Create the template your jobs run under: how candidates are reached, when, and which checks run by default. Returns `workflow_id`.
+
+**Scope:** `workflows:write` · **Idempotency-Key:** required
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | `string` | **Required.** Display name, 1–200 characters. |
+| `external_id` | `string` | Your own id (A-Z a-z 0-9 . _ : -, up to 128). Must be unique. |
+| `status` | `string` | `active` (default), `inactive` or `draft`. |
+| `default_methods` | `array<string>` | Checks a mandate uses when it sends none: `data_enrichment`, `skill_verification`, `interest_collection`. |
+| `delivery` | `object` | Channels: `whatsapp`, `voice_call`, `sms_backup` (true / false). |
+| `schedule` | `object` | `start_time` + `end_time` ("HH:MM", send both), `days` (mon…sun), `timezone` (IANA), `max_retries` 1–10, `retry_after_hours` 1–48. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("POST", "/api/v1/partner/workflows", {
+  "external_id": "wf-warehouse-chennai",
+  "name": "Warehouse associates - Chennai",
+  "status": "active",
+  "default_methods": ["data_enrichment", "skill_verification"],
+  "delivery": { "whatsapp": true, "voice_call": true, "sms_backup": false },
+  "schedule": {
+    "start_time": "09:00",
+    "end_time": "19:00",
+    "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
+    "timezone": "Asia/Kolkata",
+    "max_retries": 3,
+    "retry_after_hours": 4
+  }
+});
+const { data } = await res.json();
+```
+
+```python Python
+res = call("POST", "/api/v1/partner/workflows", {
+    "external_id": "wf-warehouse-chennai",
+    "name": "Warehouse associates - Chennai",
+    "status": "active",
+    "default_methods": ["data_enrichment", "skill_verification"],
+    "delivery": {"whatsapp": True, "voice_call": True, "sms_backup": False},
+    "schedule": {
+        "start_time": "09:00",
+        "end_time": "19:00",
+        "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
+        "timezone": "Asia/Kolkata",
+        "max_retries": 3,
+        "retry_after_hours": 4
+    }
+})
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall POST "/api/v1/partner/workflows" '{
+  "external_id": "wf-warehouse-chennai",
+  "name": "Warehouse associates - Chennai",
+  "status": "active",
+  "default_methods": ["data_enrichment", "skill_verification"],
+  "delivery": { "whatsapp": true, "voice_call": true, "sms_backup": false },
+  "schedule": {
+    "start_time": "09:00",
+    "end_time": "19:00",
+    "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
+    "timezone": "Asia/Kolkata",
+    "max_retries": 3,
+    "retry_after_hours": 4
+  }
+}'
+```
+
+```json 201 Response
+{
+  "success": true,
+  "data": {
+    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+    "external_id": "wf-warehouse-chennai",
+    "name": "Warehouse associates - Chennai",
+    "collar": "blue",
+    "status": "active",
+    "default_methods": ["data_enrichment", "skill_verification"],
+    "verification_methods": [
+      { "type": "scenario-questions", "enabled": true },
+      { "type": "ai-phone-call", "enabled": true }
+    ],
+    "delivery": { "whatsapp": true, "voice_call": true, "sms_backup": false },
+    "schedule": {
+      "start_time": "09:00",
+      "end_time": "19:00",
+      "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
+      "timezone": "Asia/Kolkata",
+      "max_retries": 3,
+      "retry_after_hours": 4
+    },
+    "is_external": true,
+    "created_at": "2026-10-09T10:15:30.123Z",
+    "updated_at": "2026-10-09T10:15:30.123Z"
+  }
+}
+```
+
+</CodeGroup>
+
+Save `data.workflow_id` for the next step.
+
+| Error | When |
+|---|---|
+| 400 `VALIDATION_FAILED` | Unknown field, time not HH:MM, or only one of start_time / end_time. |
+| 409 `CONFLICT` | `external_id` is already used by another workflow. |
+
+Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/workflows/create-a-workflow)
+
+---
+
+### List workflows
+
+`GET /workflows`
+
+List your organisation’s blue-collar workflows (made here or in the playground).
+
+**Scope:** `workflows:read` or `workflows:write` · **Idempotency-Key:** not used
+
+| Query | Type | Description |
+|---|---|---|
+| `status` | `string` | One of `active`, `inactive`, `draft`, `archived`. |
+| `include_archived` | `string` | Archived workflows are left out unless true. One of `true`, `false`. |
+| `updated_since` | `string` | ISO 8601 date-time. |
+| `limit` | `integer` | 1 to 100, default 50. |
+| `cursor` | `string` | The next_cursor of the previous page. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/workflows?status=active&include_archived=false&limit=50");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/workflows?status=active&include_archived=false&limit=50")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/workflows?status=active&include_archived=false&limit=50"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+        "external_id": "wf-warehouse-chennai",
+        "name": "Warehouse associates - Chennai",
+        "collar": "blue",
+        "status": "active",
+        "default_methods": ["data_enrichment", "skill_verification"],
+        "verification_methods": [
+          { "type": "scenario-questions", "enabled": true },
+          { "type": "ai-phone-call", "enabled": true }
+        ],
+        "delivery": { "whatsapp": true, "voice_call": true, "sms_backup": false },
+        "schedule": {
+          "start_time": "09:00",
+          "end_time": "19:00",
+          "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
+          "timezone": "Asia/Kolkata",
+          "max_retries": 3,
+          "retry_after_hours": 4
+        },
+        "is_external": true,
+        "created_at": "2026-10-09T10:15:30.123Z",
+        "updated_at": "2026-10-09T10:15:30.123Z"
+      }
+    ],
+    "count": 1,
+    "total": 1,
+    "next_cursor": null,
+    "has_more": false
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 400 `VALIDATION_FAILED` | Bad `cursor`, or `limit` above 100. |
+
+Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/workflows/list-workflows)
+
+---
+
+### Get a workflow
+
+`GET /workflows/{workflow_id}`
+
+Get one workflow by its `workflow_id`.
+
+**Scope:** `workflows:read` or `workflows:write` · **Idempotency-Key:** not used
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+    "external_id": "wf-warehouse-chennai",
+    "name": "Warehouse associates - Chennai",
+    "collar": "blue",
+    "status": "active",
+    "default_methods": ["data_enrichment", "skill_verification"],
+    "verification_methods": [
+      { "type": "scenario-questions", "enabled": true },
+      { "type": "ai-phone-call", "enabled": true }
+    ],
+    "delivery": { "whatsapp": true, "voice_call": true, "sms_backup": false },
+    "schedule": {
+      "start_time": "09:00",
+      "end_time": "19:00",
+      "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
+      "timezone": "Asia/Kolkata",
+      "max_retries": 3,
+      "retry_after_hours": 4
+    },
+    "is_external": true,
+    "created_at": "2026-10-09T10:15:30.123Z",
+    "updated_at": "2026-10-09T10:15:30.123Z"
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such `workflow_id` for this key. |
+
+Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/workflows/get-a-workflow)
+
+---
+
+### Update a workflow
+
+`PATCH /workflows/{workflow_id}`
+
+Change only the fields you send (send at least one), for example the send window. Fields not listed below cannot be changed.
+
+**Scope:** `workflows:write` · **Idempotency-Key:** optional
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | `string` | **Can change.** 1–200 characters. |
+| `status` | `string` | **Can change.** `active`, `inactive` or `draft`. To archive, use `DELETE`; `archived` cannot be set here. |
+| `external_id` | `string` | **Can change.** Must not be used by another workflow (`409 CONFLICT`). |
+| `delivery` | `object` | **Can change.** `whatsapp`, `voice_call`, `sms_backup`. Only the keys you send change. |
+| `schedule` | `object` | **Can change.** Send `start_time` and `end_time` together. Other keys merge; `days` is replaced as a whole list. |
+| `default_methods` | `array<string>` | **Can change.** 1–3 different values of `data_enrichment`, `skill_verification`, `interest_collection`. It only decides the checks of mandates that send no `methods` of their own, so existing mandates keep theirs. |
+| `verification_methods` | — | **Read-only.** Record switches both on for every workflow. Sending it (or any other unknown field) is refused with `400 VALIDATION_FAILED`. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("PATCH", "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8", {
+  "schedule": { "start_time": "10:00", "end_time": "18:00" }
+});
+const { data } = await res.json();
+```
+
+```python Python
+res = call("PATCH", "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8", {
+    "schedule": {"start_time": "10:00", "end_time": "18:00"}
+})
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall PATCH "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8" '{
+  "schedule": { "start_time": "10:00", "end_time": "18:00" }
+}'
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+    "external_id": "wf-warehouse-chennai",
+    "name": "Warehouse associates - Chennai",
+    "collar": "blue",
+    "status": "active",
+    "default_methods": ["data_enrichment", "skill_verification"],
+    "verification_methods": [
+      { "type": "scenario-questions", "enabled": true },
+      { "type": "ai-phone-call", "enabled": true }
+    ],
+    "delivery": { "whatsapp": true, "voice_call": true, "sms_backup": false },
+    "schedule": {
+      "start_time": "10:00",
+      "end_time": "18:00",
+      "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
+      "timezone": "Asia/Kolkata",
+      "max_retries": 3,
+      "retry_after_hours": 4
+    },
+    "is_external": true,
+    "created_at": "2026-10-09T10:15:30.123Z",
+    "updated_at": "2026-10-09T11:02:41.000Z"
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 400 `VALIDATION_FAILED` | Empty body, `verification_methods` or another unknown field, a time not HH:MM, only one of start_time / end_time, or a bad value. |
+| 404 `NOT_FOUND` | No such workflow. |
+| 403 `FORBIDDEN` | Workflow was made in the playground; the API can only read it. |
+| 409 `CONFLICT` | Workflow is archived, or `external_id` is taken. |
+
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/workflows/update-a-workflow)
+
+---
+
+### Archive a workflow
+
+`DELETE /workflows/{workflow_id}`
+
+Retire a workflow you no longer use. It is archived, not erased.
+
+**Scope:** `workflows:write` · **Idempotency-Key:** optional
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("DELETE", "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("DELETE", "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall DELETE "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+    "external_id": "wf-warehouse-chennai",
+    "name": "Warehouse associates - Chennai",
+    "collar": "blue",
+    "status": "archived",
+    "default_methods": ["data_enrichment", "skill_verification"],
+    "verification_methods": [
+      { "type": "scenario-questions", "enabled": true },
+      { "type": "ai-phone-call", "enabled": true }
+    ],
+    "delivery": { "whatsapp": true, "voice_call": true, "sms_backup": false },
+    "schedule": {
+      "start_time": "09:00",
+      "end_time": "19:00",
+      "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
+      "timezone": "Asia/Kolkata",
+      "max_retries": 3,
+      "retry_after_hours": 4
+    },
+    "is_external": true,
+    "created_at": "2026-10-09T10:15:30.123Z",
+    "updated_at": "2026-10-09T11:30:00.000Z"
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such workflow. |
+| 403 `FORBIDDEN` | Workflow was made in the playground. |
+| 409 `WORKFLOW_IN_USE` | It still has open mandates. Archive them first. |
+
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/workflows/archive-a-workflow)

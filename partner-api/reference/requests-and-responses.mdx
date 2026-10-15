@@ -1,0 +1,94 @@
+---
+title: "Requests and responses"
+description: "Base URL, response format, paging, idempotency and data access."
+---
+
+## Basics
+
+| | |
+|---|---|
+| Base URL | `https://api-bc.userecord.io/api/v1/partner` |
+| Transport | HTTPS only. Plain HTTP answers `403 HTTPS_REQUIRED`. |
+| Body | JSON (`application/json`, UTF-8), at most 256 KB. |
+| Naming | `snake_case` fields. |
+| Times | ISO 8601 in UTC, for example `2026-10-05T12:41:10.000Z`. |
+
+## Response format
+
+Every answer has the same envelope.
+
+<CodeGroup>
+
+```json Success
+{
+  "success": true,
+  "data": { }
+}
+```
+
+```json Failure
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "body.name: Required",
+    "details": [{ "path": "body.name", "message": "Required" }],
+    "request_id": "req_6f1d2c3b4a5e4f60918273645aabbccd"
+  }
+}
+```
+
+</CodeGroup>
+
+Match on `error.code`, never on the message text. Every answer also carries an `x-request-id` header. Quote it when you contact Record support. See [Errors](/partner-api/reference/errors) for every code.
+
+## Paging
+
+Every list is paged.
+
+```json
+{
+  "items": [ ],
+  "count": 50,
+  "total": 240,
+  "next_cursor": "eyJpZCI6IjY2YTEifQ",
+  "has_more": true
+}
+```
+
+Send `limit` for the page size and, for the next page, `cursor` set to the previous `next_cursor`. Keep going until `has_more` is `false`. Lists run oldest first. `total` can be `null` when you filter by a status that is worked out per item.
+
+## Idempotency
+
+Send an `Idempotency-Key` header (a new UUID) on writes. A retry with the same key returns the first answer instead of doing the work twice, so a timeout never creates a duplicate.
+
+- **Required** on `POST /workflows`, `POST /mandates`, `PUT /mandates/{mandate_id}/questions`, `POST /mandates/{mandate_id}/archive`, `POST /campaigns`, `POST /campaigns/{campaign_id}/candidates` and `POST /skill-requests`. Optional on other writes.
+- Keys are kept for 24 hours per API key. A replayed answer has the header `Idempotent-Replayed: true`.
+- Only successful answers are kept. After an error, a retry with the same key runs again.
+
+| Situation | Answer |
+|---|---|
+| Same key, same request | The first answer, replayed. |
+| Same key, different request | `422 IDEMPOTENCY_KEY_REUSED` |
+| Same key, first call still running | `409 IDEMPOTENCY_IN_PROGRESS`. Retry after 1 second. |
+
+<Note>
+  On a retry, reuse the `Idempotency-Key` but sign the request again. A signed write is accepted only once.
+</Note>
+
+## What you can read and change
+
+- **Reads** cover everything in your organisation, project and mode: objects made through the API and in the Record playground. `is_external: true` marks the ones made through the API.
+- **Changes** apply only to what you created through the API. Anything made in the playground answers `403 FORBIDDEN`.
+- **Test and live** data are separate. A TEST key never sees live objects, and the reverse.
+- **Deletes** archive. Nothing is erased, and results stay readable.
+- Another organisation's objects answer `404 NOT_FOUND`.
+
+## Retrying
+
+| Answer | What to do |
+|---|---|
+| `429` | Wait for `Retry-After` seconds, then slow down. |
+| `409` with `Retry-After` | Wait, then retry. Usually a mandate that is still preparing. |
+| `5xx` | Retry with backoff, the same `Idempotency-Key` and a fresh signature. |
+| Other `4xx` | Fix the request. Retrying unchanged gives the same answer. |

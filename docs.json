@@ -20,6 +20,7 @@
     "tabs": [
       {
         "tab": "Guides",
+        "hidden": true,
         "groups": [
           {
             "group": "Overview",
@@ -170,6 +171,7 @@
       },
       {
         "tab": "Skills Issuance",
+        "hidden": true,
         "groups": [
           {
             "group": "Issuance API",
@@ -186,6 +188,7 @@
       },
       {
         "tab": "SmartAI Assessment SDK",
+        "hidden": true,
         "groups": [
           {
             "group": "Getting Started",
@@ -259,13 +262,174 @@
         ]
       },
       {
+        "tab": "Blue Collar API Guides",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              "partner-api/index",
+              "partner-api/quickstart",
+              "partner-api/authentication"
+            ]
+          },
+          {
+            "group": "Integration",
+            "pages": [
+              "partner-api/guides/workflows",
+              "partner-api/guides/job-mandates",
+              "partner-api/guides/skills",
+              "partner-api/guides/lookups",
+              "partner-api/guides/campaigns",
+              "partner-api/guides/results",
+              "partner-api/guides/webhooks",
+              "partner-api/guides/analytics"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "partner-api/reference/requests-and-responses",
+              "partner-api/reference/errors",
+              "partner-api/reference/limits",
+              "partner-api/reference/statuses"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Blue Collar API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "partner-api/api-reference/introduction"
+            ]
+          },
+          {
+            "group": "Workflows",
+            "openapi": "partner-api/api-reference/openapi.json",
+            "pages": [
+              "POST /workflows",
+              "GET /workflows",
+              "GET /workflows/{workflow_id}",
+              "PATCH /workflows/{workflow_id}",
+              "DELETE /workflows/{workflow_id}"
+            ]
+          },
+          {
+            "group": "Job mandates",
+            "openapi": "partner-api/api-reference/openapi.json",
+            "pages": [
+              "POST /mandates",
+              "GET /mandates/{mandate_id}",
+              "GET /mandates",
+              "GET /mandates/{mandate_id}/questions",
+              "PUT /mandates/{mandate_id}/questions",
+              "PUT /mandates/{mandate_id}",
+              "PUT /mandates/{mandate_id}/methods",
+              "PUT /mandates/{mandate_id}/skills",
+              "PUT /mandates/{mandate_id}/enrichment-questions",
+              "POST /mandates/{mandate_id}/archive",
+              "DELETE /mandates/{mandate_id}"
+            ]
+          },
+          {
+            "group": "Skills",
+            "openapi": "partner-api/api-reference/openapi.json",
+            "pages": [
+              "GET /skills/search",
+              "GET /skills/domains",
+              "GET /skills/domains/{domain_id}/sub-domains",
+              "GET /skills/sub-domains/{sub_domain_id}/skills",
+              "GET /skills/{skill_id}",
+              "POST /skills/lookup",
+              "POST /skills/match",
+              "POST /skills/extract",
+              "POST /skill-requests",
+              "GET /skill-requests",
+              "GET /skill-requests/{request_id}"
+            ]
+          },
+          {
+            "group": "Lookups",
+            "openapi": "partner-api/api-reference/openapi.json",
+            "pages": [
+              "GET /locations",
+              "GET /countries",
+              "GET /employment-types",
+              "GET /shifts"
+            ]
+          },
+          {
+            "group": "Campaigns",
+            "openapi": "partner-api/api-reference/openapi.json",
+            "pages": [
+              "POST /campaigns",
+              "GET /campaigns/{campaign_id}",
+              "GET /campaigns",
+              "POST /campaigns/{campaign_id}/start",
+              "POST /campaigns/{campaign_id}/candidates",
+              "POST /campaigns/{campaign_id}/candidates/{candidate_id}/resend",
+              "POST /campaigns/{campaign_id}/pause",
+              "POST /campaigns/{campaign_id}/resume"
+            ]
+          },
+          {
+            "group": "Results",
+            "openapi": "partner-api/api-reference/openapi.json",
+            "pages": [
+              "GET /campaigns/{campaign_id}/results",
+              "GET /results/{candidate_id}",
+              "GET /mandates/{mandate_id}/campaigns",
+              "GET /campaigns/{campaign_id}/candidates",
+              "GET /candidates/{candidate_id}/result"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "openapi": "partner-api/api-reference/openapi.json",
+            "pages": [
+              "POST /webhooks/endpoints",
+              "GET /webhooks/endpoints",
+              "GET /webhooks/endpoints/{endpoint_id}",
+              "PATCH /webhooks/endpoints/{endpoint_id}",
+              "DELETE /webhooks/endpoints/{endpoint_id}",
+              "POST /webhooks/endpoints/{endpoint_id}/test",
+              "POST /webhooks/endpoints/{endpoint_id}/backfill",
+              "GET /webhooks/endpoints/{endpoint_id}/deliveries",
+              "POST /webhooks/deliveries/{delivery_id}/retry"
+            ]
+          },
+          {
+            "group": "Events",
+            "openapi": "partner-api/api-reference/openapi.json",
+            "pages": [
+              "GET /events",
+              "POST /events/ack",
+              "GET /events/{event_id}"
+            ]
+          },
+          {
+            "group": "Analytics",
+            "openapi": "partner-api/api-reference/openapi.json",
+            "pages": [
+              "GET /analytics/workflows/{workflow_id}",
+              "GET /analytics/mandates/{mandate_id}",
+              "GET /analytics/campaigns/{campaign_id}"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "Meta Config",
+        "hidden": true,
         "pages": [
           "meta-x-record"
         ]
       },
       {
         "tab": "Policies and Data Security",
+        "hidden": true,
         "pages": [
           "terms-and-conditions",
           "privacy",
@@ -288,12 +452,6 @@
         "name": "x-api-key"
       }
     }
-  },
-  "navbar": {
-    "links": [
-      { "label": "Guides", "href": "/quickstart" },
-      { "label": "API Reference", "href": "/api-reference/introduction" }
-    ]
   },
   "contextual": {
     "options": [

@@ -1,0 +1,44 @@
+---
+title: "Errors"
+description: "Every error code the Blue Collar API returns, and what to do about it."
+---
+
+Every failure has the same shape. Match on `error.code`, never on the message. For `409` and `429`, read the `Retry-After` header (seconds).
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Mandate not found",
+    "request_id": "req_6f1d2c3b4a5e4f60918273645aabbccd"
+  }
+}
+```
+
+`details` lists each failing field as `{ path, message }` when the request did not validate.
+
+| HTTP | Code | What it means | What to do |
+|---|---|---|---|
+| 400 | `VALIDATION_FAILED` | A field is missing, wrong, or not allowed. | Read `error.details[].path` and fix that field. |
+| 400 | `IDEMPOTENCY_KEY_REQUIRED` | This endpoint needs an `Idempotency-Key` header. | Send a new UUID in `Idempotency-Key`. |
+| 401 | `UNAUTHORIZED` | Key or signature is wrong, your clock is 5+ minutes off, or a signature was used twice. | Re-check key and secret, sign every request afresh, sync your clock. |
+| 402 | `INSUFFICIENT_CREDITS` | Not enough credits for this campaign. | Top up credits (1 per candidate when skill verification is on), then retry. |
+| 403 | `SCOPE_MISSING` | The key is valid but not allowed to call this endpoint. | Ask Record to add the scope named in the message. |
+| 403 | `FORBIDDEN` | You can read this object but not change it (made in the playground), or a TEST key used a number that is not on its list. | Work with objects created through the API; with a TEST key use the numbers Record listed. |
+| 403 | `HTTPS_REQUIRED` | Plain `http://` is refused on the live host. | Call the `https://` address. |
+| 404 | `NOT_FOUND` | No such object for this key’s organisation, project and mode. | Check the id. TEST and LIVE data are separate. |
+| 409 | `CONFLICT` | Wrong state or the id is taken: archived, already started, duplicate `external_id` / `job_id`, still preparing. | Read the message; wait for `Retry-After`, or use a new id. |
+| 409 | `WORKFLOW_IN_USE` | The workflow still has open mandates. | Archive those mandates first, then delete the workflow. |
+| 409 | `IDEMPOTENCY_IN_PROGRESS` | The first call with this `Idempotency-Key` is still running. | Wait `Retry-After` (1 s) and retry with the same key. |
+| 413 | `PAYLOAD_TOO_LARGE` | The body is bigger than 256 KB. | Send fewer items per call (for example under 1,000 candidates). |
+| 415 | `UNSUPPORTED_MEDIA_TYPE` | The body was not sent as JSON. | Send `Content-Type: application/json` (UTF-8). |
+| 422 | `LIMIT_EXCEEDED` | You went over a business limit (skills, verified skills, questions, candidates). | Send fewer items; see [Limits](/partner-api/reference/limits). |
+| 422 | `IDEMPOTENCY_KEY_REUSED` | That `Idempotency-Key` was already used for a different request. | Use a new key for a new request; reuse a key only to retry the same one. |
+| 429 | `RATE_LIMITED` | Too many requests too fast. | Wait `Retry-After` seconds, then slow down. |
+| 429 | `COOLDOWN` | Too many rejected calls (or skill-browse crawling): the key is paused for a while. | Wait `Retry-After` seconds (up to 15 minutes). |
+| 429 | `DAILY_CAP` | A daily allowance is used up. | Wait until midnight IST (see `Retry-After`). |
+| 500 | `SERVER_ERROR` | Something failed on Record’s side. | Retry with backoff and the same `Idempotency-Key`; quote `request_id` if it keeps happening. |
+| 503 | `SERVICE_DISABLED` | The API is switched off for maintenance. | Retry after `Retry-After` seconds. |
+
+Each endpoint in the [API reference](/partner-api/api-reference/introduction) lists the errors specific to it.

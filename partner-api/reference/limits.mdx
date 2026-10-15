@@ -1,0 +1,60 @@
+---
+title: "Limits"
+description: "Business limits and rate limits."
+---
+
+## Business limits
+
+| Limit | Value |
+|---|---|
+| Request body | 256 KB, JSON only |
+| Clock difference | ± 5 minutes (`x-timestamp`) |
+| Skills per mandate | 5 to 10 recommended, at most 10 |
+| Verified skills per mandate | At most 3 with `verify: true` |
+| Screening questions per mandate | 1–5 (`yes_no` or `voice`) |
+| Mandate changes | 10 per mandate per hour |
+| Candidates | 1,000 per call · 20,000 per campaign · 2,000 different people per key per day |
+| Webhook endpoints | 5 |
+| Events and backfill | Kept and replayable for 30 days |
+| `Idempotency-Key` | Kept 24 hours |
+| Rate limits | Per key and endpoint type; see headers `RateLimit-Remaining`, `Retry-After` (below) |
+| TEST key | Sees only test data; limits are one tenth of live |
+| Changing things | Only objects created through this API (others answer `403`); you can read all your organisation's |
+| Deleting | Always an archive; nothing is erased |
+
+## Rate limits
+
+Every key has a bucket for the whole key and one per endpoint class. With `x-on-behalf-of`, each recruiter also gets their own bucket (5 per second, 200 per minute). TEST keys get one tenth of every number below.
+
+| Endpoint class | Endpoints | Per second (burst) | Per minute | Per day |
+|---|---|---|---|---|
+| Whole key | All | 150 (300) | 6,000 | |
+| `reads` | Reads, events and webhooks | 20 (40) | 1,200 | |
+| `skillsSearch` | Skill search and browse | 100 (200) | 4,000 | |
+| `skillsLookup` | `GET /skills/{skill_id}`, `POST /skills/lookup` | 20 (40) | 600 | |
+| `skillsMatch` | `POST /skills/match`, `POST /skills/extract` | 10 (20) | 300 | 50,000 |
+| `skillRequests` | `POST /skill-requests` | 2 (5) | 60 | 2,000 |
+| `workflowWrites` | Workflow writes | 5 (10) | 60 | 2,000 |
+| `mandateWrites` | Mandate writes | 10 (20) | 300 | 20,000 |
+| `campaignWrites` | Campaign writes | 2 (5) | 30 | 500 |
+
+Daily caps reset at midnight IST. Record can raise limits for a key on request.
+
+### Headers
+
+Every answer carries the minute window of its endpoint class:
+
+| Header | Meaning |
+|---|---|
+| `RateLimit-Limit` | Calls allowed this minute. |
+| `RateLimit-Remaining` | Calls left this minute. |
+| `RateLimit-Reset` | Seconds until the window resets. |
+| `Retry-After` | On a `429`: seconds to wait. |
+
+### Cooldown
+
+100 rate-limited calls within a minute put the key in a 60-second cooldown (`429 COOLDOWN`). Repeats within the hour double it, up to 15 minutes.
+
+### Skill taxonomy
+
+Skill search and browse return at most 15,000 different skills per key per day (`429 DAILY_CAP`). More than 200 browse pages in an hour puts the key in cooldown. There is no bulk export: store only the skills your recruiters pick.

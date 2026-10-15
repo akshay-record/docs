@@ -1,0 +1,644 @@
+---
+title: "Campaigns"
+description: "Step 3. Send candidates for a job. Record contacts and verifies them."
+---
+
+A campaign sends your candidates (name + mobile number) to a mandate. Record contacts them on WhatsApp, follows up by call and SMS, and verifies them.
+
+| Needs | You get | Scope |
+|---|---|---|
+| `mandate_id` from [step 2](/partner-api/guides/job-mandates) | `campaign_id` | `campaigns:write` (reads also allow `results:read`) |
+
+<Warning>
+  **This contacts real people and spends credits** (1 per candidate when skill verification is on). The phone numbers in the samples are placeholders, so replace them with your own test numbers. A TEST key may only reach numbers Record listed for it (otherwise `403 FORBIDDEN`). If the mandate is still `preparing`, the campaign waits and goes out by itself when it is `ready`.
+</Warning>
+
+## Candidates
+
+- `phone` is a mobile number with 10 digits (`98765 43210`) or with a country code (`+91 98765 43210`). It is never returned by the API.
+- `external_id` is your id for the candidate. It comes back on every result.
+- `metadata` holds up to 10 fields of your own, such as an application id. It needs `external_id` and comes back unchanged on every result and event.
+- A number that cannot be used does not fail the batch. It comes back in `rejected` with a reason: `invalid_phone`, `duplicate_in_request` or `already_in_campaign`.
+- Up to 1,000 candidates per call, 20,000 per campaign, and 2,000 different people per key per day (TEST keys: 200), reset at midnight IST.
+
+## Campaign status
+
+| Status | Meaning |
+|---|---|
+| `draft` | Created with `start: manual` and not started yet. |
+| `waiting_for_questions` | Started. Goes out by itself once the mandate is `ready`. |
+| `blocked` | Started but stuck. `blocked.reason` and `blocked.message` say why. |
+| `sending` | Candidates are being contacted. |
+| `paused` | Paused by you. Nobody new is contacted. |
+| `completed` | Finished. |
+| `cancelled` | Stopped for good. |
+
+## Endpoints
+
+### Create a campaign
+
+`POST /campaigns`
+
+Send your candidates (name + phone) for a mandate. Record contacts and verifies them. Returns `campaign_id`.
+
+**Scope:** `campaigns:write` · **Idempotency-Key:** required
+
+<Warning>This contacts real people.</Warning>
+
+| Field | Type | Description |
+|---|---|---|
+| `mandate_id` | `string` | **Required.** From step 2 (or send your own `job_id` instead, never both). |
+| `start` | `string` | **Required.** `now` sends at once; `manual` only creates a draft (start it later). |
+| `candidates` | `array<object>` | **Required.** 1–1,000 of `{ name, phone, external_id? }`. Phone: 10 digits or with country code. Bad numbers come back in `rejected`. Each candidate can also carry `metadata`: up to 10 fields of your own (needs `external_id`), returned unchanged on every result and event. |
+| `name`, `external_id`, `language` | `string` | Campaign name, your unique id for it, language `en` `hi` `ta` `te` `kn` `ml` (default `en`). |
+| `job_id` | `string` | Your own job id, if the mandate was created with one. Send this or mandate_id, not both. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("POST", "/api/v1/partner/campaigns", {
+  "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+  "name": "Warehouse Associate - October batch",
+  "external_id": "ats-campaign-5521",
+  "start": "now",
+  "language": "en",
+  "candidates": [
+    {
+      "external_id": "cand-88231",
+      "name": "Ravi Kumar",
+      "phone": "98765 43210"
+    },
+    {
+      "external_id": "cand-88232",
+      "name": "Meena Devi",
+      "phone": "+91 98123 45678"
+    },
+    {
+      "external_id": "cand-88233",
+      "name": "Karthik Raj",
+      "phone": "99000 11122"
+    }
+  ]
+});
+const { data } = await res.json();
+```
+
+```python Python
+res = call("POST", "/api/v1/partner/campaigns", {
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "name": "Warehouse Associate - October batch",
+    "external_id": "ats-campaign-5521",
+    "start": "now",
+    "language": "en",
+    "candidates": [
+        {
+            "external_id": "cand-88231",
+            "name": "Ravi Kumar",
+            "phone": "98765 43210"
+        },
+        {
+            "external_id": "cand-88232",
+            "name": "Meena Devi",
+            "phone": "+91 98123 45678"
+        },
+        {
+            "external_id": "cand-88233",
+            "name": "Karthik Raj",
+            "phone": "99000 11122"
+        }
+    ]
+})
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall POST "/api/v1/partner/campaigns" '{
+  "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+  "name": "Warehouse Associate - October batch",
+  "external_id": "ats-campaign-5521",
+  "start": "now",
+  "language": "en",
+  "candidates": [
+    {
+      "external_id": "cand-88231",
+      "name": "Ravi Kumar",
+      "phone": "98765 43210"
+    },
+    {
+      "external_id": "cand-88232",
+      "name": "Meena Devi",
+      "phone": "+91 98123 45678"
+    },
+    {
+      "external_id": "cand-88233",
+      "name": "Karthik Raj",
+      "phone": "99000 11122"
+    }
+  ]
+}'
+```
+
+```json 201 Response
+{
+  "success": true,
+  "data": {
+    "campaign": {
+      "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+      "external_id": "ats-campaign-5521",
+      "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+      "job_id": "job-10452",
+      "name": "Warehouse Associate - October batch",
+      "status": "waiting_for_questions",
+      "blocked": null,
+      "language": "english",
+      "candidates": { "total": 3, "sent": 0, "queued": 3, "failed": 0 },
+      "created_at": "2026-10-05T09:12:44.000Z",
+      "started_at": "2026-10-05T09:12:45.000Z",
+      "sent_at": null,
+      "paused_at": null
+    },
+    "accepted": 3,
+    "rejected": [],
+    "credits_reserved": 3
+  }
+}
+```
+
+</CodeGroup>
+
+Save `data.campaign.campaign_id` for the next step.
+
+| Error | When |
+|---|---|
+| 400 `VALIDATION_FAILED` | Both or neither of `mandate_id` / `job_id`, or no usable phone number. |
+| 402 `INSUFFICIENT_CREDITS` | Not enough credits (1 per candidate when skill verification is on). |
+| 403 `FORBIDDEN` | TEST key with a number not on its list, or the mandate was made in the playground. |
+| 404 `NOT_FOUND` | No such mandate. |
+| 409 `CONFLICT` | Mandate is archived, or campaign `external_id` is taken. |
+| 429 `DAILY_CAP` | 2,000 different candidates already added today. |
+
+Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/create-a-campaign)
+
+---
+
+### Get a campaign
+
+`GET /campaigns/{campaign_id}`
+
+See whether it has gone out, is waiting for the job’s questions, is paused or stuck, and how many are contacted. `candidate_list` holds its first candidates (100 by default; `candidates_limit` up to 200, or 0 to leave it out) with their `candidate_id`, `delivery` and `can_resend`; `has_more` says there are more. For all of them, with verdicts and answers, call `GET /campaigns/{campaign_id}/candidates`.
+
+**Scope:** `campaigns:write` or `results:read` · **Idempotency-Key:** not used
+
+| Query | Type | Description |
+|---|---|---|
+| `candidates_limit` | `integer` | How many candidates to list in `candidate_list`; 0 for none. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f?candidates_limit=100");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f?candidates_limit=100")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f?candidates_limit=100"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+    "external_id": "ats-campaign-5521",
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "name": "Warehouse Associate - October batch",
+    "status": "sending",
+    "blocked": null,
+    "language": "english",
+    "candidates": { "total": 3, "sent": 3, "queued": 0, "failed": 0 },
+    "created_at": "2026-10-05T09:12:44.000Z",
+    "started_at": "2026-10-05T09:12:45.000Z",
+    "sent_at": "2026-10-05T09:30:00.000Z",
+    "paused_at": null,
+    "candidate_list": {
+      "items": [
+        {
+          "candidate_id": "a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01",
+          "external_id": "cand-88231",
+          "name": "Ravi Kumar",
+          "sent_at": "2026-10-05T09:30:00.000Z",
+          "delivery": "sent",
+          "can_resend": true
+        }
+      ],
+      "has_more": false
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such `campaign_id`. |
+
+Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/get-a-campaign)
+
+---
+
+### List campaigns
+
+`GET /campaigns`
+
+List your organisation’s campaigns; filter by `mandate_id` to see one job’s.
+
+**Scope:** `campaigns:write` or `results:read` · **Idempotency-Key:** not used
+
+| Query | Type | Description |
+|---|---|---|
+| `mandate_id` | `string` | Record's mandate id (JM_...): the mandate_id returned when you create the mandate. |
+| `job_id` | `string` | Your own id (1 to 128 of A-Z a-z 0-9 . _ : -). |
+| `status` | `string` | One of `draft`, `waiting_for_questions`, `blocked`, `sending`, `paused`, `completed`, `cancelled`. |
+| `limit` | `integer` | 1 to 100, default 50. |
+| `cursor` | `string` | The next_cursor of the previous page. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/campaigns?mandate_id=JM_261009101612456H3N8W2L5C9V1Z4&limit=50");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/campaigns?mandate_id=JM_261009101612456H3N8W2L5C9V1Z4&limit=50")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/campaigns?mandate_id=JM_261009101612456H3N8W2L5C9V1Z4&limit=50"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+        "external_id": "ats-campaign-5521",
+        "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+        "job_id": "job-10452",
+        "name": "Warehouse Associate - October batch",
+        "status": "sending",
+        "blocked": null,
+        "language": "english",
+        "candidates": { "total": 3, "sent": 3, "queued": 0, "failed": 0 },
+        "created_at": "2026-10-05T09:12:44.000Z",
+        "started_at": "2026-10-05T09:12:45.000Z",
+        "sent_at": "2026-10-05T09:30:00.000Z",
+        "paused_at": null
+      }
+    ],
+    "count": 1,
+    "total": null,
+    "next_cursor": null,
+    "has_more": false
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 400 `VALIDATION_FAILED` | Bad `mandate_id` format, `cursor` or `limit`. |
+
+Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/list-campaigns)
+
+---
+
+### Start a campaign
+
+`POST /campaigns/{campaign_id}/start`
+
+Start a campaign you created with `start: manual`. It starts once.
+
+**Scope:** `campaigns:write` · **Idempotency-Key:** optional
+
+<Warning>This contacts real people.</Warning>
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("POST", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/start");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("POST", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/start")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/start"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+    "external_id": "ats-campaign-5521",
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "name": "Warehouse Associate - October batch",
+    "status": "waiting_for_questions",
+    "blocked": null,
+    "language": "english",
+    "candidates": { "total": 3, "sent": 0, "queued": 3, "failed": 0 },
+    "created_at": "2026-10-05T09:12:44.000Z",
+    "started_at": "2026-10-05T09:12:45.000Z",
+    "sent_at": null,
+    "paused_at": null
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such campaign. |
+| 403 `FORBIDDEN` | Campaign was made in the playground, or TEST key number not allowed. |
+| 409 `CONFLICT` | Already started, or the job is archived. |
+
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/start-a-campaign)
+
+---
+
+### Add candidates
+
+`POST /campaigns/{campaign_id}/candidates`
+
+Add more people (up to 1,000 a call). A number already in the campaign is skipped, so resending is safe.
+
+**Scope:** `campaigns:write` · **Idempotency-Key:** required
+
+<Warning>This contacts real people.</Warning>
+
+| Field | Type | Description |
+|---|---|---|
+| `candidates` | `array<object>` | **Required.** 1 to 1,000 of `{ name, phone, external_id?, metadata? }`, as in Create a campaign. A number already in the campaign is skipped. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("POST", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates", {
+  "candidates": [
+    {
+      "external_id": "cand-88240",
+      "name": "Anitha Selvam",
+      "phone": "97000 22211"
+    }
+  ]
+});
+const { data } = await res.json();
+```
+
+```python Python
+res = call("POST", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates", {
+    "candidates": [
+        {
+            "external_id": "cand-88240",
+            "name": "Anitha Selvam",
+            "phone": "97000 22211"
+        }
+    ]
+})
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates" '{
+  "candidates": [
+    {
+      "external_id": "cand-88240",
+      "name": "Anitha Selvam",
+      "phone": "97000 22211"
+    }
+  ]
+}'
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "campaign": {
+      "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+      "external_id": "ats-campaign-5521",
+      "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+      "job_id": "job-10452",
+      "name": "Warehouse Associate - October batch",
+      "status": "waiting_for_questions",
+      "blocked": null,
+      "language": "english",
+      "candidates": { "total": 4, "sent": 0, "queued": 4, "failed": 0 },
+      "created_at": "2026-10-05T09:12:44.000Z",
+      "started_at": "2026-10-05T09:12:45.000Z",
+      "sent_at": null,
+      "paused_at": null
+    },
+    "accepted": 1,
+    "rejected": []
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such campaign. |
+| 403 `FORBIDDEN` | Campaign was made in the playground, or TEST key number not allowed. |
+| 409 `CONFLICT` | Campaign is completed / cancelled, or the job is archived. |
+| 422 `LIMIT_EXCEEDED` | More than 20,000 candidates in the campaign. |
+| 402 `INSUFFICIENT_CREDITS` | Not enough credits. |
+| 400 `VALIDATION_FAILED` | No usable phone number in the batch. |
+| 429 `DAILY_CAP` | 2,000 different candidates already added today. |
+
+Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/add-candidates)
+
+---
+
+### Resend a candidate link
+
+`POST /campaigns/{campaign_id}/candidates/{candidate_id}/resend`
+
+Send one candidate’s link again over WhatsApp (and SMS) if they have not received or opened it. Get the `candidate_id` from `GET /campaigns/{campaign_id}/candidates` (look for `can_resend: true`). Only for a started campaign you created, and not while it is paused. A candidate who has completed or declined has nothing to resend. One send per candidate per minute.
+
+**Scope:** `campaigns:write` · **Idempotency-Key:** optional
+
+<Warning>This contacts real people.</Warning>
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("POST", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01/resend");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("POST", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01/resend")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01/resend"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "candidate_id": "a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01",
+    "external_id": "cand-88231",
+    "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+    "resent_at": "2026-10-05T10:15:00.000Z"
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such campaign or candidate. |
+| 403 `FORBIDDEN` | Campaign was made in the playground. |
+| 409 `CONFLICT` | Campaign not started, paused, completed or cancelled; or the candidate has completed, declined or is not contacted yet. |
+| 429 `RATE_LIMITED` | A link was sent to this candidate less than a minute ago. Wait Retry-After seconds. |
+
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/resend-a-candidate-link)
+
+---
+
+### Pause a campaign
+
+`POST /campaigns/{campaign_id}/pause`
+
+Emergency brake: nobody new is contacted until you resume.
+
+**Scope:** `campaigns:write` · **Idempotency-Key:** optional
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("POST", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/pause");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("POST", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/pause")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/pause"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+    "external_id": "ats-campaign-5521",
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "name": "Warehouse Associate - October batch",
+    "status": "paused",
+    "blocked": null,
+    "language": "english",
+    "candidates": { "total": 3, "sent": 0, "queued": 3, "failed": 0 },
+    "created_at": "2026-10-05T09:12:44.000Z",
+    "started_at": "2026-10-05T09:12:45.000Z",
+    "sent_at": null,
+    "paused_at": "2026-10-05T09:40:00.000Z"
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such campaign. |
+| 403 `FORBIDDEN` | Campaign was made in the playground. |
+| 409 `CONFLICT` | Not started yet, or not in a state that can be paused. |
+
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/pause-a-campaign)
+
+---
+
+### Resume a campaign
+
+`POST /campaigns/{campaign_id}/resume`
+
+Continue a paused campaign: held-back people are contacted now.
+
+**Scope:** `campaigns:write` · **Idempotency-Key:** optional
+
+<Warning>This contacts real people.</Warning>
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("POST", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/resume");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("POST", "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/resume")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/resume"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+    "external_id": "ats-campaign-5521",
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "name": "Warehouse Associate - October batch",
+    "status": "sending",
+    "blocked": null,
+    "language": "english",
+    "candidates": { "total": 3, "sent": 0, "queued": 3, "failed": 0 },
+    "created_at": "2026-10-05T09:12:44.000Z",
+    "started_at": "2026-10-05T09:12:45.000Z",
+    "sent_at": null,
+    "paused_at": null
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such campaign. |
+| 403 `FORBIDDEN` | Campaign was made in the playground. |
+| 409 `CONFLICT` | Not paused, or the job is archived. |
+
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/resume-a-campaign)

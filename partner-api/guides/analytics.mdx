@@ -1,0 +1,335 @@
+---
+title: "Analytics"
+description: "Funnel, channel and drop-off numbers for a workflow, job mandate or campaign."
+---
+
+The same numbers the Record playground shows on a workflow's Overview: how many invites went out, how many candidates started and finished, which channel they finished on, follow-ups, calls, where people drop off, completion by language and what other work candidates would take. Counts only: no names or phone numbers.
+
+| Needs | You get | Scope |
+|---|---|---|
+| `workflow_id`, `mandate_id` or `campaign_id` from the steps above | funnel, channels, follow-ups, calls, drop-offs, languages | `analytics:read` |
+
+## What you get
+
+| Section | Contents |
+|---|---|
+| `assigned_candidates` | Candidates added to the campaigns in scope. |
+| `tracked_candidates` | Candidates with a status row in the logs. |
+| `funnel` | `sent` (invites sent), `started` (replied interested or started the verification), `not_started` and `completed` (finished with a verdict). |
+| `verification_methods` | Completions by `video` (verification link) and `audio` (phone call). |
+| `whatsapp` | Messages `sent`, `delivered`, `replied`, `failed`, and completions through WhatsApp. |
+| `follow_ups` | Candidates reached by the first message and each follow-up, and `completed_after_follow_up` (completed after at least one nudge). |
+| `calls` | Calls `initiated`, `completed`, `not_answered` and `not_interested`. |
+| `channel_conversions` | Completions by `whatsapp`, `sms` and `phone_call`. |
+| `drop_offs` | Count and percentage for `sent_not_started`, `started_no_verification` and `completed_no_verdict`. |
+| `completion_by_language` | `reached`, `completed` and `completion_rate` per language. |
+| `other_interests` | How many completed candidates are `open_to_other` roles, the roles they named, and their experience. |
+
+## Endpoints
+
+### Get workflow analytics
+
+`GET /analytics/workflows/{workflow_id}`
+
+The workflow Overview numbers from the Record playground. Add `mandate_id` and/or `campaign_id` to narrow it to one job or campaign; each must belong to this workflow.
+
+**Scope:** `analytics:read` · **Idempotency-Key:** not used
+
+| Query | Type | Description |
+|---|---|---|
+| `mandate_id` | `string` | Only this job mandate. |
+| `campaign_id` | `string` | Only this campaign. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/analytics/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/analytics/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/analytics/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "campaign_id": null,
+    "analytics": {
+      "assigned_candidates": 240,
+      "tracked_candidates": 240,
+      "funnel": { "sent": 236, "started": 132, "not_started": 104, "completed": 78 },
+      "verification_methods": { "total_completed": 78, "video": 60, "audio": 18 },
+      "whatsapp": {
+        "sent": 236,
+        "delivered": 221,
+        "replied": 140,
+        "failed": 5,
+        "completed": 60
+      },
+      "follow_ups": {
+        "initial_message": 236,
+        "follow_up_one": 120,
+        "follow_up_two": 64,
+        "follow_up_three": 0,
+        "completed_after_follow_up": 31
+      },
+      "calls": {
+        "initiated": 90,
+        "completed": 18,
+        "not_answered": 52,
+        "not_interested": 9
+      },
+      "channel_conversions": { "total_completed": 78, "whatsapp": 52, "sms": 8, "phone_call": 18 },
+      "drop_offs": {
+        "sent_not_started": { "count": 104, "percentage": 44.1 },
+        "started_no_verification": { "count": 54, "percentage": 40.9 },
+        "completed_no_verdict": { "count": 0, "percentage": 0 }
+      },
+      "completion_by_language": [
+        {
+          "language": "tamil",
+          "reached": 150,
+          "completed": 51,
+          "completion_rate": 34
+        },
+        {
+          "language": "hindi",
+          "reached": 70,
+          "completed": 22,
+          "completion_rate": 31.4
+        }
+      ],
+      "other_interests": {
+        "completed_candidates": 78,
+        "open_to_other": 21,
+        "interests": [
+          { "name": "Forklift Operator", "count": 12, "percentage": 57.1 }
+        ],
+        "experience": [
+          { "label": "1 to 2 years", "count": 9 }
+        ]
+      }
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such workflow, or the `mandate_id` / `campaign_id` does not belong to it. |
+| 400 `VALIDATION_FAILED` | Malformed `mandate_id` or `campaign_id`. |
+
+Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/analytics/get-workflow-analytics)
+
+---
+
+### Get mandate analytics
+
+`GET /analytics/mandates/{mandate_id}`
+
+The same numbers for one job mandate, adding up all campaigns sent on it.
+
+**Scope:** `analytics:read` · **Idempotency-Key:** not used
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/analytics/mandates/JM_261009101612456H3N8W2L5C9V1Z4");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/analytics/mandates/JM_261009101612456H3N8W2L5C9V1Z4")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/analytics/mandates/JM_261009101612456H3N8W2L5C9V1Z4"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "campaign_id": null,
+    "analytics": {
+      "assigned_candidates": 240,
+      "tracked_candidates": 240,
+      "funnel": { "sent": 236, "started": 132, "not_started": 104, "completed": 78 },
+      "verification_methods": { "total_completed": 78, "video": 60, "audio": 18 },
+      "whatsapp": {
+        "sent": 236,
+        "delivered": 221,
+        "replied": 140,
+        "failed": 5,
+        "completed": 60
+      },
+      "follow_ups": {
+        "initial_message": 236,
+        "follow_up_one": 120,
+        "follow_up_two": 64,
+        "follow_up_three": 0,
+        "completed_after_follow_up": 31
+      },
+      "calls": {
+        "initiated": 90,
+        "completed": 18,
+        "not_answered": 52,
+        "not_interested": 9
+      },
+      "channel_conversions": { "total_completed": 78, "whatsapp": 52, "sms": 8, "phone_call": 18 },
+      "drop_offs": {
+        "sent_not_started": { "count": 104, "percentage": 44.1 },
+        "started_no_verification": { "count": 54, "percentage": 40.9 },
+        "completed_no_verdict": { "count": 0, "percentage": 0 }
+      },
+      "completion_by_language": [
+        {
+          "language": "tamil",
+          "reached": 150,
+          "completed": 51,
+          "completion_rate": 34
+        },
+        {
+          "language": "hindi",
+          "reached": 70,
+          "completed": 22,
+          "completion_rate": 31.4
+        }
+      ],
+      "other_interests": {
+        "completed_candidates": 78,
+        "open_to_other": 21,
+        "interests": [
+          { "name": "Forklift Operator", "count": 12, "percentage": 57.1 }
+        ],
+        "experience": [
+          { "label": "1 to 2 years", "count": 9 }
+        ]
+      }
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such mandate. |
+
+Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/analytics/get-mandate-analytics)
+
+---
+
+### Get campaign analytics
+
+`GET /analytics/campaigns/{campaign_id}`
+
+The same numbers for one campaign: how that batch of candidates went.
+
+**Scope:** `analytics:read` · **Idempotency-Key:** not used
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/analytics/campaigns/asmnt_9f2c41d7a8b3e65f");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/analytics/campaigns/asmnt_9f2c41d7a8b3e65f")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/analytics/campaigns/asmnt_9f2c41d7a8b3e65f"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+    "mandate_id": null,
+    "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+    "analytics": {
+      "assigned_candidates": 240,
+      "tracked_candidates": 240,
+      "funnel": { "sent": 236, "started": 132, "not_started": 104, "completed": 78 },
+      "verification_methods": { "total_completed": 78, "video": 60, "audio": 18 },
+      "whatsapp": {
+        "sent": 236,
+        "delivered": 221,
+        "replied": 140,
+        "failed": 5,
+        "completed": 60
+      },
+      "follow_ups": {
+        "initial_message": 236,
+        "follow_up_one": 120,
+        "follow_up_two": 64,
+        "follow_up_three": 0,
+        "completed_after_follow_up": 31
+      },
+      "calls": {
+        "initiated": 90,
+        "completed": 18,
+        "not_answered": 52,
+        "not_interested": 9
+      },
+      "channel_conversions": { "total_completed": 78, "whatsapp": 52, "sms": 8, "phone_call": 18 },
+      "drop_offs": {
+        "sent_not_started": { "count": 104, "percentage": 44.1 },
+        "started_no_verification": { "count": 54, "percentage": 40.9 },
+        "completed_no_verdict": { "count": 0, "percentage": 0 }
+      },
+      "completion_by_language": [
+        {
+          "language": "tamil",
+          "reached": 150,
+          "completed": 51,
+          "completion_rate": 34
+        },
+        {
+          "language": "hindi",
+          "reached": 70,
+          "completed": 22,
+          "completion_rate": 31.4
+        }
+      ],
+      "other_interests": {
+        "completed_candidates": 78,
+        "open_to_other": 21,
+        "interests": [
+          { "name": "Forklift Operator", "count": 12, "percentage": 57.1 }
+        ],
+        "experience": [
+          { "label": "1 to 2 years", "count": 9 }
+        ]
+      }
+    }
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such campaign. |
+
+Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/analytics/get-campaign-analytics)

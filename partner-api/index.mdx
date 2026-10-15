@@ -1,0 +1,73 @@
+---
+title: "Introduction"
+description: "Verify blue-collar candidates from your own system with the Record Blue Collar API."
+---
+
+Record contacts your candidates on WhatsApp, follows up by phone call and SMS, and verifies them against the job. The Blue Collar API lets your ATS or backend run that whole flow and receive each candidate's result.
+
+## Verify candidates from your own system, in 4 steps
+
+Do the steps in this order. Each one returns an id that the next one needs.
+
+<Steps>
+  <Step title="Workflow">
+    How and when candidates are contacted: channels, send window and retries. Create it once and reuse it. You get `workflow_id`.
+  </Step>
+  <Step title="Job mandate">
+    The job: skills to verify and screening questions. Record prepares the questions in the background. Needs `workflow_id`, you get `mandate_id`.
+  </Step>
+  <Step title="Campaign">
+    The people: name and phone number of each candidate. Record contacts and verifies them. Needs `mandate_id`, you get `campaign_id`.
+  </Step>
+  <Step title="Results">
+    Verdict and score for each candidate, sent to your webhook as soon as they finish. Needs `campaign_id`, you get `candidate_id`.
+  </Step>
+</Steps>
+
+## The 7 calls you need
+
+1. [`POST /workflows`](/partner-api/guides/workflows#create-a-workflow) → save `workflow_id`
+2. [`POST /mandates`](/partner-api/guides/job-mandates#create-a-job-mandate) → save `mandate_id`
+3. [`GET /mandates/{mandate_id}`](/partner-api/guides/job-mandates#get-a-job-mandate) → repeat until `status` is `ready`
+4. [`POST /campaigns`](/partner-api/guides/campaigns#create-a-campaign) → save `campaign_id`
+5. [`GET /campaigns/{campaign_id}`](/partner-api/guides/campaigns#get-a-campaign) → watch it go out
+6. [`POST /webhooks/endpoints`](/partner-api/guides/webhooks#create-an-endpoint) → results are sent to you, signed; answer 2xx to acknowledge
+7. [`GET /campaigns/{campaign_id}/results`](/partner-api/guides/results#list-campaign-results) → catch up or check: status and collected `output`
+
+## 4 rules to remember
+
+- Every request is **signed** with your secret. See [Authentication](/partner-api/authentication) for the helper.
+- Creating calls need an `Idempotency-Key` header, so a retry never creates twice.
+- Use a **TEST key** first. A campaign contacts real people and spends credits.
+- Every error is `{ "success": false, "error": { "code", … } }`; all codes are explained in [Errors](/partner-api/reference/errors).
+
+## What Record checks
+
+A job mandate runs one or more checks, named in its `methods`.
+
+| Check | What the candidate does | What you get |
+|---|---|---|
+| `data_enrichment` | Answers your 1 to 5 screening questions (yes/no or voice). | The answers, and whether they qualify. |
+| `skill_verification` | Answers 3 scenario questions that Record writes from the job's verified skills. | A verdict, a score, a rating per skill and recordings. |
+| `interest_collection` | Says what other work they have done or would take. | Their current role and other roles they are open to. |
+
+## Before you start
+
+- An API key pair from the Record playground, under **Settings → API keys**.
+- The Blue Collar API switched on for that key. Record does this by granting [scopes](/partner-api/authentication#scopes).
+- A **TEST** key for development. It sees only test data and can only contact phone numbers that Record has listed for it.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/partner-api/quickstart">
+    Make your first signed call and run the four steps.
+  </Card>
+  <Card title="Authentication" icon="key" href="/partner-api/authentication">
+    API keys, scopes and request signing.
+  </Card>
+  <Card title="Webhooks" icon="bell" href="/partner-api/guides/webhooks">
+    Receive results as soon as candidates finish.
+  </Card>
+  <Card title="API reference" icon="code" href="/partner-api/api-reference/introduction">
+    Every endpoint with its request and response schema.
+  </Card>
+</CardGroup>

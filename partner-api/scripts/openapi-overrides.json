@@ -1,0 +1,973 @@
+{
+  "createWorkflow": {
+    "title": "Create a workflow",
+    "description": "Create the template your jobs run under: how candidates are reached, when, and which checks run by default. Returns `workflow_id`.",
+    "fields": {
+      "name": "Display name, 1–200 characters.",
+      "external_id": "Your own id (A-Z a-z 0-9 . _ : -, up to 128). Must be unique.",
+      "status": "`active` (default), `inactive` or `draft`.",
+      "default_methods": "Checks a mandate uses when it sends none: `data_enrichment`, `skill_verification`, `interest_collection`.",
+      "delivery": "Channels: `whatsapp`, `voice_call`, `sms_backup` (true / false).",
+      "schedule": "`start_time` + `end_time` (\"HH:MM\", send both), `days` (mon…sun), `timezone` (IANA), `max_retries` 1–10, `retry_after_hours` 1–48."
+    },
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Unknown field, time not HH:MM, or only one of start_time / end_time."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "`external_id` is already used by another workflow."
+      ]
+    ]
+  },
+  "listWorkflows": {
+    "title": "List workflows",
+    "description": "List your organisation’s blue-collar workflows (made here or in the playground).",
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Bad `cursor`, or `limit` above 100."
+      ]
+    ]
+  },
+  "getWorkflow": {
+    "title": "Get a workflow",
+    "description": "Get one workflow by its `workflow_id`.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such `workflow_id` for this key."
+      ]
+    ]
+  },
+  "updateWorkflow": {
+    "title": "Update a workflow",
+    "description": "Change only the fields you send (send at least one), for example the send window. Fields not listed below cannot be changed.",
+    "fields": {
+      "name": "1–200 characters.",
+      "status": "`active`, `inactive` or `draft`. To archive, use `DELETE`; `archived` cannot be set here.",
+      "external_id": "Must not be used by another workflow (`409 CONFLICT`).",
+      "delivery": "`whatsapp`, `voice_call`, `sms_backup`. Only the keys you send change.",
+      "schedule": "Send `start_time` and `end_time` together. Other keys merge; `days` is replaced as a whole list.",
+      "default_methods": "1–3 different values of `data_enrichment`, `skill_verification`, `interest_collection`. It only decides the checks of mandates that send no `methods` of their own, so existing mandates keep theirs.",
+      "verification_methods": "Record switches both on for every workflow. Sending it (or any other unknown field) is refused with `400 VALIDATION_FAILED`."
+    },
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Empty body, `verification_methods` or another unknown field, a time not HH:MM, only one of start_time / end_time, or a bad value."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "No such workflow."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "Workflow was made in the playground; the API can only read it."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "Workflow is archived, or `external_id` is taken."
+      ]
+    ]
+  },
+  "deleteWorkflow": {
+    "title": "Archive a workflow",
+    "description": "Retire a workflow you no longer use. It is archived, not erased.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such workflow."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "Workflow was made in the playground."
+      ],
+      [
+        409,
+        "WORKFLOW_IN_USE",
+        "It still has open mandates. Archive them first."
+      ]
+    ]
+  },
+  "searchSkills": {
+    "title": "Search skills",
+    "description": "Type-ahead: find skills by a few letters (e.g. “fork”) and keep the `skill_id` the recruiter picks.",
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "`q` shorter than 2 characters, or only wildcards."
+      ],
+      [
+        429,
+        "DAILY_CAP",
+        "15,000 different skills already seen today."
+      ]
+    ]
+  },
+  "listSkillDomains": {
+    "title": "List skill domains",
+    "description": "The top of the skill tree: all primary domains, for a browse menu."
+  },
+  "listSkillSubDomains": {
+    "title": "List sub-domains",
+    "description": "The sub-domains inside one domain.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "Unknown `domain_id`."
+      ]
+    ]
+  },
+  "browseSubDomainSkills": {
+    "title": "List skills in a sub-domain",
+    "description": "The skills inside one sub-domain, 50 per page (700 at most).",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "Unknown `sub_domain_id`."
+      ],
+      [
+        429,
+        "COOLDOWN",
+        "More than 200 browse pages in an hour."
+      ],
+      [
+        429,
+        "DAILY_CAP",
+        "15,000 different skills already seen today."
+      ]
+    ]
+  },
+  "getSkill": {
+    "title": "Get a skill",
+    "description": "Fetch one skill by its `skill_id`.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "Unknown `skill_id`."
+      ]
+    ]
+  },
+  "lookupSkills": {
+    "title": "Look up skills",
+    "description": "Check up to 50 skill ids you stored: still `active`, or `not_found` (removed)?",
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "More than 50 ids, repeated ids, or a bad id format."
+      ]
+    ]
+  },
+  "matchSkills": {
+    "title": "Match text to skills",
+    "description": "Turn free text into official skills; `suggestion` is `auto` (use it), `confirm` (ask the recruiter) or `none`.",
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Send 1–20 texts; `top_k` 1–3."
+      ],
+      [
+        429,
+        "DAILY_CAP",
+        "50,000 matches already used today."
+      ]
+    ]
+  },
+  "extractSkills": {
+    "title": "Extract skills from a job",
+    "description": "Suggest skills from a job title and description. Nothing is saved.",
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Missing `title`."
+      ]
+    ]
+  },
+  "createSkillRequest": {
+    "title": "Request a skill",
+    "description": "Ask Record to add a skill that search could not find. Returns `request_id`.",
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "`name` shorter than 2 characters."
+      ]
+    ]
+  },
+  "listSkillRequests": {
+    "title": "List skill requests",
+    "description": "See every skill you asked for and where it stands."
+  },
+  "getSkillRequest": {
+    "title": "Get a skill request",
+    "description": "Check one skill request, for example whether Record approved it.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such `request_id`."
+      ]
+    ]
+  },
+  "searchLocations": {
+    "title": "Search places in India",
+    "description": "Type-ahead for a job’s place in India: matches the start of district and place names (up to 8 districts and 25 places). Use the place `name` as `location.city` and its `state` as `location.state`. For a job abroad use `GET /countries`.",
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "`q` missing, shorter than 2 or longer than 60 characters."
+      ]
+    ]
+  },
+  "listCountries": {
+    "title": "List countries",
+    "description": "Every country an abroad job can be in, A to Z, in one answer (about 250): filter it in your own picker. Send the `code` of each pick as `countries` on a mandate with `location_type: \"abroad\"` (1–10). India is listed with `abroad_selectable: false`: jobs in India use `location`."
+  },
+  "listEmploymentTypes": {
+    "title": "List employment types",
+    "description": "The choices of the playground’s Employment type dropdown. Send one as `employment_type` of a mandate so it shows as a choice there. Other text is still accepted and kept as sent."
+  },
+  "listShifts": {
+    "title": "List shifts",
+    "description": "The choices of the playground’s Shift dropdown. Send one as `shift` of a mandate. Other text is still accepted and kept as sent."
+  },
+  "createMandate": {
+    "title": "Create a job mandate",
+    "description": "Create the job Record verifies candidates against. Returns `mandate_id`; questions are prepared in the background.",
+    "fields": {
+      "workflow_id": "From step 1.",
+      "title, company_name": "Plain text, up to 200 characters.",
+      "skills": "`{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). 5–10 recommended, max 10; max 3 with `verify: true`.",
+      "methods": "Which checks run. Leave out to use the workflow’s `default_methods`.",
+      "enrichment_questions": "1–5 items `{ key, type: yes_no | voice, text, knockout: yes | no, required }`. Needed when `data_enrichment` is on.",
+      "job_id": "Your own job id. If you send it, it must not be in use.",
+      "location_type": "`india` (default) or `abroad`. Same as the playground’s Abroad option.",
+      "location": "A place in India: `{ city, state?, pincode? }` (find it with `GET /locations`). Not allowed when `location_type` is `abroad`.",
+      "countries": "Needed when `location_type` is `abroad`: 1–10 different ISO 3166-1 alpha-2 codes such as `SG` (list them with `GET /countries`; lower case is accepted and stored upper case). India (`IN`) cannot be picked. Not allowed for an India job.",
+      "experience": "`{ min_years, max_years }`, whole years 0–50, `max_years` at least `min_years`. Send both. Leave it out to clear it on a replace.",
+      "employment_type, shift": "Pick from `GET /employment-types` (Full-time, Part-time, Contract, …) and `GET /shifts` (Day shift, Night shift, Rotational, General). Other text up to 100 characters is kept as sent.",
+      "openings, salary, description, owner": "Job details. `description` up to 1,500 characters.",
+      "interest_collection": "`other_roles` is only saved and returned. It does not change what candidates are asked: the interest prompt is fixed, and `methods` switches it on or off."
+    },
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Unknown skill, `verify` on a skill that cannot be verified, repeated skill / question key, a check without its data, `abroad` without `countries` (or with `location`), `countries` on an India job, an unknown or non-selectable country code, or experience above 50 years."
+      ],
+      [
+        422,
+        "LIMIT_EXCEEDED",
+        "More than 10 skills, 3 verified skills or 5 questions."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "`workflow_id` not found."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "That workflow was made in the playground."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "Workflow is archived, or `job_id` is already used."
+      ]
+    ]
+  },
+  "getMandateById": {
+    "title": "Get a job mandate",
+    "description": "Read the mandate. Repeat until `status` is `ready` (questions prepared) before expecting candidates to be contacted. `location_type` says where the job is: for `india`, `location` holds the place; for `abroad`, `countries` lists `{ code, name }` and `location` is null. `location_names` is every place or country name as the playground shows it.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such `mandate_id`."
+      ]
+    ]
+  },
+  "listMandates": {
+    "title": "List job mandates",
+    "description": "List your organisation’s job mandates (made here or in the playground).",
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Bad `cursor`, date, or `limit` above 100."
+      ]
+    ]
+  },
+  "getMandateQuestionsById": {
+    "title": "Get mandate questions",
+    "description": "See what a candidate will be asked, in `en` `ta` `hi` `kn` `te` or `ml` (English where a translation is not ready). Read-only: change them with `PUT …/questions`.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such mandate."
+      ],
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Unsupported `language`."
+      ]
+    ]
+  },
+  "setMandateQuestionsById": {
+    "title": "Update mandate questions",
+    "description": "The write side of `GET …/questions`: replace the screening questions, or ask Record to write new skill questions. One part per call.",
+    "fields": {
+      "enrichment_questions": "Replaces the screening questions (1–5), exactly like `PUT …/enrichment-questions`. Send this part alone.",
+      "skill_questions.regenerate": "`\"all\"` or the slots to write again, e.g. `[0, 2]` (the `index` in `GET …/questions`). Record writes the new text; you cannot supply or edit it. Send this part alone.",
+      "interest questions": "A fixed prompt per language. Switch it on or off with `methods`."
+    },
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Both parts or neither, repeated or out-of-range slots, extra fields (such as your own question text), or `skill_verification` is not on this mandate."
+      ],
+      [
+        422,
+        "LIMIT_EXCEEDED",
+        "More than 5 screening questions."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "No such mandate."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "Mandate was made in the playground."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "Archived, still `preparing` (wait Retry-After), or over 10 changes this hour."
+      ]
+    ]
+  },
+  "updateMandateById": {
+    "title": "Replace a job mandate",
+    "description": "Replace the whole mandate (send the full body again). An identical resend changes nothing.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such mandate."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "Mandate was made in the playground."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "Archived; `workflow_id` differs; still `preparing` (wait Retry-After); or over 10 changes this hour."
+      ],
+      [
+        422,
+        "LIMIT_EXCEEDED",
+        "More than 10 skills, 3 verified skills or 5 questions."
+      ],
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Same field rules as create."
+      ]
+    ]
+  },
+  "setMandateMethodsById": {
+    "title": "Update mandate checks",
+    "description": "Change only which checks run on the mandate.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such mandate."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "Mandate was made in the playground."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "Archived, still `preparing`, or too many changes this hour."
+      ],
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Empty / repeated methods, or a check without its data."
+      ]
+    ]
+  },
+  "setMandateSkillsById": {
+    "title": "Replace mandate skills",
+    "description": "Replace only the skill list. Changing the verified skills regenerates the skill questions.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such mandate."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "Mandate was made in the playground."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "Archived, still `preparing`, or too many changes this hour."
+      ],
+      [
+        422,
+        "LIMIT_EXCEEDED",
+        "More than 10 skills or 3 verified."
+      ],
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Unknown or repeated skill."
+      ]
+    ]
+  },
+  "setMandateEnrichmentQuestionsById": {
+    "title": "Replace screening questions",
+    "description": "Replace only the screening questions (1 to 5).",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such mandate."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "Mandate was made in the playground."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "Archived, still `preparing`, or too many changes this hour."
+      ],
+      [
+        422,
+        "LIMIT_EXCEEDED",
+        "More than 5 questions."
+      ],
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Type other than `yes_no` / `voice`, or repeated `key`."
+      ]
+    ]
+  },
+  "archiveMandateById": {
+    "title": "Archive a job mandate",
+    "description": "Close the job when it is filled: no new campaigns start, running ones finish, results stay readable.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such mandate."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "Mandate was made in the playground."
+      ]
+    ]
+  },
+  "deleteMandateById": {
+    "title": "Delete a job mandate",
+    "description": "Same as archive. Nothing is erased; collected results stay readable.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such mandate."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "Mandate was made in the playground."
+      ]
+    ]
+  },
+  "createCampaign": {
+    "title": "Create a campaign",
+    "description": "Send your candidates (name + phone) for a mandate. Record contacts and verifies them. Returns `campaign_id`.",
+    "danger": true,
+    "fields": {
+      "mandate_id": "From step 2 (or send your own `job_id` instead, never both).",
+      "start": "`now` sends at once; `manual` only creates a draft (start it later).",
+      "candidates": "1–1,000 of `{ name, phone, external_id? }`. Phone: 10 digits or with country code. Bad numbers come back in `rejected`.",
+      "name, external_id, language": "Campaign name, your unique id for it, language `en` `hi` `ta` `te` `kn` `ml` (default `en`)."
+    },
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Both or neither of `mandate_id` / `job_id`, or no usable phone number."
+      ],
+      [
+        402,
+        "INSUFFICIENT_CREDITS",
+        "Not enough credits (1 per candidate when skill verification is on)."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "TEST key with a number not on its list, or the mandate was made in the playground."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "No such mandate."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "Mandate is archived, or campaign `external_id` is taken."
+      ],
+      [
+        429,
+        "DAILY_CAP",
+        "2,000 different candidates already added today."
+      ]
+    ]
+  },
+  "getCampaign": {
+    "title": "Get a campaign",
+    "description": "See whether it has gone out, is waiting for the job’s questions, is paused or stuck, and how many are contacted. `candidate_list` holds its first candidates (100 by default; `candidates_limit` up to 200, or 0 to leave it out) with their `candidate_id`, `delivery` and `can_resend`; `has_more` says there are more. For all of them, with verdicts and answers, call `GET /campaigns/{campaign_id}/candidates`.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such `campaign_id`."
+      ]
+    ]
+  },
+  "listCampaigns": {
+    "title": "List campaigns",
+    "description": "List your organisation’s campaigns; filter by `mandate_id` to see one job’s.",
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Bad `mandate_id` format, `cursor` or `limit`."
+      ]
+    ]
+  },
+  "startCampaign": {
+    "title": "Start a campaign",
+    "description": "Start a campaign you created with `start: manual`. It starts once.",
+    "danger": true,
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such campaign."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "Campaign was made in the playground, or TEST key number not allowed."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "Already started, or the job is archived."
+      ]
+    ]
+  },
+  "addCampaignCandidates": {
+    "title": "Add candidates",
+    "description": "Add more people (up to 1,000 a call). A number already in the campaign is skipped, so resending is safe.",
+    "danger": true,
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such campaign."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "Campaign was made in the playground, or TEST key number not allowed."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "Campaign is completed / cancelled, or the job is archived."
+      ],
+      [
+        422,
+        "LIMIT_EXCEEDED",
+        "More than 20,000 candidates in the campaign."
+      ],
+      [
+        402,
+        "INSUFFICIENT_CREDITS",
+        "Not enough credits."
+      ],
+      [
+        400,
+        "VALIDATION_FAILED",
+        "No usable phone number in the batch."
+      ],
+      [
+        429,
+        "DAILY_CAP",
+        "2,000 different candidates already added today."
+      ]
+    ]
+  },
+  "resendCampaignCandidateLink": {
+    "title": "Resend a candidate link",
+    "description": "Send one candidate’s link again over WhatsApp (and SMS) if they have not received or opened it. Get the `candidate_id` from `GET /campaigns/{campaign_id}/candidates` (look for `can_resend: true`). Only for a started campaign you created, and not while it is paused. A candidate who has completed or declined has nothing to resend. One send per candidate per minute.",
+    "danger": true,
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such campaign or candidate."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "Campaign was made in the playground."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "Campaign not started, paused, completed or cancelled; or the candidate has completed, declined or is not contacted yet."
+      ],
+      [
+        429,
+        "RATE_LIMITED",
+        "A link was sent to this candidate less than a minute ago. Wait Retry-After seconds."
+      ]
+    ]
+  },
+  "pauseCampaign": {
+    "title": "Pause a campaign",
+    "description": "Emergency brake: nobody new is contacted until you resume.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such campaign."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "Campaign was made in the playground."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "Not started yet, or not in a state that can be paused."
+      ]
+    ]
+  },
+  "resumeCampaign": {
+    "title": "Resume a campaign",
+    "description": "Continue a paused campaign: held-back people are contacted now.",
+    "danger": true,
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such campaign."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "Campaign was made in the playground."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "Not paused, or the job is archived."
+      ]
+    ]
+  },
+  "listMandateCampaignsById": {
+    "title": "List mandate campaigns",
+    "description": "List the campaigns that were sent for one job.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such mandate."
+      ]
+    ]
+  },
+  "listCampaignCandidates": {
+    "title": "List campaign candidates",
+    "description": "One row per candidate: `candidate_id`, interested or not, progress, verdict and score, plus `delivery` (queued, sent, failed) and `can_resend`, so you can see who needs their link sent again. Phone numbers are never returned. A key with only `campaigns:write` gets the rows with `verdict`, `total_score` and `report_url` left null.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such campaign."
+      ],
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Unknown `status` / `progress`, bad date, or `limit` above 200."
+      ]
+    ]
+  },
+  "getCandidateResult": {
+    "title": "Get a candidate verdict",
+    "description": "Verdict, score, a rating per skill and a report link. Add `include=answers` to also get what they said.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such `candidate_id`."
+      ],
+      [
+        403,
+        "SCOPE_MISSING",
+        "`include=answers` also needs the `results:answers` scope."
+      ]
+    ]
+  },
+  "listCampaignResults": {
+    "title": "List campaign results",
+    "description": "One record per candidate: `status` (pending, completed, declined, failed) and `output` with what Record collected. Prefer the webhook; use this to catch up or check.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such campaign."
+      ],
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Unknown `status`, bad date, or `limit` above 100."
+      ]
+    ]
+  },
+  "getResult": {
+    "title": "Get a result",
+    "description": "The same record the webhook delivers for this candidate.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such `candidate_id` for this key."
+      ]
+    ]
+  },
+  "createWebhookEndpoint": {
+    "title": "Create an endpoint",
+    "description": "Register the HTTPS URL that receives result events. Deliveries are signed with your API secret key.",
+    "fields": {
+      "url": "HTTPS, port 443, a public host. Any 2xx answer counts as the acknowledgement.",
+      "description": "Up to 200 characters.",
+      "event_types": "Default `candidate.result`.",
+      "backfill_from": "ISO date-time: also send results from then on (at most 30 days back)."
+    },
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "URL not https, a private address, a port other than 443, or an unknown event type."
+      ],
+      [
+        422,
+        "LIMIT_EXCEEDED",
+        "Already 5 endpoints."
+      ]
+    ]
+  },
+  "listWebhookEndpoints": {
+    "title": "List endpoints",
+    "description": "Each endpoint with its status (`active`, `paused`, `auto_paused`), consecutive failures and last success."
+  },
+  "getWebhookEndpoint": {
+    "title": "Get an endpoint",
+    "description": "One endpoint with its current status.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such endpoint."
+      ]
+    ]
+  },
+  "updateWebhookEndpoint": {
+    "title": "Update an endpoint",
+    "description": "Send only what changes. `status: paused` holds deliveries (nothing is lost); `status: active` resumes them, oldest first. Use it to bring back an `auto_paused` endpoint.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such endpoint."
+      ],
+      [
+        400,
+        "VALIDATION_FAILED",
+        "No field sent, or a bad URL."
+      ]
+    ]
+  },
+  "deleteWebhookEndpoint": {
+    "title": "Delete an endpoint",
+    "description": "Deliveries still waiting for it stop. The events stay in the feed for 30 days.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such endpoint."
+      ]
+    ]
+  },
+  "testWebhookEndpoint": {
+    "title": "Send a test event",
+    "description": "Sends a signed `webhook.test` right now and shows what your server answered. Not stored, not retried.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such endpoint."
+      ]
+    ]
+  },
+  "backfillWebhookEndpoint": {
+    "title": "Backfill past results",
+    "description": "Queues the results since `from` (at most 30 days back) as normal deliveries. Safe to repeat.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such endpoint."
+      ]
+    ]
+  },
+  "listWebhookDeliveries": {
+    "title": "List deliveries",
+    "description": "Every send to this endpoint, newest first: attempts, last HTTP status or error, when the next retry is due.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such endpoint."
+      ]
+    ]
+  },
+  "retryWebhookDelivery": {
+    "title": "Retry a delivery",
+    "description": "For a dead one after you fixed your endpoint. Its attempts count from zero again.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such delivery."
+      ]
+    ]
+  },
+  "listEvents": {
+    "title": "List events",
+    "description": "Every event you have not acknowledged, oldest first: the same data the webhook sends. `status=all` with `from` replays history (30 days).",
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Bad `status`, date or `limit` above 100."
+      ]
+    ]
+  },
+  "acknowledgeEvents": {
+    "title": "Acknowledge events",
+    "description": "Up to 100 ids. They stop coming back and no webhook retry is sent for them. Safe to repeat.",
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "More than 100 ids, or an id that is not an event id."
+      ]
+    ]
+  },
+  "getEvent": {
+    "title": "Get an event",
+    "description": "Fetch one event by its id.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such event (or older than 30 days)."
+      ]
+    ]
+  },
+  "getWorkflowAnalytics": {
+    "title": "Get workflow analytics",
+    "description": "The workflow Overview numbers from the Record playground. Add `mandate_id` and/or `campaign_id` to narrow it to one job or campaign; each must belong to this workflow.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such workflow, or the `mandate_id` / `campaign_id` does not belong to it."
+      ],
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Malformed `mandate_id` or `campaign_id`."
+      ]
+    ]
+  },
+  "getMandateAnalytics": {
+    "title": "Get mandate analytics",
+    "description": "The same numbers for one job mandate, adding up all campaigns sent on it.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such mandate."
+      ]
+    ]
+  },
+  "getCampaignAnalytics": {
+    "title": "Get campaign analytics",
+    "description": "The same numbers for one campaign: how that batch of candidates went.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such campaign."
+      ]
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+---
+title: "Statuses and values"
+description: "Every status and fixed value the API uses."
+---
+
+## Objects
+
+| Object | Values |
+|---|---|
+| Workflow | `active` · `inactive` · `draft` · `archived` |
+| Job mandate | `preparing` → `ready` (or `failed`) · `archived` |
+| Mandate skill | `active` · `pending` (requested, not resolved yet) · `not_found` (removed from the taxonomy) |
+| Campaign | `draft` · `waiting_for_questions` · `blocked` · `sending` · `paused` · `completed` · `cancelled` |
+| Skill request | `pending` · `approved` · `merged` · `rejected` · `duplicate_of` |
+| Webhook endpoint | `active` · `paused` · `auto_paused` · `disabled` |
+| Webhook delivery | `pending` · `in_flight` · `retrying` · `held` · `delivered` · `dead` |
+
+## Candidates
+
+| Field | Values |
+|---|---|
+| Result `status` | `pending` · `completed` · `declined` · `failed` |
+| Result `reason` (failed only) | `undeliverable` · `no_response` |
+| Candidate row `status` | `interested` · `not_interested` · `no_answer_yet` · `unreachable` |
+| Candidate row `progress` | `not_yet_started` → `in_progress` → `completed` |
+| Link `delivery` | `queued` · `sent` · `failed` |
+| Rejected candidate `reason` | `invalid_phone` · `duplicate_in_request` · `already_in_campaign` |
+
+## Job settings
+
+| Field | Values |
+|---|---|
+| Checks (`methods`) | `data_enrichment` (your questions) · `skill_verification` · `interest_collection` |
+| Screening question `type` | `yes_no` · `voice` |
+| `location_type` | `india` · `abroad` |
+| Skill `collar` | `blue` · `grey` · `white` |
+| Skill match `suggestion` | `auto` · `confirm` · `none` |
+| Campaign `start` | `now` · `manual` |
+| Languages | `en` English · `hi` Hindi · `ta` Tamil · `te` Telugu · `kn` Kannada · `ml` Malayalam |
+| Schedule `days` | `mon` · `tue` · `wed` · `thu` · `fri` · `sat` · `sun` |
+
+## Ids
+
+| Id | Example |
+|---|---|
+| `workflow_id` | `WF_BG_261009101530123K7M2P9Q4X7R5T8` |
+| `mandate_id` | `JM_261009101612456H3N8W2L5C9V1Z4` |
+| `campaign_id` | `asmnt_9f2c41d7a8b3e65f` |
+| `candidate_id` | `a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01` |
+| `skill_id` | `sk_38824` |
+| `request_id` (skill request) | `skr_9f2c41d7a8b3e65f1c02` |
+| `endpoint_id` | `we_3f9a1c7e5b2d4086a1b3c5d7e9f01234` |
+| `event_id` | `evt_9c2e4a6b8d0f1234567890abcdef1234` |
+| `delivery_id` | `dlv_7a1b3c5d7e9f0123456789abcdef0123` |

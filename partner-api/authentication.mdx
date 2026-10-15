@@ -1,0 +1,205 @@
+---
+title: "Authentication"
+description: "API keys, scopes and how to sign every request."
+---
+
+Every request is signed with your API secret. The secret never leaves your server: it is used to compute a signature, never sent.
+
+## API keys
+
+A key comes as a pair.
+
+| Part | Looks like | Use |
+|---|---|---|
+| Key id | `VFN_TEST_…` or `VFN_LIVE_…` | Sent on every request in `x-api-key`. |
+| Secret | `VFN_SK_…` | Signs requests and verifies webhooks. Keep it on your server. |
+
+Create a key in the Record playground under **Settings → API keys**. The secret is shown **once**, when the key is created, so store it in your secret manager straight away. There is one active key per project and mode.
+
+<Warning>
+  Regenerating a key issues a new pair and turns the old one off immediately. The new key starts without Blue Collar API scopes, so ask Record to enable it again before you switch.
+</Warning>
+
+### Test and live
+
+| | TEST key | LIVE key |
+|---|---|---|
+| Data | Test data only. TEST and LIVE never see each other's objects. | Live data only. |
+| Phone numbers | Only numbers Record has listed for the key. Others answer `403 FORBIDDEN`. | Any valid number. |
+| Messages | **Real.** Test campaigns still send WhatsApp, SMS and calls. | Real. |
+| Limits | One tenth of the live limits. | See [Limits](/partner-api/reference/limits). |
+
+## Scopes
+
+Record switches the Blue Collar API on per key by granting scopes. A key without any scopes answers `403 SCOPE_MISSING`. Each endpoint needs one of the scopes listed for it.
+
+| Scope | Opens |
+|---|---|
+| `skills:read` | Skill search, browse, lookup, match and extract. |
+| `skills:request` | Ask Record to add a missing skill, and track your requests. |
+| `workflows:read` | Read workflows. |
+| `workflows:write` | Create, change and archive workflows. Also reads them. |
+| `mandates:read` | Read job mandates and their questions, and the place, country, employment-type and shift lookups. |
+| `mandates:write` | Create, change and close job mandates. Also everything in `mandates:read`. |
+| `campaigns:write` | Create, start, pause and resume campaigns, add candidates and resend links. Also reads campaigns and candidate rows (without verdicts). |
+| `results:read` | Campaigns, candidate rows and result records. |
+| `results:answers` | Adds what the candidate said to `GET /candidates/{candidate_id}/result?include=answers`. |
+| `webhooks:manage` | Webhook endpoints, delivery logs, tests and backfills. |
+| `events:read` | The event feed and acknowledgements. |
+| `analytics:read` | Workflow, mandate and campaign analytics. |
+
+## Signing a request
+
+<Steps>
+  <Step title="Take the time">
+    `timestamp` is the current time in **milliseconds** since the epoch. It must be within 5 minutes of Record's clock.
+  </Step>
+  <Step title="Build the string to sign">
+    ```text
+    METHOD:/path?query:timestamp:body
+    ```
+    - `METHOD` is upper case: `GET`, `POST`, `PUT`, `PATCH` or `DELETE`.
+    - `/path?query` is the full path exactly as you send it, starting with `/api/v1/partner`, query string included.
+    - `body` is the exact bytes you send. Empty for a request without a body.
+  </Step>
+  <Step title="Sign it">
+    Compute HMAC-SHA256 of that string with your secret as the key, and encode it as lowercase hex.
+  </Step>
+  <Step title="Send the headers">
+    | Header | Value |
+    |---|---|
+    | `x-api-key` | Your key id. |
+    | `x-timestamp` | The timestamp from step 1. |
+    | `x-signature` | The hex signature from step 3. |
+    | `Content-Type` | `application/json`, on requests with a body. |
+    | `Idempotency-Key` | A new UUID on each write. See [Idempotency](/partner-api/reference/requests-and-responses#idempotency). |
+    | `x-on-behalf-of` | Optional. Your own id for the recruiter making the call (1 to 128 of `A-Z a-z 0-9 . _ : @ -`). It applies per-recruiter rate limits, is kept in the audit log, and is used as the mandate `owner` or skill request `requested_by` when you do not send one. |
+  </Step>
+</Steps>
+
+<Note>
+  A signed write (`POST`, `PUT`, `PATCH`, `DELETE`) is accepted **once**. Sign every request afresh, retries included. To retry safely, reuse the `Idempotency-Key`, never the signature.
+</Note>
+
+## Signing helper
+
+Copy one helper into your code. Every example in these docs calls it.
+
+<CodeGroup>
+
+```javascript JavaScript
+// Node 18+. No packages needed.
+const crypto = require("crypto");
+
+const BASE = "https://api-bc.userecord.io";
+const KEY = process.env.RECORD_API_KEY;       // VFN_TEST_… or VFN_LIVE_…
+const SECRET = process.env.RECORD_API_SECRET; // VFN_SK_…
+
+async function call(method, pathAndQuery, body, idempotencyKey = crypto.randomUUID()) {
+  const raw = body === undefined ? "" : JSON.stringify(body);
+  const ts = String(Date.now());
+  const sig = crypto
+    .createHmac("sha256", SECRET)
+    .update(`${method}:${pathAndQuery}:${ts}:${raw}`)
+    .digest("hex");
+
+  const headers = { "x-api-key": KEY, "x-timestamp": ts, "x-signature": sig };
+  if (raw) headers["Content-Type"] = "application/json";
+  if (method !== "GET") headers["Idempotency-Key"] = idempotencyKey;
+
+  return fetch(BASE + pathAndQuery, { method, headers, body: raw || undefined });
+}
+```
+
+```python Python
+import hashlib, hmac, json, os, time, uuid
+import requests
+
+BASE = "https://api-bc.userecord.io"
+KEY = os.environ["RECORD_API_KEY"]        # VFN_TEST_… or VFN_LIVE_…
+SECRET = os.environ["RECORD_API_SECRET"]  # VFN_SK_…
+
+def call(method, path_and_query, body=None, idempotency_key=None):
+    raw = json.dumps(body, separators=(",", ":")) if body is not None else ""
+    ts = str(int(time.time() * 1000))
+    sig = hmac.new(SECRET.encode(), f"{method}:{path_and_query}:{ts}:{raw}".encode(),
+                   hashlib.sha256).hexdigest()
+
+    headers = {"x-api-key": KEY, "x-timestamp": ts, "x-signature": sig}
+    if raw:
+        headers["Content-Type"] = "application/json"
+    if method != "GET":
+        headers["Idempotency-Key"] = idempotency_key or str(uuid.uuid4())
+
+    return requests.request(method, BASE + path_and_query, data=raw.encode() or None,
+                            headers=headers, timeout=30)
+```
+
+```bash cURL
+BASE="https://api-bc.userecord.io"
+KEY="$RECORD_API_KEY"       # VFN_TEST_… or VFN_LIVE_…
+SECRET="$RECORD_API_SECRET" # VFN_SK_…
+
+# usage: pcall METHOD "/api/v1/partner/path?query" ['{"json":"body"}']
+pcall() {
+  local method="$1" path="$2" body="${3:-}"
+  local ts=$(( $(date +%s) * 1000 ))
+  local sig=$(printf '%s' "$method:$path:$ts:$body" | openssl dgst -sha256 -hmac "$SECRET" -hex | sed 's/^.* //')
+  local args=(-s -X "$method" "$BASE$path" -H "x-api-key: $KEY" -H "x-timestamp: $ts" -H "x-signature: $sig")
+  [ -n "$body" ] && args+=(-H "Content-Type: application/json" --data-binary "$body")
+  [ "$method" != "GET" ] && args+=(-H "Idempotency-Key: $(uuidgen)")
+  curl "${args[@]}"
+}
+```
+
+</CodeGroup>
+
+Test the key with a read:
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/workflows?limit=1");
+console.log(res.status, await res.json());
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/workflows?limit=1")
+print(res.status_code, res.json())
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/workflows?limit=1"
+```
+
+</CodeGroup>
+
+A `200` with `"success": true` means the key, secret and clock are right. A `401 UNAUTHORIZED` means one of them is not: check the key pair, sign the exact path and body you send, and sync your server clock.
+
+## Answers
+
+<CodeGroup>
+
+```json Success
+{ "success": true, "data": { } }
+```
+
+```json Failure (4xx / 5xx)
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "...",
+    "details": [{ "path": "body.name", "message": "..." }],
+    "request_id": "req_..."
+  }
+}
+```
+
+```json Paged list
+{ "items": [ ], "count": 50, "total": 240, "next_cursor": "eyJpZCI6...", "has_more": true }
+```
+
+</CodeGroup>
+
+Quote `request_id` (also the `x-request-id` header) when you contact Record support. Pass `next_cursor` back as `?cursor=` until `has_more` is `false`; `total` can be `null` when a filter is used. See [Requests and responses](/partner-api/reference/requests-and-responses).

@@ -1,0 +1,171 @@
+// Builds api-reference/openapi.json from the backend's own spec.
+//
+// The backend generates its OpenAPI document from the routes it enforces, so the
+// schemas here never drift from the server. This script only makes it read well in
+// Mintlify: short titles and descriptions, the errors specific to each endpoint, and
+// code samples that use the signing helper from the Authentication page.
+//
+//   node scripts/build-openapi.mjs                                   (backend on localhost:8080)
+//   node scripts/build-openapi.mjs --from https://HOST/api/v1/partner/openapi.json
+//   node scripts/build-openapi.mjs --from ./openapi.raw.json --host https://api.example.com
+//
+// Zero dependencies (Node 18+).
+
+import { readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const arg = (name, fallback) => {
+  const i = process.argv.indexOf(`--${name}`);
+  return i > -1 ? process.argv[i + 1] : fallback;
+};
+
+const BASE_PATH = "/api/v1/partner";
+const from = arg("from", `http://localhost:8080${BASE_PATH}/openapi.json`);
+const host = arg("host", "https://api-bc.userecord.io").replace(/\/$/, "");
+
+const load = async (source) => {
+  if (/^https?:\/\//.test(source)) {
+    const res = await fetch(source);
+    if (!res.ok) throw new Error(`${source} answered ${res.status}`);
+    return res.json();
+  }
+  return JSON.parse(await readFile(path.resolve(source), "utf8"));
+};
+
+const spec = await load(from);
+const overrides = JSON.parse(await readFile(path.join(root, "scripts/openapi-overrides.json"), "utf8"));
+
+/* ── Code samples ─────────────────────────────────────────────────────────── */
+
+const pyLiteral = (value, indent = 0) => {
+  const pad = "    ".repeat(indent + 1);
+  const end = "    ".repeat(indent);
+  if (value === null) return "None";
+  if (value === true) return "True";
+  if (value === false) return "False";
+  if (Array.isArray(value)) {
+    if (!value.length) return "[]";
+    return `[\n${value.map((v) => pad + pyLiteral(v, indent + 1)).join(",\n")}\n${end}]`;
+  }
+  if (typeof value === "object") {
+    const entries = Object.entries(value);
+    if (!entries.length) return "{}";
+    return `{\n${entries.map(([k, v]) => `${pad}${JSON.stringify(k)}: ${pyLiteral(v, indent + 1)}`).join(",\n")}\n${end}}`;
+  }
+  return JSON.stringify(value);
+};
+
+const codeSamples = (method, route, op) => {
+  const params = op.parameters ?? [];
+  let url = BASE_PATH + route;
+  for (const p of params.filter((p) => p.in === "path")) {
+    if (p.example !== undefined) url = url.replace(`{${p.name}}`, encodeURIComponent(String(p.example)));
+  }
+  const query = params
+    .filter((p) => p.in === "query" && p.example !== undefined && p.example !== "")
+    .map((p) => `${p.name}=${encodeURIComponent(String(p.example))}`)
+    .join("&");
+  if (query) url += `?${query}`;
+
+  const body = op.requestBody?.content?.["application/json"]?.example;
+  const M = method.toUpperCase();
+  const json = body === undefined ? null : JSON.stringify(body, null, 2);
+
+  return [
+    {
+      lang: "bash",
+      label: "cURL",
+      source: `pcall ${M} "${url}"${json ? ` '${json.replace(/'/g, "'\\''")}'` : ""}`,
+    },
+    {
+      lang: "javascript",
+      label: "JavaScript",
+      source: `const res = await call("${M}", "${url}"${json ? `, ${json}` : ""});\nconst { data } = await res.json();`,
+    },
+    {
+      lang: "python",
+      label: "Python",
+      source: `res = call("${M}", "${url}"${body === undefined ? "" : `, ${pyLiteral(body)}`})\ndata = res.json()["data"]`,
+    },
+  ];
+};
+
+/* ── Operations ───────────────────────────────────────────────────────────── */
+
+const scopesOf = (description) => description?.match(/\*\*Scopes:\*\* (.*?)\. \*\*Limit/)?.[1] ?? null;
+
+const fillFieldNotes = (schema, notes) => {
+  const props = schema?.properties;
+  if (!props || !notes) return;
+  for (const [names, note] of Object.entries(notes)) {
+    for (const name of names.split(",").map((n) => n.trim())) {
+      if (props[name] && !props[name].description) props[name].description = note;
+    }
+  }
+};
+
+let missing = 0;
+for (const [route, methods] of Object.entries(spec.paths)) {
+  for (const [method, op] of Object.entries(methods)) {
+    const o = overrides[op.operationId];
+    if (!o) {
+      missing++;
+      console.warn(`no override for ${op.operationId} (${method.toUpperCase()} ${route}): kept as generated`);
+      continue;
+    }
+
+    const idem = op.parameters?.find((p) => p.name === "Idempotency-Key");
+    const meta = [
+      `**Scope:** ${scopesOf(op.description) ?? "see Authentication"}`,
+      `**Idempotency-Key:** ${idem ? (idem.required ? "required" : "optional") : "not used"}`,
+    ].join(" · ");
+
+    op.summary = o.title;
+    op.description = [
+      o.description,
+      meta,
+      o.danger && "> **This contacts real candidates.** Build against a TEST key first.",
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
+    // x-on-behalf-of is optional on every call; it is explained once, in Authentication.
+    op.parameters = (op.parameters ?? []).filter((p) => p.name !== "x-on-behalf-of");
+
+    fillFieldNotes(op.requestBody?.content?.["application/json"]?.schema, o.fields);
+
+    // Keep the success answer and the errors this endpoint can return beyond the common ones (see Errors).
+    const success = Object.fromEntries(Object.entries(op.responses).filter(([status]) => status.startsWith("2")));
+    const specific = {};
+    for (const [status, code, when] of o.errors ?? []) {
+      const entry = (specific[status] ??= {
+        description: "",
+        content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+      });
+      entry.description += `${entry.description ? " " : ""}\`${code}\`: ${when}`;
+    }
+    op.responses = { ...success, ...specific };
+
+    op["x-codeSamples"] = codeSamples(method, route, op);
+  }
+}
+
+// Tags name the URL segment of each endpoint page; match them to the sidebar groups.
+const TAG_NAMES = { Helpers: "Lookups" };
+for (const methods of Object.values(spec.paths)) {
+  for (const op of Object.values(methods)) op.tags = (op.tags ?? []).map((t) => TAG_NAMES[t] ?? t);
+}
+spec.tags = (spec.tags ?? []).map((t) => ({ ...t, name: TAG_NAMES[t.name] ?? t.name }));
+
+spec.info = {
+  title: "Record Blue Collar API",
+  version: spec.info?.version ?? "1.0.0",
+  description: "Run Record candidate verification from your own system. See the guides for authentication and request signing.",
+};
+spec.servers = [{ url: `${host}${BASE_PATH}`, description: "Blue Collar API" }];
+
+const out = path.join(root, "api-reference/openapi.json");
+await writeFile(out, `${JSON.stringify(spec, null, 2)}\n`);
+console.log(`Wrote ${path.relative(root, out)} (${Object.values(spec.paths).reduce((n, m) => n + Object.keys(m).length, 0)} operations${missing ? `, ${missing} without overrides` : ""})`);
