@@ -165,7 +165,8 @@
               "api-reference/verification/metadata-user-skills"
             ]
           }
-        ]
+        ],
+        "hidden": true
       },
       {
         "tab": "Skills Issuance",
