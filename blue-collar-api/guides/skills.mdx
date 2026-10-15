@@ -21,7 +21,7 @@ If search cannot find a skill, ask Record to add it with `POST /skill-requests` 
 
 ## Usage limits
 
-Search and browse return at most 15,000 different skills per key per day, and more than 200 browse pages in an hour puts the key in cooldown. There is no bulk export: store only the skills your recruiters pick. See [Limits](/partner-api/reference/limits).
+Search and browse return at most 15,000 different skills per key per day, and more than 200 browse pages in an hour puts the key in cooldown. There is no bulk export: store only the skills your recruiters pick. See [Limits](/blue-collar-api/reference/limits).
 
 ## Endpoints
 
@@ -104,7 +104,7 @@ pcall GET "/api/v1/partner/skills/search?q=forklift&limit=10"
 | 400 `VALIDATION_FAILED` | `q` shorter than 2 characters, or only wildcards. |
 | 429 `DAILY_CAP` | 15,000 different skills already seen today. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/skills/search-skills)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/skills/search-skills)
 
 ---
 
@@ -160,7 +160,7 @@ pcall GET "/api/v1/partner/skills/domains"
 
 </CodeGroup>
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/skills/list-skill-domains)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/skills/list-skill-domains)
 
 ---
 
@@ -218,7 +218,7 @@ pcall GET "/api/v1/partner/skills/domains/dom_logistics_and_mobility_management/
 |---|---|
 | 404 `NOT_FOUND` | Unknown `domain_id`. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/skills/list-sub-domains)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/skills/list-sub-domains)
 
 ---
 
@@ -302,7 +302,7 @@ pcall GET "/api/v1/partner/skills/sub-domains/sub_logistics_and_mobility_managem
 | 429 `COOLDOWN` | More than 200 browse pages in an hour. |
 | 429 `DAILY_CAP` | 15,000 different skills already seen today. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/skills/list-skills-in-a-sub-domain)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/skills/list-skills-in-a-sub-domain)
 
 ---
 
@@ -357,7 +357,7 @@ pcall GET "/api/v1/partner/skills/sk_38824"
 |---|---|
 | 404 `NOT_FOUND` | Unknown `skill_id`. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/skills/get-a-skill)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/skills/get-a-skill)
 
 ---
 
@@ -442,7 +442,7 @@ pcall POST "/api/v1/partner/skills/lookup" '{
 |---|---|
 | 400 `VALIDATION_FAILED` | More than 50 ids, repeated ids, or a bad id format. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/skills/look-up-skills)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/skills/look-up-skills)
 
 ---
 
@@ -553,7 +553,7 @@ pcall POST "/api/v1/partner/skills/match" '{
 | 400 `VALIDATION_FAILED` | Send 1–20 texts; `top_k` 1–3. |
 | 429 `DAILY_CAP` | 50,000 matches already used today. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/skills/match-text-to-skills)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/skills/match-text-to-skills)
 
 ---
 
@@ -666,7 +666,7 @@ pcall POST "/api/v1/partner/skills/extract" '{
 |---|---|
 | 400 `VALIDATION_FAILED` | Missing `title`. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/skills/extract-skills-from-a-job)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/skills/extract-skills-from-a-job)
 
 ---
 
@@ -747,7 +747,7 @@ Save `data.request_id` for the next step.
 |---|---|
 | 400 `VALIDATION_FAILED` | `name` shorter than 2 characters. |
 
-Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/skill-requests/request-a-skill)
+Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/skill-requests/request-a-skill)
 
 ---
 
@@ -810,7 +810,7 @@ pcall GET "/api/v1/partner/skill-requests?status=pending&limit=50"
 
 </CodeGroup>
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/skill-requests/list-skill-requests)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/skill-requests/list-skill-requests)
 
 ---
 
@@ -863,4 +863,4 @@ pcall GET "/api/v1/partner/skill-requests/skr_9f2c41d7a8b3e65f1c02"
 |---|---|
 | 404 `NOT_FOUND` | No such `request_id`. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/skill-requests/get-a-skill-request)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/skill-requests/get-a-skill-request)

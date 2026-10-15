@@ -27,7 +27,7 @@ Create a key in the Record playground under **Settings → API keys**. The secre
 | Data | Test data only. TEST and LIVE never see each other's objects. | Live data only. |
 | Phone numbers | Only numbers Record has listed for the key. Others answer `403 FORBIDDEN`. | Any valid number. |
 | Messages | **Real.** Test campaigns still send WhatsApp, SMS and calls. | Real. |
-| Limits | One tenth of the live limits. | See [Limits](/partner-api/reference/limits). |
+| Limits | One tenth of the live limits. | See [Limits](/blue-collar-api/reference/limits). |
 
 ## Scopes
 
@@ -72,7 +72,7 @@ Record switches the Blue Collar API on per key by granting scopes. A key without
     | `x-timestamp` | The timestamp from step 1. |
     | `x-signature` | The hex signature from step 3. |
     | `Content-Type` | `application/json`, on requests with a body. |
-    | `Idempotency-Key` | A new UUID on each write. See [Idempotency](/partner-api/reference/requests-and-responses#idempotency). |
+    | `Idempotency-Key` | A new UUID on each write. See [Idempotency](/blue-collar-api/reference/requests-and-responses#idempotency). |
     | `x-on-behalf-of` | Optional. Your own id for the recruiter making the call (1 to 128 of `A-Z a-z 0-9 . _ : @ -`). It applies per-recruiter rate limits, is kept in the audit log, and is used as the mandate `owner` or skill request `requested_by` when you do not send one. |
   </Step>
 </Steps>
@@ -202,4 +202,4 @@ A `200` with `"success": true` means the key, secret and clock are right. A `401
 
 </CodeGroup>
 
-Quote `request_id` (also the `x-request-id` header) when you contact Record support. Pass `next_cursor` back as `?cursor=` until `has_more` is `false`; `total` can be `null` when a filter is used. See [Requests and responses](/partner-api/reference/requests-and-responses).
+Quote `request_id` (also the `x-request-id` header) when you contact Record support. Pass `next_cursor` back as `?cursor=` until `has_more` is `false`; `total` can be `null` when a filter is used. See [Requests and responses](/blue-collar-api/reference/requests-and-responses).

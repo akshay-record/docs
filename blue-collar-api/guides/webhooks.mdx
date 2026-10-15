@@ -42,7 +42,7 @@ Record-Signature: t=1791204071,v1=5f2b…
 | `version` | Rises each time the same candidate's result changes. Keep the highest. |
 | `sequence` | Order of events in your stream. |
 | `mode` | `live` or `test`. |
-| `data` | The [result record](/partner-api/guides/results#the-record). |
+| `data` | The [result record](/blue-collar-api/guides/results#the-record). |
 
 ## What your server must do
 
@@ -191,7 +191,7 @@ Save `data.endpoint.endpoint_id` for the next step.
 | 400 `VALIDATION_FAILED` | URL not https, a private address, a port other than 443, or an unknown event type. |
 | 422 `LIMIT_EXCEEDED` | Already 5 endpoints. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/webhooks/create-an-endpoint)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/webhooks/create-an-endpoint)
 
 ---
 
@@ -243,7 +243,7 @@ pcall GET "/api/v1/partner/webhooks/endpoints"
 
 </CodeGroup>
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/webhooks/list-endpoints)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/webhooks/list-endpoints)
 
 ---
 
@@ -295,7 +295,7 @@ pcall GET "/api/v1/partner/webhooks/endpoints/we_3f9a1c7e5b2d4086a1b3c5d7e9f0123
 |---|---|
 | 404 `NOT_FOUND` | No such endpoint. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/webhooks/get-an-endpoint)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/webhooks/get-an-endpoint)
 
 ---
 
@@ -355,7 +355,7 @@ pcall PATCH "/api/v1/partner/webhooks/endpoints/we_3f9a1c7e5b2d4086a1b3c5d7e9f01
 | 404 `NOT_FOUND` | No such endpoint. |
 | 400 `VALIDATION_FAILED` | No field sent, or a bad URL. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/webhooks/update-an-endpoint)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/webhooks/update-an-endpoint)
 
 ---
 
@@ -396,7 +396,7 @@ pcall DELETE "/api/v1/partner/webhooks/endpoints/we_3f9a1c7e5b2d4086a1b3c5d7e9f0
 |---|---|
 | 404 `NOT_FOUND` | No such endpoint. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/webhooks/delete-an-endpoint)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/webhooks/delete-an-endpoint)
 
 ---
 
@@ -437,7 +437,7 @@ pcall POST "/api/v1/partner/webhooks/endpoints/we_3f9a1c7e5b2d4086a1b3c5d7e9f012
 |---|---|
 | 404 `NOT_FOUND` | No such endpoint. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/webhooks/send-a-test-event)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/webhooks/send-a-test-event)
 
 ---
 
@@ -482,7 +482,7 @@ pcall POST "/api/v1/partner/webhooks/endpoints/we_3f9a1c7e5b2d4086a1b3c5d7e9f012
 |---|---|
 | 404 `NOT_FOUND` | No such endpoint. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/webhooks/backfill-past-results)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/webhooks/backfill-past-results)
 
 ---
 
@@ -551,7 +551,7 @@ pcall GET "/api/v1/partner/webhooks/endpoints/we_3f9a1c7e5b2d4086a1b3c5d7e9f0123
 |---|---|
 | 404 `NOT_FOUND` | No such endpoint. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/webhooks/list-deliveries)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/webhooks/list-deliveries)
 
 ---
 
@@ -606,7 +606,7 @@ pcall POST "/api/v1/partner/webhooks/deliveries/dlv_7a1b3c5d7e9f0123456789abcdef
 |---|---|
 | 404 `NOT_FOUND` | No such delivery. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/webhooks/retry-a-delivery)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/webhooks/retry-a-delivery)
 
 ## Event feed
 
@@ -736,7 +736,7 @@ Save `data.items[0].event_id` for the next step.
 |---|---|
 | 400 `VALIDATION_FAILED` | Bad `status`, date or `limit` above 100. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/events/list-events)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/events/list-events)
 
 ---
 
@@ -787,7 +787,7 @@ pcall POST "/api/v1/partner/events/ack" '{
 |---|---|
 | 400 `VALIDATION_FAILED` | More than 100 ids, or an id that is not an event id. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/events/acknowledge-events)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/events/acknowledge-events)
 
 ---
 
@@ -899,4 +899,4 @@ pcall GET "/api/v1/partner/events/evt_9c2e4a6b8d0f1234567890abcdef1234"
 |---|---|
 | 404 `NOT_FOUND` | No such event (or older than 30 days). |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/events/get-an-event)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/events/get-an-event)

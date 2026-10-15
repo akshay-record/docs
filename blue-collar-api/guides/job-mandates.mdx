@@ -7,9 +7,9 @@ A mandate is the job Record checks candidates against: its skills, screening que
 
 | Needs | You get | Scope |
 |---|---|---|
-| `workflow_id` from [step 1](/partner-api/guides/workflows) | `mandate_id`, then wait for `status: ready` | `mandates:write` to change, `mandates:read` to read |
+| `workflow_id` from [step 1](/blue-collar-api/guides/workflows) | `mandate_id`, then wait for `status: ready` | `mandates:write` to change, `mandates:read` to read |
 
-Before you create one, pick its [skills](/partner-api/guides/skills) and, if you want, its [place, employment type and shift](/partner-api/guides/lookups).
+Before you create one, pick its [skills](/blue-collar-api/guides/skills) and, if you want, its [place, employment type and shift](/blue-collar-api/guides/lookups).
 
 ## Rules the server checks
 
@@ -237,7 +237,7 @@ Save `data.mandate_id` for the next step.
 | 403 `FORBIDDEN` | That workflow was made in the playground. |
 | 409 `CONFLICT` | Workflow is archived, or `job_id` is already used. |
 
-Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/create-a-job-mandate)
+Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/create-a-job-mandate)
 
 ---
 
@@ -372,7 +372,7 @@ For a job abroad, `location` is `null` and `countries` lists each country:
 |---|---|
 | 404 `NOT_FOUND` | No such `mandate_id`. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/get-a-job-mandate)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/get-a-job-mandate)
 
 ---
 
@@ -511,7 +511,7 @@ pcall GET "/api/v1/partner/mandates?limit=50"
 |---|---|
 | 400 `VALIDATION_FAILED` | Bad `cursor`, date, or `limit` above 100. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/list-job-mandates)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/list-job-mandates)
 
 ---
 
@@ -590,7 +590,7 @@ pcall GET "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/questions?l
 | 404 `NOT_FOUND` | No such mandate. |
 | 400 `VALIDATION_FAILED` | Unsupported `language`. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/get-mandate-questions)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/get-mandate-questions)
 
 ---
 
@@ -655,7 +655,7 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/questions" 
 | 403 `FORBIDDEN` | Mandate was made in the playground. |
 | 409 `CONFLICT` | Archived, still `preparing` (wait Retry-After), or over 10 changes this hour. |
 
-Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/update-mandate-questions)
+Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/update-mandate-questions)
 
 ---
 
@@ -850,7 +850,7 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4" '{
 | 422 `LIMIT_EXCEEDED` | More than 10 skills, 3 verified skills or 5 questions. |
 | 400 `VALIDATION_FAILED` | Same field rules as create. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/replace-a-job-mandate)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/replace-a-job-mandate)
 
 ---
 
@@ -912,7 +912,7 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/methods" '{
 | 409 `CONFLICT` | Archived, still `preparing`, or too many changes this hour. |
 | 400 `VALIDATION_FAILED` | Empty / repeated methods, or a check without its data. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/update-mandate-checks)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/update-mandate-checks)
 
 ---
 
@@ -996,7 +996,7 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/skills" '{
 | 422 `LIMIT_EXCEEDED` | More than 10 skills or 3 verified. |
 | 400 `VALIDATION_FAILED` | Unknown or repeated skill. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/replace-mandate-skills)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/replace-mandate-skills)
 
 ---
 
@@ -1101,7 +1101,7 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/enrichment-
 | 422 `LIMIT_EXCEEDED` | More than 5 questions. |
 | 400 `VALIDATION_FAILED` | Type other than `yes_no` / `voice`, or repeated `key`. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/replace-screening-questions)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/replace-screening-questions)
 
 ---
 
@@ -1224,7 +1224,7 @@ pcall POST "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/archive"
 | 404 `NOT_FOUND` | No such mandate. |
 | 403 `FORBIDDEN` | Mandate was made in the playground. |
 
-Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/archive-a-job-mandate)
+Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/archive-a-job-mandate)
 
 ---
 
@@ -1347,4 +1347,4 @@ pcall DELETE "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4"
 | 404 `NOT_FOUND` | No such mandate. |
 | 403 `FORBIDDEN` | Mandate was made in the playground. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/job-mandates/delete-a-job-mandate)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/delete-a-job-mandate)

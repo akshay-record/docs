@@ -9,7 +9,7 @@ description: "From an API key to your first candidate result in six calls."
 
 <Steps>
   <Step title="Set up signing">
-    Copy the `call()` helper for your language from [Authentication](/partner-api/authentication#signing-helper), then check your key with a read:
+    Copy the `call()` helper for your language from [Authentication](/blue-collar-api/authentication#signing-helper), then check your key with a read:
 
     <CodeGroup>
 
@@ -57,7 +57,7 @@ description: "From an API key to your first candidate result in six calls."
   </Step>
 
   <Step title="Create a job mandate">
-    The mandate is the job: 5 to 10 skills (at most 3 with `verify: true`) and up to 5 screening questions. Find skill ids with [`GET /skills/search`](/partner-api/guides/skills#search-skills).
+    The mandate is the job: 5 to 10 skills (at most 3 with `verify: true`) and up to 5 screening questions. Find skill ids with [`GET /skills/search`](/blue-collar-api/guides/skills#search-skills).
 
     <CodeGroup>
 
@@ -107,7 +107,7 @@ description: "From an API key to your first candidate result in six calls."
   </Step>
 
   <Step title="Register a webhook">
-    Give Record an HTTPS URL. Each finished candidate's result is posted there, signed with your secret. See [Webhooks](/partner-api/guides/webhooks) to verify the signature.
+    Give Record an HTTPS URL. Each finished candidate's result is posted there, signed with your secret. See [Webhooks](/blue-collar-api/guides/webhooks) to verify the signature.
 
     <CodeGroup>
 
@@ -160,7 +160,7 @@ description: "From an API key to your first candidate result in six calls."
   </Step>
 
   <Step title="Receive results">
-    When a candidate finishes, your webhook receives a `candidate.result` event with their [result record](/partner-api/guides/results). To catch up or check, read them directly:
+    When a candidate finishes, your webhook receives a `candidate.result` event with their [result record](/blue-collar-api/guides/results). To catch up or check, read them directly:
 
     <CodeGroup>
 
@@ -181,10 +181,10 @@ description: "From an API key to your first candidate result in six calls."
 ## Next steps
 
 <CardGroup cols={2}>
-  <Card title="Job mandates" icon="briefcase" href="/partner-api/guides/job-mandates">
+  <Card title="Job mandates" icon="briefcase" href="/blue-collar-api/guides/job-mandates">
     Skills, questions, locations and what you can change later.
   </Card>
-  <Card title="Errors" icon="triangle-exclamation" href="/partner-api/reference/errors">
+  <Card title="Errors" icon="triangle-exclamation" href="/blue-collar-api/reference/errors">
     Every error code and what to do about it.
   </Card>
 </CardGroup>

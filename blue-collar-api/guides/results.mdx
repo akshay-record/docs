@@ -3,11 +3,11 @@ title: "Results"
 description: "Step 4. What Record collected from each candidate, and how to get it."
 ---
 
-A result is what Record **collected** from the candidate: the answers to your screening questions, the skill-verification verdict and score, and other roles they are open to. It comes as one record per candidate. The best way to get it is the [webhook](/partner-api/guides/webhooks); these endpoints are for catching up and checking.
+A result is what Record **collected** from the candidate: the answers to your screening questions, the skill-verification verdict and score, and other roles they are open to. It comes as one record per candidate. The best way to get it is the [webhook](/blue-collar-api/guides/webhooks); these endpoints are for catching up and checking.
 
 | Needs | You get | Scope |
 |---|---|---|
-| `campaign_id` from [step 3](/partner-api/guides/campaigns) | a record with `status` and `output` | `results:read` |
+| `campaign_id` from [step 3](/blue-collar-api/guides/campaigns) | a record with `status` and `output` | `results:read` |
 
 ## Status
 
@@ -141,7 +141,7 @@ pcall GET "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/campaigns?l
 |---|---|
 | 404 `NOT_FOUND` | No such mandate. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/results/list-mandate-campaigns)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/results/list-mandate-campaigns)
 
 ---
 
@@ -261,7 +261,7 @@ Save `data.items[0].candidate_id` for the next step.
 | 404 `NOT_FOUND` | No such campaign. |
 | 400 `VALIDATION_FAILED` | Unknown `status`, bad date, or `limit` above 100. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/results/list-campaign-results)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/results/list-campaign-results)
 
 ---
 
@@ -363,7 +363,7 @@ pcall GET "/api/v1/partner/results/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01"
 |---|---|
 | 404 `NOT_FOUND` | No such `candidate_id` for this key. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/results/get-a-result)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/results/get-a-result)
 
 ## Candidate rows and verdicts
 
@@ -438,7 +438,7 @@ pcall GET "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates?limit=100
 | 404 `NOT_FOUND` | No such campaign. |
 | 400 `VALIDATION_FAILED` | Unknown `status` / `progress`, bad date, or `limit` above 200. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/results/list-campaign-candidates)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/results/list-campaign-candidates)
 
 ---
 
@@ -525,4 +525,4 @@ pcall GET "/api/v1/partner/candidates/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01/resul
 | 404 `NOT_FOUND` | No such `candidate_id`. |
 | 403 `SCOPE_MISSING` | `include=answers` also needs the `results:answers` scope. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/results/get-a-candidate-verdict)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/results/get-a-candidate-verdict)

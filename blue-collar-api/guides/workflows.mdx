@@ -134,7 +134,7 @@ Save `data.workflow_id` for the next step.
 | 400 `VALIDATION_FAILED` | Unknown field, time not HH:MM, or only one of start_time / end_time. |
 | 409 `CONFLICT` | `external_id` is already used by another workflow. |
 
-Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/workflows/create-a-workflow)
+Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/workflows/create-a-workflow)
 
 ---
 
@@ -214,7 +214,7 @@ pcall GET "/api/v1/partner/workflows?status=active&include_archived=false&limit=
 |---|---|
 | 400 `VALIDATION_FAILED` | Bad `cursor`, or `limit` above 100. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/workflows/list-workflows)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/workflows/list-workflows)
 
 ---
 
@@ -278,7 +278,7 @@ pcall GET "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8"
 |---|---|
 | 404 `NOT_FOUND` | No such `workflow_id` for this key. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/workflows/get-a-workflow)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/workflows/get-a-workflow)
 
 ---
 
@@ -361,7 +361,7 @@ pcall PATCH "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8" '{
 | 403 `FORBIDDEN` | Workflow was made in the playground; the API can only read it. |
 | 409 `CONFLICT` | Workflow is archived, or `external_id` is taken. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/workflows/update-a-workflow)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/workflows/update-a-workflow)
 
 ---
 
@@ -427,4 +427,4 @@ pcall DELETE "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8"
 | 403 `FORBIDDEN` | Workflow was made in the playground. |
 | 409 `WORKFLOW_IN_USE` | It still has open mandates. Archive them first. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/workflows/archive-a-workflow)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/workflows/archive-a-workflow)

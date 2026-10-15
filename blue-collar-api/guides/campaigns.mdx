@@ -7,7 +7,7 @@ A campaign sends your candidates (name + mobile number) to a mandate. Record con
 
 | Needs | You get | Scope |
 |---|---|---|
-| `mandate_id` from [step 2](/partner-api/guides/job-mandates) | `campaign_id` | `campaigns:write` (reads also allow `results:read`) |
+| `mandate_id` from [step 2](/blue-collar-api/guides/job-mandates) | `campaign_id` | `campaigns:write` (reads also allow `results:read`) |
 
 <Warning>
   **This contacts real people and spends credits** (1 per candidate when skill verification is on). The phone numbers in the samples are placeholders, so replace them with your own test numbers. A TEST key may only reach numbers Record listed for it (otherwise `403 FORBIDDEN`). If the mandate is still `preparing`, the campaign waits and goes out by itself when it is `ready`.
@@ -177,7 +177,7 @@ Save `data.campaign.campaign_id` for the next step.
 | 409 `CONFLICT` | Mandate is archived, or campaign `external_id` is taken. |
 | 429 `DAILY_CAP` | 2,000 different candidates already added today. |
 
-Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/create-a-campaign)
+Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/campaigns/create-a-campaign)
 
 ---
 
@@ -249,7 +249,7 @@ pcall GET "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f?candidates_limit=100
 |---|---|
 | 404 `NOT_FOUND` | No such `campaign_id`. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/get-a-campaign)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/campaigns/get-a-campaign)
 
 ---
 
@@ -320,7 +320,7 @@ pcall GET "/api/v1/partner/campaigns?mandate_id=JM_261009101612456H3N8W2L5C9V1Z4
 |---|---|
 | 400 `VALIDATION_FAILED` | Bad `mandate_id` format, `cursor` or `limit`. |
 
-Can also return the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/list-campaigns)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/campaigns/list-campaigns)
 
 ---
 
@@ -379,7 +379,7 @@ pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/start"
 | 403 `FORBIDDEN` | Campaign was made in the playground, or TEST key number not allowed. |
 | 409 `CONFLICT` | Already started, or the job is archived. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/start-a-campaign)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/campaigns/start-a-campaign)
 
 ---
 
@@ -474,7 +474,7 @@ pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates" '{
 | 400 `VALIDATION_FAILED` | No usable phone number in the batch. |
 | 429 `DAILY_CAP` | 2,000 different candidates already added today. |
 
-Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/add-candidates)
+Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/campaigns/add-candidates)
 
 ---
 
@@ -525,7 +525,7 @@ pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates/a3f1c9d2
 | 409 `CONFLICT` | Campaign not started, paused, completed or cancelled; or the candidate has completed, declined or is not contacted yet. |
 | 429 `RATE_LIMITED` | A link was sent to this candidate less than a minute ago. Wait Retry-After seconds. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/resend-a-candidate-link)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/campaigns/resend-a-candidate-link)
 
 ---
 
@@ -582,7 +582,7 @@ pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/pause"
 | 403 `FORBIDDEN` | Campaign was made in the playground. |
 | 409 `CONFLICT` | Not started yet, or not in a state that can be paused. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/pause-a-campaign)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/campaigns/pause-a-campaign)
 
 ---
 
@@ -641,4 +641,4 @@ pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/resume"
 | 403 `FORBIDDEN` | Campaign was made in the playground. |
 | 409 `CONFLICT` | Not paused, or the job is archived. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/partner-api/reference/errors). [Full schema](/api-reference/campaigns/resume-a-campaign)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/campaigns/resume-a-campaign)

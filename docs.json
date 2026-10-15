@@ -267,31 +267,31 @@
           {
             "group": "Get started",
             "pages": [
-              "partner-api/index",
-              "partner-api/quickstart",
-              "partner-api/authentication"
+              "blue-collar-api/index",
+              "blue-collar-api/quickstart",
+              "blue-collar-api/authentication"
             ]
           },
           {
             "group": "Integration",
             "pages": [
-              "partner-api/guides/workflows",
-              "partner-api/guides/job-mandates",
-              "partner-api/guides/skills",
-              "partner-api/guides/lookups",
-              "partner-api/guides/campaigns",
-              "partner-api/guides/results",
-              "partner-api/guides/webhooks",
-              "partner-api/guides/analytics"
+              "blue-collar-api/guides/workflows",
+              "blue-collar-api/guides/job-mandates",
+              "blue-collar-api/guides/skills",
+              "blue-collar-api/guides/lookups",
+              "blue-collar-api/guides/campaigns",
+              "blue-collar-api/guides/results",
+              "blue-collar-api/guides/webhooks",
+              "blue-collar-api/guides/analytics"
             ]
           },
           {
             "group": "Reference",
             "pages": [
-              "partner-api/reference/requests-and-responses",
-              "partner-api/reference/errors",
-              "partner-api/reference/limits",
-              "partner-api/reference/statuses"
+              "blue-collar-api/reference/requests-and-responses",
+              "blue-collar-api/reference/errors",
+              "blue-collar-api/reference/limits",
+              "blue-collar-api/reference/statuses"
             ]
           }
         ]
@@ -302,12 +302,12 @@
           {
             "group": "Overview",
             "pages": [
-              "partner-api/api-reference/introduction"
+              "blue-collar-api/api-reference/introduction"
             ]
           },
           {
             "group": "Workflows",
-            "openapi": "partner-api/api-reference/openapi.json",
+            "openapi": "blue-collar-api/api-reference/openapi.json",
             "pages": [
               "POST /workflows",
               "GET /workflows",
@@ -318,7 +318,7 @@
           },
           {
             "group": "Job mandates",
-            "openapi": "partner-api/api-reference/openapi.json",
+            "openapi": "blue-collar-api/api-reference/openapi.json",
             "pages": [
               "POST /mandates",
               "GET /mandates/{mandate_id}",
@@ -335,7 +335,7 @@
           },
           {
             "group": "Skills",
-            "openapi": "partner-api/api-reference/openapi.json",
+            "openapi": "blue-collar-api/api-reference/openapi.json",
             "pages": [
               "GET /skills/search",
               "GET /skills/domains",
@@ -352,7 +352,7 @@
           },
           {
             "group": "Lookups",
-            "openapi": "partner-api/api-reference/openapi.json",
+            "openapi": "blue-collar-api/api-reference/openapi.json",
             "pages": [
               "GET /locations",
               "GET /countries",
@@ -362,7 +362,7 @@
           },
           {
             "group": "Campaigns",
-            "openapi": "partner-api/api-reference/openapi.json",
+            "openapi": "blue-collar-api/api-reference/openapi.json",
             "pages": [
               "POST /campaigns",
               "GET /campaigns/{campaign_id}",
@@ -376,7 +376,7 @@
           },
           {
             "group": "Results",
-            "openapi": "partner-api/api-reference/openapi.json",
+            "openapi": "blue-collar-api/api-reference/openapi.json",
             "pages": [
               "GET /campaigns/{campaign_id}/results",
               "GET /results/{candidate_id}",
@@ -387,7 +387,7 @@
           },
           {
             "group": "Webhooks",
-            "openapi": "partner-api/api-reference/openapi.json",
+            "openapi": "blue-collar-api/api-reference/openapi.json",
             "pages": [
               "POST /webhooks/endpoints",
               "GET /webhooks/endpoints",
@@ -402,7 +402,7 @@
           },
           {
             "group": "Events",
-            "openapi": "partner-api/api-reference/openapi.json",
+            "openapi": "blue-collar-api/api-reference/openapi.json",
             "pages": [
               "GET /events",
               "POST /events/ack",
@@ -411,7 +411,7 @@
           },
           {
             "group": "Analytics",
-            "openapi": "partner-api/api-reference/openapi.json",
+            "openapi": "blue-collar-api/api-reference/openapi.json",
             "pages": [
               "GET /analytics/workflows/{workflow_id}",
               "GET /analytics/mandates/{mandate_id}",
@@ -453,6 +453,20 @@
       }
     }
   },
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/blue-collar-api"
+    },
+    {
+      "source": "/partner-api",
+      "destination": "/blue-collar-api"
+    },
+    {
+      "source": "/partner-api/:slug*",
+      "destination": "/blue-collar-api/:slug*"
+    }
+  ],
   "contextual": {
     "options": [
       "copy",
