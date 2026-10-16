@@ -21,7 +21,7 @@ All four are optional lookups that hold no data of yours; `mandates:read` or `ma
 
 Type-ahead for a job’s place in India: matches the start of district and place names (up to 8 districts and 25 places). Use the place `name` as `location.city` and its `state` as `location.state`. For a job abroad use `GET /countries`.
 
-**Scope:** `mandates:read` or `mandates:write` · **Idempotency-Key:** not used
+**Scope:** `mandates:read` or `mandates:write`
 
 | Query | Type | Description |
 |---|---|---|
@@ -83,7 +83,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 Every country an abroad job can be in, A to Z, in one answer (about 250): filter it in your own picker. Send the `code` of each pick as `countries` on a mandate with `location_type: "abroad"` (1–10). India is listed with `abroad_selectable: false`: jobs in India use `location`.
 
-**Scope:** `mandates:read` or `mandates:write` · **Idempotency-Key:** not used
+**Scope:** `mandates:read` or `mandates:write`
 
 <CodeGroup>
 
@@ -134,7 +134,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 The choices of the playground’s Employment type dropdown. Send one as `employment_type` of a mandate so it shows as a choice there. Other text is still accepted and kept as sent.
 
-**Scope:** `mandates:read` or `mandates:write` · **Idempotency-Key:** not used
+**Scope:** `mandates:read` or `mandates:write`
 
 <CodeGroup>
 
@@ -188,7 +188,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 The choices of the playground’s Shift dropdown. Send one as `shift` of a mandate. Other text is still accepted and kept as sent.
 
-**Scope:** `mandates:read` or `mandates:write` · **Idempotency-Key:** not used
+**Scope:** `mandates:read` or `mandates:write`
 
 <CodeGroup>
 

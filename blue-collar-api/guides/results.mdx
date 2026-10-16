@@ -90,7 +90,7 @@ A result is what Record **collected** from the candidate: the answers to your sc
 
 List the campaigns that were sent for one job.
 
-**Scope:** `results:read` · **Idempotency-Key:** not used
+**Scope:** `results:read`
 
 | Query | Type | Description |
 |---|---|---|
@@ -151,7 +151,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 One record per candidate: `status` (pending, completed, declined, failed) and `output` with what Record collected. Prefer the webhook; use this to catch up or check.
 
-**Scope:** `results:read` · **Idempotency-Key:** not used
+**Scope:** `results:read`
 
 | Query | Type | Description |
 |---|---|---|
@@ -271,7 +271,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 The same record the webhook delivers for this candidate.
 
-**Scope:** `results:read` · **Idempotency-Key:** not used
+**Scope:** `results:read`
 
 <CodeGroup>
 
@@ -375,7 +375,7 @@ One row per candidate with progress, verdict and score, and one candidate's full
 
 One row per candidate: `candidate_id`, interested or not, progress, verdict and score, plus `delivery` (queued, sent, failed) and `can_resend`, so you can see who needs their link sent again. Phone numbers are never returned. A key with only `campaigns:write` gets the rows with `verdict`, `total_score` and `report_url` left null.
 
-**Scope:** `results:read` or `campaigns:write` · **Idempotency-Key:** not used
+**Scope:** `results:read` or `campaigns:write`
 
 | Query | Type | Description |
 |---|---|---|
@@ -448,7 +448,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 Verdict, score, a rating per skill and a report link. Add `include=answers` to also get what they said.
 
-**Scope:** `results:read` · **Idempotency-Key:** not used
+**Scope:** `results:read`
 
 | Query | Type | Description |
 |---|---|---|

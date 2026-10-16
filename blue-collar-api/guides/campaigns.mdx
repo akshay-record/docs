@@ -187,7 +187,7 @@ Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_
 
 See whether it has gone out, is waiting for the job’s questions, is paused or stuck, and how many are contacted. `candidate_list` holds its first candidates (100 by default; `candidates_limit` up to 200, or 0 to leave it out) with their `candidate_id`, `delivery` and `can_resend`; `has_more` says there are more. For all of them, with verdicts and answers, call `GET /campaigns/{campaign_id}/candidates`.
 
-**Scope:** `campaigns:write` or `results:read` · **Idempotency-Key:** not used
+**Scope:** `campaigns:write` or `results:read`
 
 | Query | Type | Description |
 |---|---|---|
@@ -259,7 +259,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 List your organisation’s campaigns; filter by `mandate_id` to see one job’s.
 
-**Scope:** `campaigns:write` or `results:read` · **Idempotency-Key:** not used
+**Scope:** `campaigns:write` or `results:read`
 
 | Query | Type | Description |
 |---|---|---|

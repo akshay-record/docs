@@ -31,7 +31,7 @@ Search and browse return at most 15,000 different skills per key per day, and mo
 
 Type-ahead: find skills by a few letters (e.g. “fork”) and keep the `skill_id` the recruiter picks.
 
-**Scope:** `skills:read` · **Idempotency-Key:** not used
+**Scope:** `skills:read`
 
 | Query | Type | Description |
 |---|---|---|
@@ -114,7 +114,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 The top of the skill tree: all primary domains, for a browse menu.
 
-**Scope:** `skills:read` · **Idempotency-Key:** not used
+**Scope:** `skills:read`
 
 <CodeGroup>
 
@@ -170,7 +170,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 The sub-domains inside one domain.
 
-**Scope:** `skills:read` · **Idempotency-Key:** not used
+**Scope:** `skills:read`
 
 <CodeGroup>
 
@@ -228,7 +228,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 The skills inside one sub-domain, 50 per page (700 at most).
 
-**Scope:** `skills:read` · **Idempotency-Key:** not used
+**Scope:** `skills:read`
 
 | Query | Type | Description |
 |---|---|---|
@@ -312,7 +312,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 Fetch one skill by its `skill_id`.
 
-**Scope:** `skills:read` · **Idempotency-Key:** not used
+**Scope:** `skills:read`
 
 <CodeGroup>
 
@@ -757,7 +757,7 @@ Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_
 
 See every skill you asked for and where it stands.
 
-**Scope:** `skills:request` · **Idempotency-Key:** not used
+**Scope:** `skills:request`
 
 | Query | Type | Description |
 |---|---|---|
@@ -820,7 +820,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 Check one skill request, for example whether Record approved it.
 
-**Scope:** `skills:request` · **Idempotency-Key:** not used
+**Scope:** `skills:request`
 
 <CodeGroup>
 

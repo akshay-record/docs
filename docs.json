@@ -445,6 +445,9 @@
     ]
   },
   "api": {
+    "playground": {
+      "display": "none"
+    },
     "mdx": {
       "server": "https://api.example.com/v1",
       "auth": {

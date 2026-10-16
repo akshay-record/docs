@@ -247,7 +247,7 @@ Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_
 
 Read the mandate. Repeat until `status` is `ready` (questions prepared) before expecting candidates to be contacted. `location_type` says where the job is: for `india`, `location` holds the place; for `abroad`, `countries` lists `{ code, name }` and `location` is null. `location_names` is every place or country name as the playground shows it.
 
-**Scope:** `mandates:read` or `mandates:write` · **Idempotency-Key:** not used
+**Scope:** `mandates:read` or `mandates:write`
 
 <CodeGroup>
 
@@ -382,7 +382,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 List your organisation’s job mandates (made here or in the playground).
 
-**Scope:** `mandates:read` or `mandates:write` · **Idempotency-Key:** not used
+**Scope:** `mandates:read` or `mandates:write`
 
 | Query | Type | Description |
 |---|---|---|
@@ -521,7 +521,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 See what a candidate will be asked, in `en` `ta` `hi` `kn` `te` or `ml` (English where a translation is not ready). Read-only: change them with `PUT …/questions`.
 
-**Scope:** `mandates:read` or `mandates:write` · **Idempotency-Key:** not used
+**Scope:** `mandates:read` or `mandates:write`
 
 | Query | Type | Description |
 |---|---|---|

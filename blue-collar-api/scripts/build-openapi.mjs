@@ -116,11 +116,18 @@ for (const [route, methods] of Object.entries(spec.paths)) {
       continue;
     }
 
+    // Idempotency-Key is always optional in the reference, even where the backend requires it.
     const idem = op.parameters?.find((p) => p.name === "Idempotency-Key");
+    if (idem) {
+      idem.required = false;
+      idem.description = idem.description?.replace(/^Required\./, "Optional.");
+    }
     const meta = [
       `**Scope:** ${scopesOf(op.description) ?? "see Authentication"}`,
-      `**Idempotency-Key:** ${idem ? (idem.required ? "required" : "optional") : "not used"}`,
-    ].join(" · ");
+      idem && "**Idempotency-Key:** optional",
+    ]
+      .filter(Boolean)
+      .join(" · ");
 
     op.summary = o.title;
     op.description = [
@@ -158,6 +165,31 @@ for (const methods of Object.values(spec.paths)) {
   for (const op of Object.values(methods)) op.tags = (op.tags ?? []).map((t) => TAG_NAMES[t] ?? t);
 }
 spec.tags = (spec.tags ?? []).map((t) => ({ ...t, name: TAG_NAMES[t.name] ?? t.name }));
+
+// Response schemas show no "required" badges: drop their required lists (not a property named "required").
+const stripRequired = (node, inProperties = false) => {
+  if (!node || typeof node !== "object") return;
+  if (Array.isArray(node)) return node.forEach((n) => stripRequired(n));
+  if (!inProperties && Array.isArray(node.required)) delete node.required;
+  for (const [key, value] of Object.entries(node)) stripRequired(value, key === "properties" && !inProperties);
+};
+for (const methods of Object.values(spec.paths)) {
+  for (const op of Object.values(methods)) stripRequired(op.responses);
+}
+stripRequired(spec.components.schemas.Error);
+
+// Every endpoint authenticates with the key id and the secret key, not a signed request.
+delete spec.components.securitySchemes.Timestamp;
+delete spec.components.securitySchemes.Signature;
+spec.components.securitySchemes.SecretKey = {
+  type: "apiKey",
+  in: "header",
+  name: "x-secret-key",
+  description: "Your API secret key (VFN_SK_…)",
+};
+for (const methods of Object.values(spec.paths)) {
+  for (const op of Object.values(methods)) op.security = [{ ApiKey: [], SecretKey: [] }];
+}
 
 spec.info = {
   title: "Record Blue Collar API",

@@ -201,7 +201,7 @@ Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_
 
 Each endpoint with its status (`active`, `paused`, `auto_paused`), consecutive failures and last success.
 
-**Scope:** `webhooks:manage` · **Idempotency-Key:** not used
+**Scope:** `webhooks:manage`
 
 <CodeGroup>
 
@@ -253,7 +253,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 One endpoint with its current status.
 
-**Scope:** `webhooks:manage` · **Idempotency-Key:** not used
+**Scope:** `webhooks:manage`
 
 <CodeGroup>
 
@@ -406,7 +406,7 @@ Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_
 
 Sends a signed `webhook.test` right now and shows what your server answered. Not stored, not retried.
 
-**Scope:** `webhooks:manage` · **Idempotency-Key:** not used
+**Scope:** `webhooks:manage`
 
 <CodeGroup>
 
@@ -492,7 +492,7 @@ Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_
 
 Every send to this endpoint, newest first: attempts, last HTTP status or error, when the next retry is due.
 
-**Scope:** `webhooks:manage` · **Idempotency-Key:** not used
+**Scope:** `webhooks:manage`
 
 | Query | Type | Description |
 |---|---|---|
@@ -616,7 +616,7 @@ Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_
 
 Every event you have not acknowledged, oldest first: the same data the webhook sends. `status=all` with `from` replays history (30 days).
 
-**Scope:** `events:read` · **Idempotency-Key:** not used
+**Scope:** `events:read`
 
 | Query | Type | Description |
 |---|---|---|
@@ -746,7 +746,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 Up to 100 ids. They stop coming back and no webhook retry is sent for them. Safe to repeat.
 
-**Scope:** `events:read` · **Idempotency-Key:** not used
+**Scope:** `events:read`
 
 | Field | Type | Description |
 |---|---|---|
@@ -797,7 +797,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 Fetch one event by its id.
 
-**Scope:** `events:read` · **Idempotency-Key:** not used
+**Scope:** `events:read`
 
 <CodeGroup>
 
