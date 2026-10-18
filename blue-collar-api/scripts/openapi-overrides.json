@@ -1,20 +1,20 @@
 {
   "createWorkflow": {
     "title": "Create a workflow",
-    "description": "Create the template your jobs run under: how candidates are reached, when, and which checks run by default. Returns `workflow_id`.",
+    "description": "Create the template your jobs run under: how candidates are reached, when, and which checks run by default. Only `name` and `schedule` are required. Returns `workflow_id`.",
     "fields": {
       "name": "Display name, 1–200 characters.",
       "external_id": "Your own id (A-Z a-z 0-9 . _ : -, up to 128). Must be unique.",
       "status": "`active` (default), `inactive` or `draft`.",
-      "default_methods": "Checks a mandate uses when it sends none: `data_enrichment`, `skill_verification`, `interest_collection`.",
-      "delivery": "Channels: `whatsapp`, `voice_call`, `sms_backup` (true / false).",
-      "schedule": "`start_time` + `end_time` (\"HH:MM\", send both), `days` (mon…sun), `timezone` (IANA), `max_retries` 1–10, `retry_after_hours` 1–48."
+      "default_methods": "Optional. Checks a mandate uses when it sends none: `data_enrichment`, `skill_verification`, `interest_collection`. Leave out for all three.",
+      "delivery": "Optional. Channels: `whatsapp`, `voice_call`, `sms_backup` (true / false). Leave out for all three on.",
+      "schedule": "Required. Send all six: `start_time` and `end_time` (\"HH:MM\"), `days` (mon…sun, at least one), `timezone` (IANA), `max_retries` 1 to 3, `retry_after_hours` 6, 8 or 12."
     },
     "errors": [
       [
         400,
         "VALIDATION_FAILED",
-        "Unknown field, time not HH:MM, or only one of start_time / end_time."
+        "`name` or `schedule` missing, a `schedule` key missing, empty or repeated `days`, time not HH:MM, or an unknown field."
       ],
       [
         409,
@@ -259,7 +259,7 @@
       "title, company_name": "Plain text, up to 200 characters.",
       "skills": "`{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). 5–10 recommended, max 10; max 3 with `verify: true`.",
       "methods": "Which checks run. Leave out to use the workflow’s `default_methods`.",
-      "enrichment_questions": "1–5 items `{ key, type: yes_no | voice, text, knockout: yes | no, required }`. Needed when `data_enrichment` is on.",
+      "enrichment_questions": "1–5 items (up to 10 when `data_enrichment` is the only method) `{ key, type: yes_no | voice, text, knockout: yes | no, required }`. Needed when `data_enrichment` is on.",
       "job_id": "Your own job id. If you send it, it must not be in use.",
       "location_type": "`india` (default) or `abroad`. Same as the playground’s Abroad option.",
       "location": "A place in India: `{ city, state?, pincode? }` (find it with `GET /locations`). Not allowed when `location_type` is `abroad`.",
@@ -339,7 +339,7 @@
     "title": "Update mandate questions",
     "description": "The write side of `GET …/questions`: replace the screening questions, or ask Record to write new skill questions. One part per call.",
     "fields": {
-      "enrichment_questions": "Replaces the screening questions (1–5), exactly like `PUT …/enrichment-questions`. Send this part alone.",
+      "enrichment_questions": "Replaces the screening questions (1–5, or 10 with enrichment only), exactly like `PUT …/enrichment-questions`. Send this part alone.",
       "skill_questions.regenerate": "`\"all\"` or the slots to write again, e.g. `[0, 2]` (the `index` in `GET …/questions`). Record writes the new text; you cannot supply or edit it. Send this part alone.",
       "interest questions": "A fixed prompt per language. Switch it on or off with `methods`."
     },
@@ -352,7 +352,7 @@
       [
         422,
         "LIMIT_EXCEEDED",
-        "More than 5 screening questions."
+        "More than 5 screening questions (10 when `data_enrichment` is the only method)."
       ],
       [
         404,
@@ -461,7 +461,7 @@
   },
   "setMandateEnrichmentQuestionsById": {
     "title": "Replace screening questions",
-    "description": "Replace only the screening questions (1 to 5).",
+    "description": "Replace only the screening questions (1 to 5, or 10 with enrichment only).",
     "errors": [
       [
         404,
@@ -486,7 +486,7 @@
       [
         400,
         "VALIDATION_FAILED",
-        "Type other than `yes_no` / `voice`, or repeated `key`."
+        "A `type` other than `yes_no` / `voice`, an `options` field, or a repeated `key`."
       ]
     ]
   },

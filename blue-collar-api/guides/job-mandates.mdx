@@ -15,7 +15,7 @@ Before you create one, pick its [skills](/blue-collar-api/guides/skills) and, if
 
 - 5–10 skills (max 10). Fewer than 5 is accepted with a warning.
 - At most 3 skills with `verify: true`, and only skills that are `verifiable`.
-- At most 5 screening questions, of type `yes_no` or `voice`. The schema also lists `single_choice`, `number`, `short_text` and `options`; they are not supported yet and answer `400 VALIDATION_FAILED`.
+- At most 5 screening questions (10 when `data_enrichment` is the only method, as in the playground), each a `yes_no` (Yes / No) or `voice` (the candidate answers in their own words) question. Any other `type`, or an `options` field, answers `400 VALIDATION_FAILED`.
 - If `skill_verification` is on, you need at least 1 verified skill.
 - If `data_enrichment` is on, you need at least 1 question.
 - The job is in India (`location`) **or** abroad (`location_type: "abroad"` + 1–10 `countries`), never both.
@@ -37,7 +37,7 @@ Repeat `GET /mandates/{mandate_id}` until `status` is `ready`. A campaign create
 |---|---|---|
 | Whole mandate | Yes | `PUT /mandates/{mandate_id}` with the full body. |
 | Skills | Yes | `PUT …/skills` |
-| Screening questions | Yes | `PUT …/questions` or `PUT …/enrichment-questions` (1–5, your own text) |
+| Screening questions | Yes | `PUT …/questions` or `PUT …/enrichment-questions` (1–5, or 10 with enrichment only; your own text) |
 | Which checks run | Yes | `PUT …/methods` |
 | Skill questions (the 3 Record writes) | Regenerate only | `PUT …/questions` with `skill_questions.regenerate`: all 3 or chosen slots. Record writes the new text; you cannot supply or edit it. Changing which skills have `verify: true` also regenerates them. Read them with `GET …/questions`. |
 | Interest questions | No | A fixed prompt per language ("Apart from the job, what other work have you done?"). You can only switch it on or off by adding or removing `interest_collection` in `methods`. |
@@ -64,7 +64,7 @@ Create the job Record verifies candidates against. Returns `mandate_id`; questio
 | `title`, `company_name` | `string` | **Required.** Plain text, up to 200 characters. |
 | `skills` | `array<object>` | **Required.** `{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). 5–10 recommended, max 10; max 3 with `verify: true`. |
 | `methods` | `array<string>` | Which checks run. Leave out to use the workflow’s `default_methods`. |
-| `enrichment_questions` | `array<object>` | 1–5 items `{ key, type: yes_no \| voice, text, knockout: yes \| no, required }`. Needed when `data_enrichment` is on. |
+| `enrichment_questions` | `array<object>` | 1–5 items (up to 10 when `data_enrichment` is the only method) `{ key, type: yes_no \| voice, text, knockout: yes \| no, required }`. Needed when `data_enrichment` is on. |
 | `job_id` | `string` | Your own job id. If you send it, it must not be in use. |
 | `location_type` | `string` | `india` (default) or `abroad`. Same as the playground’s Abroad option. |
 | `location` | `object` | A place in India: `{ city, state?, pincode? }` (find it with `GET /locations`). Not allowed when `location_type` is `abroad`. |
@@ -604,7 +604,7 @@ The write side of `GET …/questions`: replace the screening questions, or ask R
 
 | Field | Type | Description |
 |---|---|---|
-| `enrichment_questions` | `array<object>` | **One of the two.** Replaces the screening questions (1–5), exactly like `PUT …/enrichment-questions`. Send this part alone. Each item is `{ key, type, text, knockout, required }`, as in Create a job mandate. |
+| `enrichment_questions` | `array<object>` | **One of the two.** Replaces the screening questions (1–5, or 10 with enrichment only), exactly like `PUT …/enrichment-questions`. Send this part alone. Each item is `{ key, type, text, knockout, required }`, as in Create a job mandate. |
 | `skill_questions.regenerate` | `object` | **One of the two.** `"all"` or the slots to write again, e.g. `[0, 2]` (the `index` in `GET …/questions`). Record writes the new text; you cannot supply or edit it. Send this part alone. |
 | `interest questions` | — | **Not editable.** A fixed prompt per language. Switch it on or off with `methods`. |
 
@@ -650,7 +650,7 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/questions" 
 | Error | When |
 |---|---|
 | 400 `VALIDATION_FAILED` | Both parts or neither, repeated or out-of-range slots, extra fields (such as your own question text), or `skill_verification` is not on this mandate. |
-| 422 `LIMIT_EXCEEDED` | More than 5 screening questions. |
+| 422 `LIMIT_EXCEEDED` | More than 5 screening questions (10 when `data_enrichment` is the only method). |
 | 404 `NOT_FOUND` | No such mandate. |
 | 403 `FORBIDDEN` | Mandate was made in the playground. |
 | 409 `CONFLICT` | Archived, still `preparing` (wait Retry-After), or over 10 changes this hour. |
@@ -684,7 +684,7 @@ Replace the whole mandate (send the full body again). An identical resend change
 | `owner` | `object` | The recruiter in your ATS; defaults to x-on-behalf-of. Fields: `external_user_id`, `name`. |
 | `methods` | `array<string>` | Any non-empty mix; candidates always go enrichment → skills → interest. Omit to use the workflow's default. Each one of `data_enrichment`, `skill_verification`, `interest_collection`. |
 | `skills` | `array<object>` | **Required.** 5 to 10 recommended; fewer than 5 is a warning. Fields: `skill_id`, `verify`, `name`, `pending`. |
-| `enrichment_questions` | `array<object>` | 0 to 5 enrichment questions. Fields: `key`, `type`, `text`, `options`, `knockout`, `required`. |
+| `enrichment_questions` | `array<object>` | 0 to 5 enrichment questions (10 when `data_enrichment` is the only method). Fields: `key`, `type`, `text`, `knockout`, `required`. |
 | `interest_collection` | `object` | Fields: `other_roles`. |
 
 <CodeGroup>
@@ -1004,13 +1004,13 @@ Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_
 
 `PUT /mandates/{mandate_id}/enrichment-questions`
 
-Replace only the screening questions (1 to 5).
+Replace only the screening questions (1 to 5, or 10 with enrichment only).
 
 **Scope:** `mandates:write` · **Idempotency-Key:** optional
 
 | Field | Type | Description |
 |---|---|---|
-| `enrichment_questions` | `array<object>` | **Required.** 0 to 5 enrichment questions. Fields: `key`, `type`, `text`, `options`, `knockout`, `required`. |
+| `enrichment_questions` | `array<object>` | **Required.** 0 to 5 enrichment questions (10 when `data_enrichment` is the only method). Fields: `key`, `type`, `text`, `knockout`, `required`. |
 
 <CodeGroup>
 
@@ -1099,7 +1099,7 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/enrichment-
 | 403 `FORBIDDEN` | Mandate was made in the playground. |
 | 409 `CONFLICT` | Archived, still `preparing`, or too many changes this hour. |
 | 422 `LIMIT_EXCEEDED` | More than 5 questions. |
-| 400 `VALIDATION_FAILED` | Type other than `yes_no` / `voice`, or repeated `key`. |
+| 400 `VALIDATION_FAILED` | A `type` other than `yes_no` / `voice`, an `options` field, or a repeated `key`. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/replace-screening-questions)
 

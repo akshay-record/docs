@@ -3043,7 +3043,7 @@
           "Workflows"
         ],
         "summary": "Create a workflow",
-        "description": "Create the template your jobs run under: how candidates are reached, when, and which checks run by default. Returns `workflow_id`.\n\n**Scope:** `workflows:write` · **Idempotency-Key:** optional",
+        "description": "Create the template your jobs run under: how candidates are reached, when, and which checks run by default. Only `name` and `schedule` are required. Returns `workflow_id`.\n\n**Scope:** `workflows:write` · **Idempotency-Key:** optional",
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -3113,12 +3113,7 @@
                       }
                     },
                     "additionalProperties": false,
-                    "description": "Channels used to reach candidates",
-                    "required": [
-                      "whatsapp",
-                      "voice_call",
-                      "sms_backup"
-                    ]
+                    "description": "Channels used to reach candidates"
                   },
                   "schedule": {
                     "type": "object",
@@ -3147,8 +3142,9 @@
                             "sun"
                           ]
                         },
+                        "minItems": 1,
                         "maxItems": 7,
-                        "description": "Days messages may go out; empty = every day",
+                        "description": "Days messages may go out, each listed once",
                         "uniqueItems": true
                       },
                       "timezone": {
@@ -3158,16 +3154,19 @@
                       "max_retries": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 10
+                        "maximum": 3,
+                        "description": "Follow-up calls, 1 to 3"
                       },
                       "retry_after_hours": {
                         "type": "integer",
-                        "minimum": 1,
-                        "maximum": 48
+                        "enum": [
+                          6,
+                          8,
+                          12
+                        ],
+                        "description": "Hours before a retry: 6, 8 or 12"
                       }
                     },
-                    "additionalProperties": false,
-                    "description": "`start_time` + `end_time` (\"HH:MM\", send both), `days` (mon…sun), `timezone` (IANA), `max_retries` 1–10, `retry_after_hours` 1–48.",
                     "required": [
                       "start_time",
                       "end_time",
@@ -3175,13 +3174,13 @@
                       "timezone",
                       "max_retries",
                       "retry_after_hours"
-                    ]
+                    ],
+                    "additionalProperties": false,
+                    "description": "Required. Send all six: `start_time` and `end_time` (\"HH:MM\"), `days` (mon…sun, at least one), `timezone` (IANA), `max_retries` 1 to 3, `retry_after_hours` 6, 8 or 12."
                   }
                 },
                 "required": [
                   "name",
-                  "default_methods",
-                  "delivery",
                   "schedule"
                 ],
                 "additionalProperties": false
@@ -3212,7 +3211,7 @@
                   ],
                   "timezone": "Asia/Kolkata",
                   "max_retries": 3,
-                  "retry_after_hours": 4
+                  "retry_after_hours": 6
                 }
               }
             }
@@ -3390,7 +3389,7 @@
                       ],
                       "timezone": "Asia/Kolkata",
                       "max_retries": 3,
-                      "retry_after_hours": 4
+                      "retry_after_hours": 6
                     },
                     "is_external": true,
                     "created_at": "2026-10-09T10:15:30.123Z",
@@ -3401,7 +3400,7 @@
             }
           },
           "400": {
-            "description": "`VALIDATION_FAILED`: Unknown field, time not HH:MM, or only one of start_time / end_time.",
+            "description": "`VALIDATION_FAILED`: `name` or `schedule` missing, a `schedule` key missing, empty or repeated `days`, time not HH:MM, or an unknown field.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3431,17 +3430,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall POST \"/api/v1/partner/workflows\" '{\n  \"external_id\": \"wf-warehouse-chennai\",\n  \"name\": \"Warehouse associates - Chennai\",\n  \"status\": \"active\",\n  \"default_methods\": [\n    \"data_enrichment\",\n    \"skill_verification\"\n  ],\n  \"delivery\": {\n    \"whatsapp\": true,\n    \"voice_call\": true,\n    \"sms_backup\": false\n  },\n  \"schedule\": {\n    \"start_time\": \"09:00\",\n    \"end_time\": \"19:00\",\n    \"days\": [\n      \"mon\",\n      \"tue\",\n      \"wed\",\n      \"thu\",\n      \"fri\",\n      \"sat\"\n    ],\n    \"timezone\": \"Asia/Kolkata\",\n    \"max_retries\": 3,\n    \"retry_after_hours\": 4\n  }\n}'"
+            "source": "pcall POST \"/api/v1/partner/workflows\" '{\n  \"external_id\": \"wf-warehouse-chennai\",\n  \"name\": \"Warehouse associates - Chennai\",\n  \"status\": \"active\",\n  \"default_methods\": [\n    \"data_enrichment\",\n    \"skill_verification\"\n  ],\n  \"delivery\": {\n    \"whatsapp\": true,\n    \"voice_call\": true,\n    \"sms_backup\": false\n  },\n  \"schedule\": {\n    \"start_time\": \"09:00\",\n    \"end_time\": \"19:00\",\n    \"days\": [\n      \"mon\",\n      \"tue\",\n      \"wed\",\n      \"thu\",\n      \"fri\",\n      \"sat\"\n    ],\n    \"timezone\": \"Asia/Kolkata\",\n    \"max_retries\": 3,\n    \"retry_after_hours\": 6\n  }\n}'"
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"POST\", \"/api/v1/partner/workflows\", {\n  \"external_id\": \"wf-warehouse-chennai\",\n  \"name\": \"Warehouse associates - Chennai\",\n  \"status\": \"active\",\n  \"default_methods\": [\n    \"data_enrichment\",\n    \"skill_verification\"\n  ],\n  \"delivery\": {\n    \"whatsapp\": true,\n    \"voice_call\": true,\n    \"sms_backup\": false\n  },\n  \"schedule\": {\n    \"start_time\": \"09:00\",\n    \"end_time\": \"19:00\",\n    \"days\": [\n      \"mon\",\n      \"tue\",\n      \"wed\",\n      \"thu\",\n      \"fri\",\n      \"sat\"\n    ],\n    \"timezone\": \"Asia/Kolkata\",\n    \"max_retries\": 3,\n    \"retry_after_hours\": 4\n  }\n});\nconst { data } = await res.json();"
+            "source": "const res = await call(\"POST\", \"/api/v1/partner/workflows\", {\n  \"external_id\": \"wf-warehouse-chennai\",\n  \"name\": \"Warehouse associates - Chennai\",\n  \"status\": \"active\",\n  \"default_methods\": [\n    \"data_enrichment\",\n    \"skill_verification\"\n  ],\n  \"delivery\": {\n    \"whatsapp\": true,\n    \"voice_call\": true,\n    \"sms_backup\": false\n  },\n  \"schedule\": {\n    \"start_time\": \"09:00\",\n    \"end_time\": \"19:00\",\n    \"days\": [\n      \"mon\",\n      \"tue\",\n      \"wed\",\n      \"thu\",\n      \"fri\",\n      \"sat\"\n    ],\n    \"timezone\": \"Asia/Kolkata\",\n    \"max_retries\": 3,\n    \"retry_after_hours\": 6\n  }\n});\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"POST\", \"/api/v1/partner/workflows\", {\n    \"external_id\": \"wf-warehouse-chennai\",\n    \"name\": \"Warehouse associates - Chennai\",\n    \"status\": \"active\",\n    \"default_methods\": [\n        \"data_enrichment\",\n        \"skill_verification\"\n    ],\n    \"delivery\": {\n        \"whatsapp\": True,\n        \"voice_call\": True,\n        \"sms_backup\": False\n    },\n    \"schedule\": {\n        \"start_time\": \"09:00\",\n        \"end_time\": \"19:00\",\n        \"days\": [\n            \"mon\",\n            \"tue\",\n            \"wed\",\n            \"thu\",\n            \"fri\",\n            \"sat\"\n        ],\n        \"timezone\": \"Asia/Kolkata\",\n        \"max_retries\": 3,\n        \"retry_after_hours\": 4\n    }\n})\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"POST\", \"/api/v1/partner/workflows\", {\n    \"external_id\": \"wf-warehouse-chennai\",\n    \"name\": \"Warehouse associates - Chennai\",\n    \"status\": \"active\",\n    \"default_methods\": [\n        \"data_enrichment\",\n        \"skill_verification\"\n    ],\n    \"delivery\": {\n        \"whatsapp\": True,\n        \"voice_call\": True,\n        \"sms_backup\": False\n    },\n    \"schedule\": {\n        \"start_time\": \"09:00\",\n        \"end_time\": \"19:00\",\n        \"days\": [\n            \"mon\",\n            \"tue\",\n            \"wed\",\n            \"thu\",\n            \"fri\",\n            \"sat\"\n        ],\n        \"timezone\": \"Asia/Kolkata\",\n        \"max_retries\": 3,\n        \"retry_after_hours\": 6\n    }\n})\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -3734,7 +3733,7 @@
                           ],
                           "timezone": "Asia/Kolkata",
                           "max_retries": 3,
-                          "retry_after_hours": 4
+                          "retry_after_hours": 6
                         },
                         "is_external": true,
                         "created_at": "2026-10-09T10:15:30.123Z",
@@ -3983,7 +3982,7 @@
                       ],
                       "timezone": "Asia/Kolkata",
                       "max_retries": 3,
-                      "retry_after_hours": 4
+                      "retry_after_hours": 6
                     },
                     "is_external": true,
                     "created_at": "2026-10-09T10:15:30.123Z",
@@ -4147,8 +4146,9 @@
                             "sun"
                           ]
                         },
+                        "minItems": 1,
                         "maxItems": 7,
-                        "description": "Days messages may go out; empty = every day",
+                        "description": "Days messages may go out, each listed once",
                         "uniqueItems": true
                       },
                       "timezone": {
@@ -4158,12 +4158,17 @@
                       "max_retries": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 10
+                        "maximum": 3,
+                        "description": "Follow-up calls, 1 to 3"
                       },
                       "retry_after_hours": {
                         "type": "integer",
-                        "minimum": 1,
-                        "maximum": 48
+                        "enum": [
+                          6,
+                          8,
+                          12
+                        ],
+                        "description": "Hours before a retry: 6, 8 or 12"
                       }
                     },
                     "additionalProperties": false,
@@ -4353,7 +4358,7 @@
                       ],
                       "timezone": "Asia/Kolkata",
                       "max_retries": 3,
-                      "retry_after_hours": 4
+                      "retry_after_hours": 6
                     },
                     "is_external": true,
                     "created_at": "2026-10-09T10:15:30.123Z",
@@ -4634,7 +4639,7 @@
                       ],
                       "timezone": "Asia/Kolkata",
                       "max_retries": 3,
-                      "retry_after_hours": 4
+                      "retry_after_hours": 6
                     },
                     "is_external": true,
                     "created_at": "2026-10-09T10:15:30.123Z",
@@ -5544,12 +5549,9 @@
                           "type": "string",
                           "enum": [
                             "yes_no",
-                            "single_choice",
-                            "number",
-                            "short_text",
                             "voice"
                           ],
-                          "description": "yes_no and voice are supported today; the others answer VALIDATION_FAILED"
+                          "description": "yes_no = a Yes / No question; voice = the candidate answers in their own words"
                         },
                         "text": {
                           "type": "string",
@@ -5557,20 +5559,12 @@
                           "maxLength": 200,
                           "description": "English"
                         },
-                        "options": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 100
-                          },
-                          "minItems": 2,
-                          "maxItems": 4,
-                          "description": "single_choice only"
-                        },
                         "knockout": {
                           "type": "string",
-                          "maxLength": 100,
+                          "enum": [
+                            "yes",
+                            "no"
+                          ],
                           "description": "yes_no only: the answer (\"yes\" or \"no\") that marks the candidate not qualified"
                         },
                         "required": {
@@ -5586,7 +5580,7 @@
                       "additionalProperties": false
                     },
                     "maxItems": 50,
-                    "description": "0 to 5 enrichment questions"
+                    "description": "0 to 5 enrichment questions (up to 10 when data_enrichment is the only method)"
                   },
                   "interest_collection": {
                     "type": "object",
@@ -6615,12 +6609,9 @@
                           "type": "string",
                           "enum": [
                             "yes_no",
-                            "single_choice",
-                            "number",
-                            "short_text",
                             "voice"
                           ],
-                          "description": "yes_no and voice are supported today; the others answer VALIDATION_FAILED"
+                          "description": "yes_no = a Yes / No question; voice = the candidate answers in their own words"
                         },
                         "text": {
                           "type": "string",
@@ -6628,20 +6619,12 @@
                           "maxLength": 200,
                           "description": "English"
                         },
-                        "options": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 100
-                          },
-                          "minItems": 2,
-                          "maxItems": 4,
-                          "description": "single_choice only"
-                        },
                         "knockout": {
                           "type": "string",
-                          "maxLength": 100,
+                          "enum": [
+                            "yes",
+                            "no"
+                          ],
                           "description": "yes_no only: the answer (\"yes\" or \"no\") that marks the candidate not qualified"
                         },
                         "required": {
@@ -6657,7 +6640,7 @@
                       "additionalProperties": false
                     },
                     "maxItems": 50,
-                    "description": "0 to 5 enrichment questions"
+                    "description": "0 to 5 enrichment questions (up to 10 when data_enrichment is the only method)"
                   },
                   "interest_collection": {
                     "type": "object",
@@ -7963,7 +7946,7 @@
           "Job mandates"
         ],
         "summary": "Replace screening questions",
-        "description": "Replace only the screening questions (1 to 5).\n\n**Scope:** `mandates:write` · **Idempotency-Key:** optional",
+        "description": "Replace only the screening questions (1 to 5, or 10 with enrichment only).\n\n**Scope:** `mandates:write` · **Idempotency-Key:** optional",
         "parameters": [
           {
             "name": "mandate_id",
@@ -8008,12 +7991,9 @@
                           "type": "string",
                           "enum": [
                             "yes_no",
-                            "single_choice",
-                            "number",
-                            "short_text",
                             "voice"
                           ],
-                          "description": "yes_no and voice are supported today; the others answer VALIDATION_FAILED"
+                          "description": "yes_no = a Yes / No question; voice = the candidate answers in their own words"
                         },
                         "text": {
                           "type": "string",
@@ -8021,20 +8001,12 @@
                           "maxLength": 200,
                           "description": "English"
                         },
-                        "options": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 100
-                          },
-                          "minItems": 2,
-                          "maxItems": 4,
-                          "description": "single_choice only"
-                        },
                         "knockout": {
                           "type": "string",
-                          "maxLength": 100,
+                          "enum": [
+                            "yes",
+                            "no"
+                          ],
                           "description": "yes_no only: the answer (\"yes\" or \"no\") that marks the candidate not qualified"
                         },
                         "required": {
@@ -8050,7 +8022,7 @@
                       "additionalProperties": false
                     },
                     "maxItems": 50,
-                    "description": "0 to 5 enrichment questions"
+                    "description": "0 to 5 enrichment questions (up to 10 when data_enrichment is the only method)"
                   }
                 },
                 "required": [
@@ -8167,7 +8139,7 @@
             }
           },
           "400": {
-            "description": "`VALIDATION_FAILED`: Type other than `yes_no` / `voice`, or repeated `key`.",
+            "description": "`VALIDATION_FAILED`: A `type` other than `yes_no` / `voice`, an `options` field, or a repeated `key`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8539,12 +8511,9 @@
                           "type": "string",
                           "enum": [
                             "yes_no",
-                            "single_choice",
-                            "number",
-                            "short_text",
                             "voice"
                           ],
-                          "description": "yes_no and voice are supported today; the others answer VALIDATION_FAILED"
+                          "description": "yes_no = a Yes / No question; voice = the candidate answers in their own words"
                         },
                         "text": {
                           "type": "string",
@@ -8552,20 +8521,12 @@
                           "maxLength": 200,
                           "description": "English"
                         },
-                        "options": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 100
-                          },
-                          "minItems": 2,
-                          "maxItems": 4,
-                          "description": "single_choice only"
-                        },
                         "knockout": {
                           "type": "string",
-                          "maxLength": 100,
+                          "enum": [
+                            "yes",
+                            "no"
+                          ],
                           "description": "yes_no only: the answer (\"yes\" or \"no\") that marks the candidate not qualified"
                         },
                         "required": {
@@ -8581,7 +8542,7 @@
                       "additionalProperties": false
                     },
                     "maxItems": 50,
-                    "description": "Replaces the screening questions (1 to 5), exactly like PUT .../enrichment-questions"
+                    "description": "Replaces the screening questions (1 to 5, or 10 when data_enrichment is the only method), exactly like PUT .../enrichment-questions"
                   },
                   "skill_questions": {
                     "type": "object",
@@ -8752,7 +8713,7 @@
             }
           },
           "422": {
-            "description": "`LIMIT_EXCEEDED`: More than 5 screening questions.",
+            "description": "`LIMIT_EXCEEDED`: More than 5 screening questions (10 when `data_enrichment` is the only method).",
             "content": {
               "application/json": {
                 "schema": {

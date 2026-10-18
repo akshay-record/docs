@@ -12,7 +12,7 @@ A workflow is a reusable template: how candidates are reached and when. Create i
 ## How workflows work
 
 - **Defaults for jobs.** `default_methods` are the checks a mandate runs when it sends no `methods` of its own. Changing them later affects only mandates that send none; existing mandates keep theirs.
-- **Channels and timing.** `delivery` picks WhatsApp, voice call and SMS backup. `schedule` sets the daily send window, the days, the time zone and how often to retry.
+- **Channels and timing.** `delivery` picks WhatsApp, voice call and SMS backup; Record switches all three on by default, as it does in the playground. `schedule` is required: the daily send window, the days, the time zone and how often to retry.
 - **Verification methods.** Every workflow answers with `verification_methods`. Record switches both on for every workflow; you cannot set or change them.
 - **Changing.** `PATCH` changes only the fields you send. Send `start_time` and `end_time` together; other `schedule` keys merge, and `days` is replaced as a whole list.
 - **Archiving.** `DELETE` archives the workflow; nothing is erased. It answers `409 WORKFLOW_IN_USE` while the workflow still has open mandates.
@@ -24,7 +24,7 @@ A workflow is a reusable template: how candidates are reached and when. Create i
 
 `POST /workflows`
 
-Create the template your jobs run under: how candidates are reached, when, and which checks run by default. Returns `workflow_id`.
+Create the template your jobs run under: how candidates are reached, when, and which checks run by default. Only `name` and `schedule` are required. Returns `workflow_id`.
 
 **Scope:** `workflows:write` · **Idempotency-Key:** required
 
@@ -33,9 +33,15 @@ Create the template your jobs run under: how candidates are reached, when, and w
 | `name` | `string` | **Required.** Display name, 1–200 characters. |
 | `external_id` | `string` | Your own id (A-Z a-z 0-9 . _ : -, up to 128). Must be unique. |
 | `status` | `string` | `active` (default), `inactive` or `draft`. |
-| `default_methods` | `array<string>` | **Required.** Checks a mandate uses when it sends none, each listed once: `data_enrichment`, `skill_verification`, `interest_collection`. |
-| `delivery` | `object` | **Required.** Channels: `whatsapp`, `voice_call`, `sms_backup`, each `true` or `false`. |
-| `schedule` | `object` | **Required.** `start_time` and `end_time` ("HH:MM"), `days` (mon…sun, each once), `timezone` (IANA), `max_retries` 1–10, `retry_after_hours` 1–48. Send all six. |
+| `default_methods` | `array<string>` | Optional. Checks a mandate uses when it sends none, each listed once: `data_enrichment`, `skill_verification`, `interest_collection`. Leave out for all three. |
+| `delivery` | `object` | Optional. Channels: `whatsapp`, `voice_call`, `sms_backup`, each `true` or `false`. Leave out for all three on, as Record sets them for every blue-collar workflow. |
+| `schedule` | `object` | **Required.** Send all six keys below. |
+| `schedule.start_time` | `string` | **Required.** Send window start, "HH:MM" (24-hour). |
+| `schedule.end_time` | `string` | **Required.** Send window end, "HH:MM" (24-hour). |
+| `schedule.days` | `array<string>` | **Required.** At least one of mon…sun, each once. |
+| `schedule.timezone` | `string` | **Required.** IANA time zone, for example `Asia/Kolkata`. |
+| `schedule.max_retries` | `integer` | **Required.** Follow-up calls, 1 to 3. |
+| `schedule.retry_after_hours` | `integer` | **Required.** Hours before a retry: `6`, `8` or `12`. |
 
 <CodeGroup>
 
@@ -52,7 +58,7 @@ const res = await call("POST", "/api/v1/partner/workflows", {
     "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
     "timezone": "Asia/Kolkata",
     "max_retries": 3,
-    "retry_after_hours": 4
+    "retry_after_hours": 6
   }
 });
 const { data } = await res.json();
@@ -71,7 +77,7 @@ res = call("POST", "/api/v1/partner/workflows", {
         "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
         "timezone": "Asia/Kolkata",
         "max_retries": 3,
-        "retry_after_hours": 4
+        "retry_after_hours": 6
     }
 })
 data = res.json()["data"]
@@ -90,7 +96,7 @@ pcall POST "/api/v1/partner/workflows" '{
     "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
     "timezone": "Asia/Kolkata",
     "max_retries": 3,
-    "retry_after_hours": 4
+    "retry_after_hours": 6
   }
 }'
 ```
@@ -116,7 +122,7 @@ pcall POST "/api/v1/partner/workflows" '{
       "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
       "timezone": "Asia/Kolkata",
       "max_retries": 3,
-      "retry_after_hours": 4
+      "retry_after_hours": 6
     },
     "is_external": true,
     "created_at": "2026-10-09T10:15:30.123Z",
@@ -131,7 +137,7 @@ Save `data.workflow_id` for the next step.
 
 | Error | When |
 |---|---|
-| 400 `VALIDATION_FAILED` | Unknown field, time not HH:MM, or only one of start_time / end_time. |
+| 400 `VALIDATION_FAILED` | `name` or `schedule` missing, a `schedule` key missing, empty or repeated `days`, time not HH:MM, or an unknown field. |
 | 409 `CONFLICT` | `external_id` is already used by another workflow. |
 
 Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/workflows/create-a-workflow)
@@ -193,7 +199,7 @@ pcall GET "/api/v1/partner/workflows?status=active&include_archived=false&limit=
           "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
           "timezone": "Asia/Kolkata",
           "max_retries": 3,
-          "retry_after_hours": 4
+          "retry_after_hours": 6
         },
         "is_external": true,
         "created_at": "2026-10-09T10:15:30.123Z",
@@ -263,7 +269,7 @@ pcall GET "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8"
       "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
       "timezone": "Asia/Kolkata",
       "max_retries": 3,
-      "retry_after_hours": 4
+      "retry_after_hours": 6
     },
     "is_external": true,
     "created_at": "2026-10-09T10:15:30.123Z",
@@ -343,7 +349,7 @@ pcall PATCH "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8" '{
       "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
       "timezone": "Asia/Kolkata",
       "max_retries": 3,
-      "retry_after_hours": 4
+      "retry_after_hours": 6
     },
     "is_external": true,
     "created_at": "2026-10-09T10:15:30.123Z",
@@ -410,7 +416,7 @@ pcall DELETE "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8"
       "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
       "timezone": "Asia/Kolkata",
       "max_retries": 3,
-      "retry_after_hours": 4
+      "retry_after_hours": 6
     },
     "is_external": true,
     "created_at": "2026-10-09T10:15:30.123Z",

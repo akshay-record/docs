@@ -162,15 +162,6 @@ for (const [route, methods] of Object.entries(spec.paths)) {
   }
 }
 
-// Create a workflow: send the whole definition. The API fills a default for anything left out, but the form should ask for
-// the fields that define the workflow, so they are shown as required (external_id stays optional, status keeps its default).
-const workflowBody = spec.paths["/workflows"]?.post?.requestBody?.content?.["application/json"]?.schema;
-if (workflowBody) {
-  workflowBody.required = ["name", "default_methods", "delivery", "schedule"];
-  workflowBody.properties.delivery.required = ["whatsapp", "voice_call", "sms_backup"];
-  workflowBody.properties.schedule.required = ["start_time", "end_time", "days", "timezone", "max_retries", "retry_after_hours"];
-}
-
 // A list of enum values never repeats an item (the API refuses a repeat), so say so in the schema.
 const markUnique = (node) => {
   if (!node || typeof node !== "object") return;
