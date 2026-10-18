@@ -899,25 +899,22 @@
       ]
     ]
   },
-  "listEvents": {
-    "title": "List events",
-    "description": "Every event you have not acknowledged, oldest first: the same data the webhook sends. `status=all` with `from` replays history (30 days).",
+  "pullEvents": {
+    "title": "Pull and confirm events",
+    "description": "One call does both jobs. Send the `ack` ids of the events you already processed, and get the next events back. An event keeps coming back until you put its id in `ack`. Use it when you cannot expose a URL, and as a safety net next to the webhook.",
+    "fields": {
+      "ack": "Ids of the events you processed. Leave it empty on your first call.",
+      "status": "`unacked` (default) gives only events you have not confirmed. `all` replays history (use it with `from`).",
+      "type": "Only this event type.",
+      "from": "Only events created at or after this time (replay).",
+      "after": "Only events with a higher `sequence` than this. A paging shortcut: rely on `unacked`.",
+      "limit": "1 to 100, default 100."
+    },
     "errors": [
       [
         400,
         "VALIDATION_FAILED",
-        "Bad `status`, date or `limit` above 100."
-      ]
-    ]
-  },
-  "acknowledgeEvents": {
-    "title": "Acknowledge events",
-    "description": "Up to 100 ids. They stop coming back and no webhook retry is sent for them. Safe to repeat.",
-    "errors": [
-      [
-        400,
-        "VALIDATION_FAILED",
-        "More than 100 ids, or an id that is not an event id."
+        "An `ack` id that is not an event id, more than 100 ids, a bad date, or `limit` above 100."
       ]
     ]
   },

@@ -23,7 +23,10 @@ const arg = (name, fallback) => {
 
 const BASE_PATH = "/api/v1/partner";
 const from = arg("from", `http://localhost:8080${BASE_PATH}/openapi.json`);
-const host = arg("host", "https://api-bc.userecord.io").replace(/\/$/, "");
+// --local: build the docs against a backend on this machine (http://localhost:8080) so Try it hits it, not production.
+// Run it again without --local to go back to the production host. Do not commit the local build.
+const LOCAL_HOST = "http://localhost:8080";
+const host = (process.argv.includes("--local") ? LOCAL_HOST : arg("host", "https://api-bc.userecord.io")).replace(/\/$/, "");
 
 const load = async (source) => {
   if (/^https?:\/\//.test(source)) {
@@ -120,7 +123,7 @@ for (const [route, methods] of Object.entries(spec.paths)) {
     const idem = op.parameters?.find((p) => p.name === "Idempotency-Key");
     if (idem) {
       idem.required = false;
-      idem.description = idem.description?.replace(/^Required\./, "Optional.");
+      idem.description = `${(idem.description ?? "").replace(/^Required\./, "Optional.")} Leave empty in Try it: a new one is made for every call.`.trim();
     }
     const meta = [
       `**Scope:** ${scopesOf(op.description) ?? "see Authentication"}`,
@@ -159,6 +162,26 @@ for (const [route, methods] of Object.entries(spec.paths)) {
   }
 }
 
+// Create a workflow: send the whole definition. The API fills a default for anything left out, but the form should ask for
+// the fields that define the workflow, so they are shown as required (external_id stays optional, status keeps its default).
+const workflowBody = spec.paths["/workflows"]?.post?.requestBody?.content?.["application/json"]?.schema;
+if (workflowBody) {
+  workflowBody.required = ["name", "default_methods", "delivery", "schedule"];
+  workflowBody.properties.delivery.required = ["whatsapp", "voice_call", "sms_backup"];
+  workflowBody.properties.schedule.required = ["start_time", "end_time", "days", "timezone", "max_retries", "retry_after_hours"];
+}
+
+// A list of enum values never repeats an item (the API refuses a repeat), so say so in the schema.
+const markUnique = (node) => {
+  if (!node || typeof node !== "object") return;
+  if (Array.isArray(node)) return node.forEach(markUnique);
+  if (node.type === "array" && node.items?.enum) node.uniqueItems = true;
+  Object.values(node).forEach(markUnique);
+};
+for (const methods of Object.values(spec.paths)) {
+  for (const op of Object.values(methods)) markUnique(op.requestBody);
+}
+
 // Tags name the URL segment of each endpoint page; match them to the sidebar groups.
 const TAG_NAMES = { Helpers: "Lookups" };
 for (const methods of Object.values(spec.paths)) {
@@ -178,23 +201,38 @@ for (const methods of Object.values(spec.paths)) {
 }
 stripRequired(spec.components.schemas.Error);
 
-// Every endpoint authenticates with the key id and the secret key, not a signed request.
+// Try it: the reader gives only the key id and the secret. On the wire Record wants x-api-key, x-timestamp and
+// x-signature, and the secret itself is never sent. `playground-signing.js` (loaded on every docs page) reads the
+// `x-secret-key` field, makes the timestamp and signature, and removes the secret before the request leaves the browser.
 delete spec.components.securitySchemes.Timestamp;
 delete spec.components.securitySchemes.Signature;
+spec.components.securitySchemes.ApiKey = {
+  type: "apiKey",
+  in: "header",
+  name: "x-api-key",
+  description: "Your key id, `VFN_TEST_…` or `VFN_LIVE_…`. Sent on every request.",
+};
 spec.components.securitySchemes.SecretKey = {
   type: "apiKey",
   in: "header",
   name: "x-secret-key",
-  description: "Your API secret key (VFN_SK_…)",
+  description:
+    "Your secret, `VFN_SK_…`. **Not a real header, and never sent to the API.** It is only a form field for Try it, which uses it to sign your request in your browser. " +
+    "In your own code you sign each request with the secret and send `x-api-key`, `x-timestamp` and `x-signature` (see Authentication).",
 };
 for (const methods of Object.values(spec.paths)) {
-  for (const op of Object.values(methods)) op.security = [{ ApiKey: [], SecretKey: [] }];
+  for (const op of Object.values(methods)) {
+    op.security = [{ ApiKey: [], SecretKey: [] }];
+    // The site shows no playground by default (docs.json); switch it on for this API's endpoints only.
+    op["x-mint"] = { ...(op["x-mint"] ?? {}), metadata: { ...(op["x-mint"]?.metadata ?? {}), playground: "interactive" } };
+  }
 }
 
 spec.info = {
   title: "Record Blue Collar API",
   version: spec.info?.version ?? "1.0.0",
-  description: "Run Record candidate verification from your own system. See the guides for authentication and request signing.",
+  description:
+    "Run Record candidate verification from your own system. You need two things: your **key id** and your **secret**. Everything else is generated. See Authentication for how.",
 };
 spec.servers = [{ url: `${host}${BASE_PATH}`, description: "Blue Collar API" }];
 

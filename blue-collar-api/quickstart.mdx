@@ -8,8 +8,8 @@ description: "From an API key to your first candidate result in six calls."
 </Warning>
 
 <Steps>
-  <Step title="Set up signing">
-    Copy the `call()` helper for your language from [Authentication](/blue-collar-api/authentication#signing-helper), then check your key with a read:
+  <Step title="Set up your key and secret">
+    You only need your key id and secret. Copy the `call()` helper for your language from [Authentication](/blue-collar-api/authentication#signing-helper): it makes the timestamp, signature and `Idempotency-Key` for you. Or skip the code and use **Try it** on any [API reference](/blue-collar-api/api-reference/introduction) page. Then check your key with a read:
 
     <CodeGroup>
 
@@ -160,7 +160,7 @@ description: "From an API key to your first candidate result in six calls."
   </Step>
 
   <Step title="Receive results">
-    When a candidate finishes, your webhook receives a `candidate.result` event with their [result record](/blue-collar-api/guides/results). To catch up or check, read them directly:
+    When a candidate finishes, your webhook receives a `candidate.result` event with their [result record](/blue-collar-api/guides/results). No public URL? [Pull the events](/blue-collar-api/guides/webhooks#pull-and-confirm-events) instead. To catch up or check, read the results directly:
 
     <CodeGroup>
 

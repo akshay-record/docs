@@ -31,13 +31,13 @@ Do the steps in this order. Each one returns an id that the next one needs.
 3. [`GET /mandates/{mandate_id}`](/blue-collar-api/guides/job-mandates#get-a-job-mandate) → repeat until `status` is `ready`
 4. [`POST /campaigns`](/blue-collar-api/guides/campaigns#create-a-campaign) → save `campaign_id`
 5. [`GET /campaigns/{campaign_id}`](/blue-collar-api/guides/campaigns#get-a-campaign) → watch it go out
-6. [`POST /webhooks/endpoints`](/blue-collar-api/guides/webhooks#create-an-endpoint) → results are sent to you, signed; answer 2xx to acknowledge
+6. [`POST /webhooks/endpoints`](/blue-collar-api/guides/webhooks#create-an-endpoint) → results are sent to you, signed; answer 2xx to confirm. No public URL? Pull them with [`POST /events/pull`](/blue-collar-api/guides/webhooks#pull-and-confirm-events)
 7. [`GET /campaigns/{campaign_id}/results`](/blue-collar-api/guides/results#list-campaign-results) → catch up or check: status and collected `output`
 
 ## 4 rules to remember
 
-- Every request is **signed** with your secret. See [Authentication](/blue-collar-api/authentication) for the helper.
-- Creating calls need an `Idempotency-Key` header, so a retry never creates twice.
+- You only need your **key id and secret**. Timestamp, signature and `Idempotency-Key` are made by the [helper](/blue-collar-api/authentication#signing-helper) (or by **Try it**).
+- Creating calls carry an `Idempotency-Key`, so a retry never creates twice. The helper adds it.
 - Use a **TEST key** first. A campaign contacts real people and spends credits.
 - Every error is `{ "success": false, "error": { "code", … } }`; all codes are explained in [Errors](/blue-collar-api/reference/errors).
 

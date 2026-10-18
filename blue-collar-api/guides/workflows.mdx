@@ -33,9 +33,9 @@ Create the template your jobs run under: how candidates are reached, when, and w
 | `name` | `string` | **Required.** Display name, 1–200 characters. |
 | `external_id` | `string` | Your own id (A-Z a-z 0-9 . _ : -, up to 128). Must be unique. |
 | `status` | `string` | `active` (default), `inactive` or `draft`. |
-| `default_methods` | `array<string>` | Checks a mandate uses when it sends none: `data_enrichment`, `skill_verification`, `interest_collection`. |
-| `delivery` | `object` | Channels: `whatsapp`, `voice_call`, `sms_backup` (true / false). |
-| `schedule` | `object` | `start_time` + `end_time` ("HH:MM", send both), `days` (mon…sun), `timezone` (IANA), `max_retries` 1–10, `retry_after_hours` 1–48. |
+| `default_methods` | `array<string>` | **Required.** Checks a mandate uses when it sends none, each listed once: `data_enrichment`, `skill_verification`, `interest_collection`. |
+| `delivery` | `object` | **Required.** Channels: `whatsapp`, `voice_call`, `sms_backup`, each `true` or `false`. |
+| `schedule` | `object` | **Required.** `start_time` and `end_time` ("HH:MM"), `days` (mon…sun, each once), `timezone` (IANA), `max_retries` 1–10, `retry_after_hours` 1–48. Send all six. |
 
 <CodeGroup>
 
