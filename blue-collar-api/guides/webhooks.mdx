@@ -4,11 +4,37 @@ sidebarTitle: "Webhooks"
 description: "Receive each candidate's result as soon as they finish."
 ---
 
-Do not poll for results. Give Record an HTTPS URL; when a candidate finishes, Record POSTs the result record to it, **signed with your API secret key**, and keeps retrying until you answer with a **2xx**. Nothing is dropped: anything you do not acknowledge comes again, can be pulled from the event feed, and can be replayed.
+Do not poll for results. When a candidate finishes, Record sends you an **event** with their [result record](/blue-collar-api/guides/results). Nothing is dropped: an event you do not confirm comes again.
 
 | You send | You get | Scopes |
 |---|---|---|
 | an HTTPS URL (`POST /webhooks/endpoints`) | one `candidate.result` event per finished candidate | `webhooks:manage` (endpoints), `events:read` (feed) |
+
+## Two ways to receive events
+
+| | Webhook (Record pushes) | Event feed (you pull) |
+|---|---|---|
+| How | Record POSTs each event to your HTTPS URL, signed with your secret. | You call `POST /events/pull` whenever you want. |
+| Best for | Getting results the moment they are ready. | No public URL, or catching what a webhook missed. |
+| An event is confirmed when | Your server answers **2xx**. | You send its id in `ack` on your next pull. |
+| Scope | `webhooks:manage` | `events:read` |
+
+**Use the webhook as the main path and the feed as the safety net.** An event is confirmed once, by whichever way gets there first, and then stops coming from the other: a 2xx removes it from the feed, and a pull that confirms it cancels the webhook that was waiting. If you run both, let your pull wait about a minute before confirming new events, so the webhook gets its turn.
+
+**Which one delivered it?** The delivery log shows `delivered_via`: `webhook` or `feed`.
+
+**Your URL is yours to choose.** Register any HTTPS URL, such as `https://ats.example.com/hooks/record` or `https://example.com/api/record-results`. Record posts to exactly that URL.
+
+### How the pull loop works
+
+Say 5 events are waiting. Your first pull returns all 5. If you never confirm them, **the next pull returns the same 5 again**. Once you pass their ids in `ack`, they are gone and you get only newer ones.
+
+1. Pull with `ack: []`. You get the events, each with an `event_id`.
+2. Save them. Skip an `event_id` you already saved.
+3. Pull again with those ids in `ack`. They are confirmed and the next events come back.
+4. Stop when a pull returns no events.
+
+Confirm only what you really saved: that is what makes a lost response or a crash safe. Confirming is safe to repeat, and ids that are unknown or already confirmed are accepted.
 
 ## When an event is sent
 
@@ -57,7 +83,7 @@ Record-Signature: t=1791204071,v1=5f2b…
 |---|---|
 | Retry waits | 30 s, 2 min, 10 min, 30 min, 1 h, 2 h, 4 h, 8 h, 12 h, 24 h (about 52 hours), then the delivery is kept as `dead`: visible in the delivery log and replayable with `POST /webhooks/deliveries/{delivery_id}/retry`. A `Retry-After` header in your answer is respected. |
 | Endpoint down for long | After 20 failures in a row the endpoint is `auto_paused`. Events keep being recorded and wait. Fix it, then `PATCH` its status to `active`: they are sent, oldest first. |
-| Event feed | `GET /events` returns every event you have not acknowledged, oldest first; confirm with `POST /events/ack`. Use it as a safety net next to the webhook, or instead of it if you cannot expose a URL. Events are kept 30 days. |
+| Event feed | `POST /events/pull` returns every event you have not confirmed, oldest first, and confirms the ids you send in `ack`. Use it as a safety net next to the webhook, or instead of it if you cannot expose a URL. Events are kept 30 days. |
 | Past results | Create the endpoint with `backfill_from`, or call `POST /webhooks/endpoints/{endpoint_id}/backfill`, to receive results from the last 30 days at most. |
 | Test | `POST /webhooks/endpoints/{endpoint_id}/test` sends a signed `webhook.test` now and shows what your server answered. |
 
@@ -114,7 +140,7 @@ def record_hook():
 
 </CodeGroup>
 
-Your URL must be HTTPS on port 443 and reachable from the internet. Redirects are not followed. You can have up to 5 endpoints.
+Your URL must be HTTPS on port 443 and reachable from the internet. The path is yours to choose. Redirects are not followed. You can have up to 5 endpoints.
 
 ## Webhook endpoints
 
@@ -122,7 +148,7 @@ Your URL must be HTTPS on port 443 and reachable from the internet. Redirects ar
 
 `POST /webhooks/endpoints`
 
-Register the HTTPS URL that receives result events. Deliveries are signed with your API secret key.
+Register the HTTPS URL that receives result events. The path is up to you. Deliveries are signed with your API secret key.
 
 **Scope:** `webhooks:manage` · **Idempotency-Key:** optional
 
@@ -610,36 +636,50 @@ Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_
 
 ## Event feed
 
-### List events
+### Pull and confirm events
 
-`GET /events`
+`POST /events/pull`
 
-Every event you have not acknowledged, oldest first: the same data the webhook sends. `status=all` with `from` replays history (30 days).
+One call does both jobs. Send the `ack` ids of the events you already processed, and get the next events back. An event keeps coming back until you put its id in `ack`.
 
 **Scope:** `events:read`
 
-| Query | Type | Description |
+| Field | Type | Description |
 |---|---|---|
-| `status` | `string` | One of `unacked`, `all`. Default `"unacked"`. |
-| `type` | `string` | One of `candidate.result`. |
+| `ack` | `array<string>` | Ids of the events you processed, up to 100. Leave it empty on your first call. |
+| `status` | `string` | `unacked` (default) gives only events you have not confirmed. `all` replays history (use it with `from`). |
+| `type` | `string` | `candidate.result`. |
 | `from` | `string` | Only events created at or after this time (replay). |
-| `after` | `integer` | Only events with a higher `sequence` than this. |
+| `after` | `integer` | Only events with a higher `sequence` than this. A paging shortcut: rely on `unacked`. |
 | `limit` | `integer` | 1 to 100, default 100. |
 
 <CodeGroup>
 
 ```javascript JavaScript
-const res = await call("GET", "/api/v1/partner/events?status=unacked&limit=100");
-const { data } = await res.json();
+let ack = [];
+for (;;) {
+  const res = await call("POST", "/api/v1/partner/events/pull", { ack, limit: 100 });
+  const { items } = (await res.json()).data;
+  if (items.length === 0) break;        // the last call confirmed the final page: nothing is left
+  for (const e of items) save(e);       // store first; skip an event_id you already stored
+  ack = items.map((e) => e.event_id);   // confirm them with the next call
+}
 ```
 
 ```python Python
-res = call("GET", "/api/v1/partner/events?status=unacked&limit=100")
-data = res.json()["data"]
+ack = []
+while True:
+    res = call("POST", "/api/v1/partner/events/pull", {"ack": ack, "limit": 100})
+    items = res.json()["data"]["items"]
+    if not items:
+        break                            # the last call confirmed the final page: nothing is left
+    for e in items:
+        save(e)                          # store first; skip an event_id you already stored
+    ack = [e["event_id"] for e in items] # confirm them with the next call
 ```
 
 ```bash cURL
-pcall GET "/api/v1/partner/events?status=unacked&limit=100"
+pcall POST "/api/v1/partner/events/pull" '{ "ack": [], "limit": 100 }'
 ```
 
 ```json 200 Response
@@ -690,13 +730,6 @@ pcall GET "/api/v1/partner/events?status=unacked&limit=100"
               "skills": [
                 { "name": "Forklift Basic Operation", "rating": "Strong" }
               ],
-              "videos": [
-                {
-                  "question_index": 1,
-                  "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
-                  "duration_seconds": 42
-                }
-              ],
               "call_recording_url": null,
               "answers": [
                 {
@@ -721,6 +754,7 @@ pcall GET "/api/v1/partner/events?status=unacked&limit=100"
       }
     ],
     "count": 1,
+    "acknowledged": 0,
     "pending": 1,
     "next_cursor": null,
     "has_more": false
@@ -730,64 +764,18 @@ pcall GET "/api/v1/partner/events?status=unacked&limit=100"
 
 </CodeGroup>
 
-Save `data.items[0].event_id` for the next step.
+| Response field | Meaning |
+|---|---|
+| `items` | The events, oldest first. |
+| `acknowledged` | How many of the `ack` ids this call confirmed for the first time. |
+| `pending` | How many events you have not confirmed in all. |
+| `next_cursor`, `has_more` | More events are waiting. Keep pulling. |
 
 | Error | When |
 |---|---|
-| 400 `VALIDATION_FAILED` | Bad `status`, date or `limit` above 100. |
+| 400 `VALIDATION_FAILED` | An `ack` id that is not an event id, more than 100 ids, a bad date, or `limit` above 100. |
 
-Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/events/list-events)
-
----
-
-### Acknowledge events
-
-`POST /events/ack`
-
-Up to 100 ids. They stop coming back and no webhook retry is sent for them. Safe to repeat.
-
-**Scope:** `events:read`
-
-| Field | Type | Description |
-|---|---|---|
-| `event_ids` | `array<string>` | **Required.** 1 to 100 items. |
-
-<CodeGroup>
-
-```javascript JavaScript
-const res = await call("POST", "/api/v1/partner/events/ack", {
-  "event_ids": ["evt_9c2e4a6b8d0f1234567890abcdef1234"]
-});
-const { data } = await res.json();
-```
-
-```python Python
-res = call("POST", "/api/v1/partner/events/ack", {
-    "event_ids": ["evt_9c2e4a6b8d0f1234567890abcdef1234"]
-})
-data = res.json()["data"]
-```
-
-```bash cURL
-pcall POST "/api/v1/partner/events/ack" '{
-  "event_ids": ["evt_9c2e4a6b8d0f1234567890abcdef1234"]
-}'
-```
-
-```json 200 Response
-{
-  "success": true,
-  "data": { "acknowledged": 1 }
-}
-```
-
-</CodeGroup>
-
-| Error | When |
-|---|---|
-| 400 `VALIDATION_FAILED` | More than 100 ids, or an id that is not an event id. |
-
-Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/events/acknowledge-events)
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/events/pull-and-confirm-events)
 
 ---
 
@@ -860,13 +848,6 @@ pcall GET "/api/v1/partner/events/evt_9c2e4a6b8d0f1234567890abcdef1234"
           "total": 3,
           "skills": [
             { "name": "Forklift Basic Operation", "rating": "Strong" }
-          ],
-          "videos": [
-            {
-              "question_index": 1,
-              "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
-              "duration_seconds": 42
-            }
           ],
           "call_recording_url": null,
           "answers": [

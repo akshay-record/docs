@@ -1,18 +1,70 @@
 ---
 title: "Authentication"
-description: "API keys, scopes and how to sign every request."
+description: "You need two things: your key id and your secret. Everything else is generated for you."
 ---
 
-Every request is signed with your API secret. The secret never leaves your server: it is used to compute a signature, never sent.
+## The short version
+
+You hold **two values**. Your code (or the **Try it** button) makes the rest on every call.
+
+| You give | Looks like | What it is |
+|---|---|---|
+| **Key id** | `VFN_TEST_…` or `VFN_LIVE_…` | Who you are. Sent as the `x-api-key` header. |
+| **Secret** | `VFN_SK_…` | Proves it is you. **Never sent.** It only signs. |
+
+| Generated for each call | How |
+|---|---|
+| `x-timestamp` | The current time in milliseconds. |
+| `x-signature` | A signature of the request, made with your secret. |
+| `Idempotency-Key` | A new UUID on each write (`POST`, `PUT`, `PATCH`, `DELETE`). |
+
+You do not calculate these by hand. Copy the [signing helper](#signing-helper) once, then call `call("GET", "/api/v1/partner/…")`.
+
+<Info>
+  Optional: `x-on-behalf-of` is your own id for the recruiter making the call (1 to 128 of `A-Z a-z 0-9 . _ : @ -`). It sets per-recruiter rate limits, is kept in the audit log, and fills `owner` on a mandate or `requested_by` on a skill request when you leave them out.
+</Info>
+
+## Why a signature and not just the secret?
+
+Sending a secret on every request risks leaking it (logs, proxies, screenshots). Instead, your code **signs** each request with the secret, and Record checks the signature with its own copy. The secret stays on your side.
+
+Three small rules follow from that:
+
+- **Fresh every time.** The signature covers the exact method, path, time and body, so sign each request again, retries included.
+- **Within 5 minutes.** The timestamp must be close to Record's clock.
+- **A write is accepted once.** A signed `POST`, `PUT`, `PATCH` or `DELETE` that is replayed is refused. To retry safely, send the same `Idempotency-Key` with a new signature. See [Idempotency](/blue-collar-api/reference/requests-and-responses#idempotency).
+
+## Why does Try it say `x-secret-key`?
+
+`x-secret-key` is **only a form field** in these docs so you can type your secret once. It is not a real API header.
+
+When you press **Send**, the docs page, in your browser:
+
+1. reads the secret you typed,
+2. makes `x-timestamp` and `x-signature` (and an `Idempotency-Key` if you left it empty),
+3. **removes `x-secret-key`**, then sends the request.
+
+So Record only ever receives `x-api-key`, `x-timestamp` and `x-signature`, exactly like your own code. The secret goes nowhere except your own browser: not to Record, and not to anyone else. These docs keep what you type in your browser's local storage so you do not retype it. Clear your browser's site data to remove it, and never type a LIVE secret on a shared computer.
+
+## Try it from these docs
+
+<Steps>
+  <Step title="Open any endpoint">
+    For example [Search skills](/api-reference/skills/search-skills), then click **Try it**.
+  </Step>
+  <Step title="Enter your two values">
+    Put your key id in `x-api-key` and your secret in `x-secret-key`. Use a **TEST** key.
+  </Step>
+  <Step title="Fill the request and send">
+    Fill the fields, press **Send**. Leave `Idempotency-Key` empty: it is made for you.
+  </Step>
+</Steps>
+
+<Note>
+  Try it needs a secure page (HTTPS or localhost) to sign. A `401 UNAUTHORIZED` means the key id or secret is wrong, or the key has been regenerated.
+</Note>
 
 ## API keys
-
-A key comes as a pair.
-
-| Part | Looks like | Use |
-|---|---|---|
-| Key id | `VFN_TEST_…` or `VFN_LIVE_…` | Sent on every request in `x-api-key`. |
-| Secret | `VFN_SK_…` | Signs requests and verifies webhooks. Keep it on your server. |
 
 Create a key in the Record playground under **Settings → API keys**. The secret is shown **once**, when the key is created, so store it in your secret manager straight away. There is one active key per project and mode.
 
@@ -45,14 +97,16 @@ Record switches the Blue Collar API on per key by granting scopes. A key without
 | `results:read` | Campaigns, candidate rows and result records. |
 | `results:answers` | Adds what the candidate said to `GET /candidates/{candidate_id}/result?include=answers`. |
 | `webhooks:manage` | Webhook endpoints, delivery logs, tests and backfills. |
-| `events:read` | The event feed and acknowledgements. |
+| `events:read` | The event feed (`POST /events/pull`) and `GET /events/{event_id}`. |
 | `analytics:read` | Workflow, mandate and campaign analytics. |
 
-## Signing a request
+## How a request is signed
+
+The helper below does this for you. This is what it does, in case you write your own.
 
 <Steps>
   <Step title="Take the time">
-    `timestamp` is the current time in **milliseconds** since the epoch. It must be within 5 minutes of Record's clock.
+    `timestamp` is the current time in **milliseconds** since the epoch.
   </Step>
   <Step title="Build the string to sign">
     ```text
@@ -63,7 +117,7 @@ Record switches the Blue Collar API on per key by granting scopes. A key without
     - `body` is the exact bytes you send. Empty for a request without a body.
   </Step>
   <Step title="Sign it">
-    Compute HMAC-SHA256 of that string with your secret as the key, and encode it as lowercase hex.
+    HMAC-SHA256 of that string, with your secret as the key, as lowercase hex.
   </Step>
   <Step title="Send the headers">
     | Header | Value |
@@ -72,18 +126,14 @@ Record switches the Blue Collar API on per key by granting scopes. A key without
     | `x-timestamp` | The timestamp from step 1. |
     | `x-signature` | The hex signature from step 3. |
     | `Content-Type` | `application/json`, on requests with a body. |
-    | `Idempotency-Key` | A new UUID on each write. See [Idempotency](/blue-collar-api/reference/requests-and-responses#idempotency). |
-    | `x-on-behalf-of` | Optional. Your own id for the recruiter making the call (1 to 128 of `A-Z a-z 0-9 . _ : @ -`). It applies per-recruiter rate limits, is kept in the audit log, and is used as the mandate `owner` or skill request `requested_by` when you do not send one. |
+    | `Idempotency-Key` | A new UUID on each write. |
+    | `x-on-behalf-of` | Optional, see above. |
   </Step>
 </Steps>
 
-<Note>
-  A signed write (`POST`, `PUT`, `PATCH`, `DELETE`) is accepted **once**. Sign every request afresh, retries included. To retry safely, reuse the `Idempotency-Key`, never the signature.
-</Note>
-
 ## Signing helper
 
-Copy one helper into your code. Every example in these docs calls it.
+Copy one helper into your code. Every example in these docs calls it. It needs only your key id and secret.
 
 <CodeGroup>
 
@@ -154,7 +204,7 @@ pcall() {
 
 </CodeGroup>
 
-Test the key with a read:
+Test your key with a read:
 
 <CodeGroup>
 
@@ -174,7 +224,16 @@ pcall GET "/api/v1/partner/workflows?limit=1"
 
 </CodeGroup>
 
-A `200` with `"success": true` means the key, secret and clock are right. A `401 UNAUTHORIZED` means one of them is not: check the key pair, sign the exact path and body you send, and sync your server clock.
+A `200` with `"success": true` means the key, secret and clock are right.
+
+## If you get `401 UNAUTHORIZED`
+
+| Check | Fix |
+|---|---|
+| Key id and secret match | They must be the same pair. Regenerating a key turns the old pair off. |
+| You sign what you send | The path, query and body in the signature must be exactly what you send. |
+| Your clock | Sync your server clock. It must be within 5 minutes of Record's. |
+| Signing again on a retry | A signature works once for writes. Sign afresh and reuse only the `Idempotency-Key`. |
 
 ## Answers
 

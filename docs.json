@@ -404,8 +404,7 @@
             "group": "Events",
             "openapi": "blue-collar-api/api-reference/openapi.json",
             "pages": [
-              "GET /events",
-              "POST /events/ack",
+              "POST /events/pull",
               "GET /events/{event_id}"
             ]
           },
@@ -446,7 +445,8 @@
   },
   "api": {
     "playground": {
-      "display": "none"
+      "display": "none",
+      "proxy": false
     },
     "mdx": {
       "server": "https://api.example.com/v1",

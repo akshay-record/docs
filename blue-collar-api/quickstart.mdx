@@ -8,8 +8,8 @@ description: "From an API key to your first candidate result in six calls."
 </Warning>
 
 <Steps>
-  <Step title="Set up signing">
-    Copy the `call()` helper for your language from [Authentication](/blue-collar-api/authentication#signing-helper), then check your key with a read:
+  <Step title="Set up your key and secret">
+    You only need your key id and secret. Copy the `call()` helper for your language from [Authentication](/blue-collar-api/authentication#signing-helper): it makes the timestamp, signature and `Idempotency-Key` for you. Or skip the code and use **Try it** on any [API reference](/blue-collar-api/api-reference/introduction) page. Then check your key with a read:
 
     <CodeGroup>
 
@@ -36,9 +36,14 @@ description: "From an API key to your first candidate result in six calls."
     ```javascript JavaScript
     const res = await call("POST", "/api/v1/partner/workflows", {
       name: "Warehouse associates - Chennai",
-      default_methods: ["data_enrichment", "skill_verification"],
-      delivery: { whatsapp: true, voice_call: true, sms_backup: false },
-      schedule: { start_time: "09:00", end_time: "19:00", timezone: "Asia/Kolkata" },
+      schedule: {
+        start_time: "09:00",
+        end_time: "19:00",
+        days: ["mon", "tue", "wed", "thu", "fri", "sat"],
+        timezone: "Asia/Kolkata",
+        max_retries: 3,
+        retry_after_hours: 6,
+      },
     });
     const { workflow_id } = (await res.json()).data;
     ```
@@ -46,9 +51,14 @@ description: "From an API key to your first candidate result in six calls."
     ```python Python
     res = call("POST", "/api/v1/partner/workflows", {
         "name": "Warehouse associates - Chennai",
-        "default_methods": ["data_enrichment", "skill_verification"],
-        "delivery": {"whatsapp": True, "voice_call": True, "sms_backup": False},
-        "schedule": {"start_time": "09:00", "end_time": "19:00", "timezone": "Asia/Kolkata"},
+        "schedule": {
+            "start_time": "09:00",
+            "end_time": "19:00",
+            "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
+            "timezone": "Asia/Kolkata",
+            "max_retries": 3,
+            "retry_after_hours": 6,
+        },
     })
     workflow_id = res.json()["data"]["workflow_id"]
     ```
@@ -57,7 +67,7 @@ description: "From an API key to your first candidate result in six calls."
   </Step>
 
   <Step title="Create a job mandate">
-    The mandate is the job: 5 to 10 skills (at most 3 with `verify: true`) and up to 5 screening questions. Find skill ids with [`GET /skills/search`](/blue-collar-api/guides/skills#search-skills).
+    The mandate is the job: 5 to 10 skills (at most 3 with `verify: true`) and up to 5 screening questions (10 with enrichment only). Find skill ids with [`GET /skills/search`](/blue-collar-api/guides/skills#search-skills).
 
     <CodeGroup>
 
@@ -160,7 +170,7 @@ description: "From an API key to your first candidate result in six calls."
   </Step>
 
   <Step title="Receive results">
-    When a candidate finishes, your webhook receives a `candidate.result` event with their [result record](/blue-collar-api/guides/results). To catch up or check, read them directly:
+    When a candidate finishes, your webhook receives a `candidate.result` event with their [result record](/blue-collar-api/guides/results). No public URL? [Pull the events](/blue-collar-api/guides/webhooks#pull-and-confirm-events) instead. To catch up or check, read the results directly:
 
     <CodeGroup>
 

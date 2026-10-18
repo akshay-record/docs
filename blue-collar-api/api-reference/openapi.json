@@ -3,7 +3,7 @@
   "info": {
     "title": "Record Blue Collar API",
     "version": "1.0.0",
-    "description": "Run Record candidate verification from your own system. See the guides for authentication and request signing."
+    "description": "Run Record candidate verification from your own system. You need two things: your **key id** and your **secret**. Everything else is generated. See Authentication for how."
   },
   "servers": [
     {
@@ -34,7 +34,7 @@
     },
     {
       "name": "Campaigns",
-      "description": "Contact candidates for one of your jobs and verify them. Spends credits; a test key may only reach numbers Record listed"
+      "description": "Contact candidates for one of your jobs and verify them. Spends credits"
     },
     {
       "name": "Results",
@@ -282,7 +282,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/skills/search?q=forklift&limit=10\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/skills/domains": {
@@ -415,7 +420,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/skills/domains\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/skills/domains/{domain_id}/sub-domains": {
@@ -564,7 +574,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/skills/domains/dom_logistics_and_mobility_management/sub-domains\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/skills/sub-domains/{sub_domain_id}/skills": {
@@ -809,7 +824,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/skills/sub-domains/sub_logistics_and_mobility_management__inventory_and_warehousing/skills?limit=50\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/skills/lookup": {
@@ -829,7 +849,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -1032,7 +1052,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/skills/lookup\", {\n    \"skill_ids\": [\n        \"sk_38824\",\n        \"sk_36440\",\n        \"sk_99999999\"\n    ]\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/skills/match": {
@@ -1052,7 +1077,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -1307,7 +1332,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/skills/match\", {\n    \"texts\": [\n        \"Forklift Basic Operation\",\n        \"warehouse picking\",\n        \"reach truck driver\"\n    ],\n    \"top_k\": 2\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/skills/extract": {
@@ -1327,7 +1357,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -1549,7 +1579,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/skills/extract\", {\n    \"title\": \"Forklift Truck Operator\",\n    \"description\": \"Must hold Forklift Certification. Order Picking and Loading And Unloading of trucks.\"\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/skills/{skill_id}": {
@@ -1693,7 +1728,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/skills/sk_38824\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/skill-requests": {
@@ -1713,7 +1753,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -1937,7 +1977,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/skill-requests\", {\n    \"name\": \"Reach Truck Operation\",\n    \"collar\": \"blue\",\n    \"domain_hint\": \"Logistics and warehousing\",\n    \"mandate_external_id\": \"job-10452\",\n    \"requested_by\": \"recruiter_1042\"\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       },
       "get": {
         "operationId": "listSkillRequests",
@@ -2194,7 +2239,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/skill-requests?status=pending&limit=50\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/skill-requests/{request_id}": {
@@ -2388,7 +2438,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/skill-requests/skr_9f2c41d7a8b3e65f1c02\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/locations": {
@@ -2555,7 +2610,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/locations?q=coim\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/countries": {
@@ -2690,7 +2750,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/countries\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/employment-types": {
@@ -2833,7 +2898,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/employment-types\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/shifts": {
@@ -2958,7 +3028,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/shifts\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/workflows": {
@@ -2968,7 +3043,7 @@
           "Workflows"
         ],
         "summary": "Create a workflow",
-        "description": "Create the template your jobs run under: how candidates are reached, when, and which checks run by default. Returns `workflow_id`.\n\n**Scope:** `workflows:write` · **Idempotency-Key:** optional",
+        "description": "Create the template your jobs run under: how candidates are reached, when, and which checks run by default. Only `name` and `schedule` are required. Returns `workflow_id`.\n\n**Scope:** `workflows:write` · **Idempotency-Key:** optional",
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -2978,7 +3053,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -3021,7 +3096,8 @@
                     },
                     "minItems": 1,
                     "maxItems": 3,
-                    "description": "Methods a mandate uses when it does not send its own"
+                    "description": "Methods a mandate uses when it does not send its own",
+                    "uniqueItems": true
                   },
                   "delivery": {
                     "type": "object",
@@ -3066,8 +3142,10 @@
                             "sun"
                           ]
                         },
+                        "minItems": 1,
                         "maxItems": 7,
-                        "description": "Days messages may go out; empty = every day"
+                        "description": "Days messages may go out, each listed once",
+                        "uniqueItems": true
                       },
                       "timezone": {
                         "type": "string",
@@ -3076,20 +3154,34 @@
                       "max_retries": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 10
+                        "maximum": 3,
+                        "description": "Follow-up calls, 1 to 3"
                       },
                       "retry_after_hours": {
                         "type": "integer",
-                        "minimum": 1,
-                        "maximum": 48
+                        "enum": [
+                          6,
+                          8,
+                          12
+                        ],
+                        "description": "Hours before a retry: 6, 8 or 12"
                       }
                     },
+                    "required": [
+                      "start_time",
+                      "end_time",
+                      "days",
+                      "timezone",
+                      "max_retries",
+                      "retry_after_hours"
+                    ],
                     "additionalProperties": false,
-                    "description": "`start_time` + `end_time` (\"HH:MM\", send both), `days` (mon…sun), `timezone` (IANA), `max_retries` 1–10, `retry_after_hours` 1–48."
+                    "description": "Required. Send all six: `start_time` and `end_time` (\"HH:MM\"), `days` (mon…sun, at least one), `timezone` (IANA), `max_retries` 1 to 3, `retry_after_hours` 6, 8 or 12."
                   }
                 },
                 "required": [
-                  "name"
+                  "name",
+                  "schedule"
                 ],
                 "additionalProperties": false
               },
@@ -3119,7 +3211,7 @@
                   ],
                   "timezone": "Asia/Kolkata",
                   "max_retries": 3,
-                  "retry_after_hours": 4
+                  "retry_after_hours": 6
                 }
               }
             }
@@ -3245,7 +3337,7 @@
                         },
                         "is_external": {
                           "type": "boolean",
-                          "description": "true when the workflow was created through the Blue Collar API, false when it was made in the Record playground"
+                          "description": "true when the workflow was created through the Partner API, false when it was made in the Record playground"
                         },
                         "created_at": {
                           "type": "string"
@@ -3297,7 +3389,7 @@
                       ],
                       "timezone": "Asia/Kolkata",
                       "max_retries": 3,
-                      "retry_after_hours": 4
+                      "retry_after_hours": 6
                     },
                     "is_external": true,
                     "created_at": "2026-10-09T10:15:30.123Z",
@@ -3308,7 +3400,7 @@
             }
           },
           "400": {
-            "description": "`VALIDATION_FAILED`: Unknown field, time not HH:MM, or only one of start_time / end_time.",
+            "description": "`VALIDATION_FAILED`: `name` or `schedule` missing, a `schedule` key missing, empty or repeated `days`, time not HH:MM, or an unknown field.",
             "content": {
               "application/json": {
                 "schema": {
@@ -3338,19 +3430,24 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall POST \"/api/v1/partner/workflows\" '{\n  \"external_id\": \"wf-warehouse-chennai\",\n  \"name\": \"Warehouse associates - Chennai\",\n  \"status\": \"active\",\n  \"default_methods\": [\n    \"data_enrichment\",\n    \"skill_verification\"\n  ],\n  \"delivery\": {\n    \"whatsapp\": true,\n    \"voice_call\": true,\n    \"sms_backup\": false\n  },\n  \"schedule\": {\n    \"start_time\": \"09:00\",\n    \"end_time\": \"19:00\",\n    \"days\": [\n      \"mon\",\n      \"tue\",\n      \"wed\",\n      \"thu\",\n      \"fri\",\n      \"sat\"\n    ],\n    \"timezone\": \"Asia/Kolkata\",\n    \"max_retries\": 3,\n    \"retry_after_hours\": 4\n  }\n}'"
+            "source": "pcall POST \"/api/v1/partner/workflows\" '{\n  \"external_id\": \"wf-warehouse-chennai\",\n  \"name\": \"Warehouse associates - Chennai\",\n  \"status\": \"active\",\n  \"default_methods\": [\n    \"data_enrichment\",\n    \"skill_verification\"\n  ],\n  \"delivery\": {\n    \"whatsapp\": true,\n    \"voice_call\": true,\n    \"sms_backup\": false\n  },\n  \"schedule\": {\n    \"start_time\": \"09:00\",\n    \"end_time\": \"19:00\",\n    \"days\": [\n      \"mon\",\n      \"tue\",\n      \"wed\",\n      \"thu\",\n      \"fri\",\n      \"sat\"\n    ],\n    \"timezone\": \"Asia/Kolkata\",\n    \"max_retries\": 3,\n    \"retry_after_hours\": 6\n  }\n}'"
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"POST\", \"/api/v1/partner/workflows\", {\n  \"external_id\": \"wf-warehouse-chennai\",\n  \"name\": \"Warehouse associates - Chennai\",\n  \"status\": \"active\",\n  \"default_methods\": [\n    \"data_enrichment\",\n    \"skill_verification\"\n  ],\n  \"delivery\": {\n    \"whatsapp\": true,\n    \"voice_call\": true,\n    \"sms_backup\": false\n  },\n  \"schedule\": {\n    \"start_time\": \"09:00\",\n    \"end_time\": \"19:00\",\n    \"days\": [\n      \"mon\",\n      \"tue\",\n      \"wed\",\n      \"thu\",\n      \"fri\",\n      \"sat\"\n    ],\n    \"timezone\": \"Asia/Kolkata\",\n    \"max_retries\": 3,\n    \"retry_after_hours\": 4\n  }\n});\nconst { data } = await res.json();"
+            "source": "const res = await call(\"POST\", \"/api/v1/partner/workflows\", {\n  \"external_id\": \"wf-warehouse-chennai\",\n  \"name\": \"Warehouse associates - Chennai\",\n  \"status\": \"active\",\n  \"default_methods\": [\n    \"data_enrichment\",\n    \"skill_verification\"\n  ],\n  \"delivery\": {\n    \"whatsapp\": true,\n    \"voice_call\": true,\n    \"sms_backup\": false\n  },\n  \"schedule\": {\n    \"start_time\": \"09:00\",\n    \"end_time\": \"19:00\",\n    \"days\": [\n      \"mon\",\n      \"tue\",\n      \"wed\",\n      \"thu\",\n      \"fri\",\n      \"sat\"\n    ],\n    \"timezone\": \"Asia/Kolkata\",\n    \"max_retries\": 3,\n    \"retry_after_hours\": 6\n  }\n});\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"POST\", \"/api/v1/partner/workflows\", {\n    \"external_id\": \"wf-warehouse-chennai\",\n    \"name\": \"Warehouse associates - Chennai\",\n    \"status\": \"active\",\n    \"default_methods\": [\n        \"data_enrichment\",\n        \"skill_verification\"\n    ],\n    \"delivery\": {\n        \"whatsapp\": True,\n        \"voice_call\": True,\n        \"sms_backup\": False\n    },\n    \"schedule\": {\n        \"start_time\": \"09:00\",\n        \"end_time\": \"19:00\",\n        \"days\": [\n            \"mon\",\n            \"tue\",\n            \"wed\",\n            \"thu\",\n            \"fri\",\n            \"sat\"\n        ],\n        \"timezone\": \"Asia/Kolkata\",\n        \"max_retries\": 3,\n        \"retry_after_hours\": 4\n    }\n})\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"POST\", \"/api/v1/partner/workflows\", {\n    \"external_id\": \"wf-warehouse-chennai\",\n    \"name\": \"Warehouse associates - Chennai\",\n    \"status\": \"active\",\n    \"default_methods\": [\n        \"data_enrichment\",\n        \"skill_verification\"\n    ],\n    \"delivery\": {\n        \"whatsapp\": True,\n        \"voice_call\": True,\n        \"sms_backup\": False\n    },\n    \"schedule\": {\n        \"start_time\": \"09:00\",\n        \"end_time\": \"19:00\",\n        \"days\": [\n            \"mon\",\n            \"tue\",\n            \"wed\",\n            \"thu\",\n            \"fri\",\n            \"sat\"\n        ],\n        \"timezone\": \"Asia/Kolkata\",\n        \"max_retries\": 3,\n        \"retry_after_hours\": 6\n    }\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       },
       "get": {
         "operationId": "listWorkflows",
@@ -3549,7 +3646,7 @@
                               },
                               "is_external": {
                                 "type": "boolean",
-                                "description": "true when the workflow was created through the Blue Collar API, false when it was made in the Record playground"
+                                "description": "true when the workflow was created through the Partner API, false when it was made in the Record playground"
                               },
                               "created_at": {
                                 "type": "string"
@@ -3636,7 +3733,7 @@
                           ],
                           "timezone": "Asia/Kolkata",
                           "max_retries": 3,
-                          "retry_after_hours": 4
+                          "retry_after_hours": 6
                         },
                         "is_external": true,
                         "created_at": "2026-10-09T10:15:30.123Z",
@@ -3685,7 +3782,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/workflows?status=active&include_archived=false&limit=50\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/workflows/{workflow_id}": {
@@ -3828,7 +3930,7 @@
                         },
                         "is_external": {
                           "type": "boolean",
-                          "description": "true when the workflow was created through the Blue Collar API, false when it was made in the Record playground"
+                          "description": "true when the workflow was created through the Partner API, false when it was made in the Record playground"
                         },
                         "created_at": {
                           "type": "string"
@@ -3880,7 +3982,7 @@
                       ],
                       "timezone": "Asia/Kolkata",
                       "max_retries": 3,
-                      "retry_after_hours": 4
+                      "retry_after_hours": 6
                     },
                     "is_external": true,
                     "created_at": "2026-10-09T10:15:30.123Z",
@@ -3923,7 +4025,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       },
       "patch": {
         "operationId": "updateWorkflow",
@@ -3951,7 +4058,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -3993,7 +4100,8 @@
                     },
                     "minItems": 1,
                     "maxItems": 3,
-                    "description": "Methods a mandate uses when it does not send its own"
+                    "description": "Methods a mandate uses when it does not send its own",
+                    "uniqueItems": true
                   },
                   "delivery": {
                     "type": "object",
@@ -4038,8 +4146,10 @@
                             "sun"
                           ]
                         },
+                        "minItems": 1,
                         "maxItems": 7,
-                        "description": "Days messages may go out; empty = every day"
+                        "description": "Days messages may go out, each listed once",
+                        "uniqueItems": true
                       },
                       "timezone": {
                         "type": "string",
@@ -4048,12 +4158,17 @@
                       "max_retries": {
                         "type": "integer",
                         "minimum": 1,
-                        "maximum": 10
+                        "maximum": 3,
+                        "description": "Follow-up calls, 1 to 3"
                       },
                       "retry_after_hours": {
                         "type": "integer",
-                        "minimum": 1,
-                        "maximum": 48
+                        "enum": [
+                          6,
+                          8,
+                          12
+                        ],
+                        "description": "Hours before a retry: 6, 8 or 12"
                       }
                     },
                     "additionalProperties": false,
@@ -4191,7 +4306,7 @@
                         },
                         "is_external": {
                           "type": "boolean",
-                          "description": "true when the workflow was created through the Blue Collar API, false when it was made in the Record playground"
+                          "description": "true when the workflow was created through the Partner API, false when it was made in the Record playground"
                         },
                         "created_at": {
                           "type": "string"
@@ -4243,7 +4358,7 @@
                       ],
                       "timezone": "Asia/Kolkata",
                       "max_retries": 3,
-                      "retry_after_hours": 4
+                      "retry_after_hours": 6
                     },
                     "is_external": true,
                     "created_at": "2026-10-09T10:15:30.123Z",
@@ -4316,7 +4431,12 @@
             "label": "Python",
             "source": "res = call(\"PATCH\", \"/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8\", {\n    \"schedule\": {\n        \"start_time\": \"10:00\",\n        \"end_time\": \"18:00\"\n    }\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       },
       "delete": {
         "operationId": "deleteWorkflow",
@@ -4344,7 +4464,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "responses": {
@@ -4467,7 +4587,7 @@
                         },
                         "is_external": {
                           "type": "boolean",
-                          "description": "true when the workflow was created through the Blue Collar API, false when it was made in the Record playground"
+                          "description": "true when the workflow was created through the Partner API, false when it was made in the Record playground"
                         },
                         "created_at": {
                           "type": "string"
@@ -4519,7 +4639,7 @@
                       ],
                       "timezone": "Asia/Kolkata",
                       "max_retries": 3,
-                      "retry_after_hours": 4
+                      "retry_after_hours": 6
                     },
                     "is_external": true,
                     "created_at": "2026-10-09T10:15:30.123Z",
@@ -4582,7 +4702,12 @@
             "label": "Python",
             "source": "res = call(\"DELETE\", \"/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/mandates": {
@@ -4967,7 +5092,7 @@
                               },
                               "is_external": {
                                 "type": "boolean",
-                                "description": "true when the mandate was created through the Blue Collar API, false when it was made in the Record playground"
+                                "description": "true when the mandate was created through the Partner API, false when it was made in the Record playground"
                               },
                               "created_at": {
                                 "type": "string"
@@ -5165,7 +5290,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/mandates?status=ready&limit=50\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       },
       "post": {
         "operationId": "createMandate",
@@ -5183,7 +5313,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -5354,7 +5484,8 @@
                     },
                     "minItems": 1,
                     "maxItems": 3,
-                    "description": "Any non-empty mix; candidates always go enrichment → skills → interest. Omit to use the workflow's default."
+                    "description": "Any non-empty mix; candidates always go enrichment → skills → interest. Omit to use the workflow's default.",
+                    "uniqueItems": true
                   },
                   "skills": {
                     "type": "array",
@@ -5418,12 +5549,9 @@
                           "type": "string",
                           "enum": [
                             "yes_no",
-                            "single_choice",
-                            "number",
-                            "short_text",
                             "voice"
                           ],
-                          "description": "yes_no and voice are supported today; the others answer VALIDATION_FAILED"
+                          "description": "yes_no = a Yes / No question; voice = the candidate answers in their own words"
                         },
                         "text": {
                           "type": "string",
@@ -5431,20 +5559,12 @@
                           "maxLength": 200,
                           "description": "English"
                         },
-                        "options": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 100
-                          },
-                          "minItems": 2,
-                          "maxItems": 4,
-                          "description": "single_choice only"
-                        },
                         "knockout": {
                           "type": "string",
-                          "maxLength": 100,
+                          "enum": [
+                            "yes",
+                            "no"
+                          ],
                           "description": "yes_no only: the answer (\"yes\" or \"no\") that marks the candidate not qualified"
                         },
                         "required": {
@@ -5460,7 +5580,7 @@
                       "additionalProperties": false
                     },
                     "maxItems": 50,
-                    "description": "0 to 5 enrichment questions"
+                    "description": "0 to 5 enrichment questions (up to 10 when data_enrichment is the only method)"
                   },
                   "interest_collection": {
                     "type": "object",
@@ -5735,7 +5855,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/mandates\", {\n    \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n    \"title\": \"Warehouse Associate (Forklift)\",\n    \"company_name\": \"Acme Logistics Pvt Ltd\",\n    \"location_type\": \"india\",\n    \"location\": {\n        \"city\": \"Chennai\",\n        \"state\": \"Tamil Nadu\",\n        \"pincode\": \"600001\"\n    },\n    \"experience\": {\n        \"min_years\": 1,\n        \"max_years\": 5\n    },\n    \"openings\": 12,\n    \"salary\": {\n        \"min\": 18000,\n        \"max\": 24000,\n        \"currency\": \"INR\",\n        \"period\": \"month\"\n    },\n    \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n    \"shift\": \"Day shift\",\n    \"employment_type\": \"Full-time\",\n    \"owner\": {\n        \"external_user_id\": \"recruiter_1042\",\n        \"name\": \"Priya Nair\"\n    },\n    \"methods\": [\n        \"data_enrichment\",\n        \"skill_verification\",\n        \"interest_collection\"\n    ],\n    \"skills\": [\n        {\n            \"skill_id\": \"sk_36440\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38973\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38824\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_2338\"\n        },\n        {\n            \"skill_id\": \"sk_2452\"\n        },\n        {\n            \"name\": \"Reach Truck Operation\",\n            \"pending\": True\n        }\n    ],\n    \"enrichment_questions\": [\n        {\n            \"key\": \"has_licence\",\n            \"type\": \"yes_no\",\n            \"text\": \"Do you hold a valid forklift licence?\",\n            \"knockout\": \"no\",\n            \"required\": True\n        },\n        {\n            \"key\": \"why_this_job\",\n            \"type\": \"voice\",\n            \"text\": \"Tell us in your own words why you want this job.\",\n            \"required\": False\n        }\n    ],\n    \"interest_collection\": {\n        \"other_roles\": [\n            \"Forklift Operator\",\n            \"Store Keeper\"\n        ]\n    }\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/mandates/{mandate_id}": {
@@ -6059,7 +6184,7 @@
                         },
                         "is_external": {
                           "type": "boolean",
-                          "description": "true when the mandate was created through the Blue Collar API, false when it was made in the Record playground"
+                          "description": "true when the mandate was created through the Partner API, false when it was made in the Record playground"
                         },
                         "created_at": {
                           "type": "string"
@@ -6218,7 +6343,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       },
       "put": {
         "operationId": "updateMandateById",
@@ -6247,7 +6377,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -6414,7 +6544,8 @@
                     },
                     "minItems": 1,
                     "maxItems": 3,
-                    "description": "Any non-empty mix; candidates always go enrichment → skills → interest. Omit to use the workflow's default."
+                    "description": "Any non-empty mix; candidates always go enrichment → skills → interest. Omit to use the workflow's default.",
+                    "uniqueItems": true
                   },
                   "skills": {
                     "type": "array",
@@ -6478,12 +6609,9 @@
                           "type": "string",
                           "enum": [
                             "yes_no",
-                            "single_choice",
-                            "number",
-                            "short_text",
                             "voice"
                           ],
-                          "description": "yes_no and voice are supported today; the others answer VALIDATION_FAILED"
+                          "description": "yes_no = a Yes / No question; voice = the candidate answers in their own words"
                         },
                         "text": {
                           "type": "string",
@@ -6491,20 +6619,12 @@
                           "maxLength": 200,
                           "description": "English"
                         },
-                        "options": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 100
-                          },
-                          "minItems": 2,
-                          "maxItems": 4,
-                          "description": "single_choice only"
-                        },
                         "knockout": {
                           "type": "string",
-                          "maxLength": 100,
+                          "enum": [
+                            "yes",
+                            "no"
+                          ],
                           "description": "yes_no only: the answer (\"yes\" or \"no\") that marks the candidate not qualified"
                         },
                         "required": {
@@ -6520,7 +6640,7 @@
                       "additionalProperties": false
                     },
                     "maxItems": 50,
-                    "description": "0 to 5 enrichment questions"
+                    "description": "0 to 5 enrichment questions (up to 10 when data_enrichment is the only method)"
                   },
                   "interest_collection": {
                     "type": "object",
@@ -6791,7 +6911,12 @@
             "label": "Python",
             "source": "res = call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4\", {\n    \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n    \"title\": \"Warehouse Associate (Forklift)\",\n    \"company_name\": \"Acme Logistics Pvt Ltd\",\n    \"location_type\": \"india\",\n    \"location\": {\n        \"city\": \"Chennai\",\n        \"state\": \"Tamil Nadu\",\n        \"pincode\": \"600001\"\n    },\n    \"experience\": {\n        \"min_years\": 1,\n        \"max_years\": 5\n    },\n    \"openings\": 12,\n    \"salary\": {\n        \"min\": 18000,\n        \"max\": 24000,\n        \"currency\": \"INR\",\n        \"period\": \"month\"\n    },\n    \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n    \"shift\": \"Day shift\",\n    \"employment_type\": \"Full-time\",\n    \"owner\": {\n        \"external_user_id\": \"recruiter_1042\",\n        \"name\": \"Priya Nair\"\n    },\n    \"methods\": [\n        \"data_enrichment\",\n        \"skill_verification\",\n        \"interest_collection\"\n    ],\n    \"skills\": [\n        {\n            \"skill_id\": \"sk_36440\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38973\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38824\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_2338\"\n        },\n        {\n            \"skill_id\": \"sk_2452\"\n        },\n        {\n            \"name\": \"Reach Truck Operation\",\n            \"pending\": True\n        }\n    ],\n    \"enrichment_questions\": [\n        {\n            \"key\": \"has_licence\",\n            \"type\": \"yes_no\",\n            \"text\": \"Do you hold a valid forklift licence?\",\n            \"knockout\": \"no\",\n            \"required\": True\n        },\n        {\n            \"key\": \"why_this_job\",\n            \"type\": \"voice\",\n            \"text\": \"Tell us in your own words why you want this job.\",\n            \"required\": False\n        }\n    ],\n    \"interest_collection\": {\n        \"other_roles\": [\n            \"Forklift Operator\",\n            \"Store Keeper\"\n        ]\n    }\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       },
       "delete": {
         "operationId": "deleteMandateById",
@@ -6820,7 +6945,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "responses": {
@@ -7123,7 +7248,7 @@
                         },
                         "is_external": {
                           "type": "boolean",
-                          "description": "true when the mandate was created through the Blue Collar API, false when it was made in the Record playground"
+                          "description": "true when the mandate was created through the Partner API, false when it was made in the Record playground"
                         },
                         "created_at": {
                           "type": "string"
@@ -7290,7 +7415,12 @@
             "label": "Python",
             "source": "res = call(\"DELETE\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/mandates/{mandate_id}/methods": {
@@ -7321,7 +7451,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -7343,7 +7473,8 @@
                     },
                     "minItems": 1,
                     "maxItems": 3,
-                    "description": "Any non-empty mix; candidates always go enrichment → skills → interest. Omit to use the workflow's default."
+                    "description": "Any non-empty mix; candidates always go enrichment → skills → interest. Omit to use the workflow's default.",
+                    "uniqueItems": true
                   }
                 },
                 "required": [
@@ -7510,7 +7641,12 @@
             "label": "Python",
             "source": "res = call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/methods\", {\n    \"methods\": [\n        \"data_enrichment\",\n        \"skill_verification\"\n    ]\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/mandates/{mandate_id}/skills": {
@@ -7541,7 +7677,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -7795,7 +7931,12 @@
             "label": "Python",
             "source": "res = call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/skills\", {\n    \"skills\": [\n        {\n            \"skill_id\": \"sk_36440\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38973\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38824\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_2338\"\n        },\n        {\n            \"skill_id\": \"sk_2452\"\n        },\n        {\n            \"name\": \"Reach Truck Operation\",\n            \"pending\": True\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/mandates/{mandate_id}/enrichment-questions": {
@@ -7805,7 +7946,7 @@
           "Job mandates"
         ],
         "summary": "Replace screening questions",
-        "description": "Replace only the screening questions (1 to 5).\n\n**Scope:** `mandates:write` · **Idempotency-Key:** optional",
+        "description": "Replace only the screening questions (1 to 5, or 10 with enrichment only).\n\n**Scope:** `mandates:write` · **Idempotency-Key:** optional",
         "parameters": [
           {
             "name": "mandate_id",
@@ -7826,7 +7967,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -7850,12 +7991,9 @@
                           "type": "string",
                           "enum": [
                             "yes_no",
-                            "single_choice",
-                            "number",
-                            "short_text",
                             "voice"
                           ],
-                          "description": "yes_no and voice are supported today; the others answer VALIDATION_FAILED"
+                          "description": "yes_no = a Yes / No question; voice = the candidate answers in their own words"
                         },
                         "text": {
                           "type": "string",
@@ -7863,20 +8001,12 @@
                           "maxLength": 200,
                           "description": "English"
                         },
-                        "options": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 100
-                          },
-                          "minItems": 2,
-                          "maxItems": 4,
-                          "description": "single_choice only"
-                        },
                         "knockout": {
                           "type": "string",
-                          "maxLength": 100,
+                          "enum": [
+                            "yes",
+                            "no"
+                          ],
                           "description": "yes_no only: the answer (\"yes\" or \"no\") that marks the candidate not qualified"
                         },
                         "required": {
@@ -7892,7 +8022,7 @@
                       "additionalProperties": false
                     },
                     "maxItems": 50,
-                    "description": "0 to 5 enrichment questions"
+                    "description": "0 to 5 enrichment questions (up to 10 when data_enrichment is the only method)"
                   }
                 },
                 "required": [
@@ -8009,7 +8139,7 @@
             }
           },
           "400": {
-            "description": "`VALIDATION_FAILED`: Type other than `yes_no` / `voice`, or repeated `key`.",
+            "description": "`VALIDATION_FAILED`: A `type` other than `yes_no` / `voice`, an `options` field, or a repeated `key`.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8081,7 +8211,12 @@
             "label": "Python",
             "source": "res = call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/enrichment-questions\", {\n    \"enrichment_questions\": [\n        {\n            \"key\": \"has_licence\",\n            \"type\": \"yes_no\",\n            \"text\": \"Do you hold a valid forklift licence?\",\n            \"knockout\": \"no\",\n            \"required\": True\n        },\n        {\n            \"key\": \"why_this_job\",\n            \"type\": \"voice\",\n            \"text\": \"Tell us in your own words why you want this job.\",\n            \"required\": False\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/mandates/{mandate_id}/questions": {
@@ -8318,7 +8453,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/questions?language=en\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       },
       "put": {
         "operationId": "setMandateQuestionsById",
@@ -8347,7 +8487,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -8371,12 +8511,9 @@
                           "type": "string",
                           "enum": [
                             "yes_no",
-                            "single_choice",
-                            "number",
-                            "short_text",
                             "voice"
                           ],
-                          "description": "yes_no and voice are supported today; the others answer VALIDATION_FAILED"
+                          "description": "yes_no = a Yes / No question; voice = the candidate answers in their own words"
                         },
                         "text": {
                           "type": "string",
@@ -8384,20 +8521,12 @@
                           "maxLength": 200,
                           "description": "English"
                         },
-                        "options": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 100
-                          },
-                          "minItems": 2,
-                          "maxItems": 4,
-                          "description": "single_choice only"
-                        },
                         "knockout": {
                           "type": "string",
-                          "maxLength": 100,
+                          "enum": [
+                            "yes",
+                            "no"
+                          ],
                           "description": "yes_no only: the answer (\"yes\" or \"no\") that marks the candidate not qualified"
                         },
                         "required": {
@@ -8413,7 +8542,7 @@
                       "additionalProperties": false
                     },
                     "maxItems": 50,
-                    "description": "Replaces the screening questions (1 to 5), exactly like PUT .../enrichment-questions"
+                    "description": "Replaces the screening questions (1 to 5, or 10 when data_enrichment is the only method), exactly like PUT .../enrichment-questions"
                   },
                   "skill_questions": {
                     "type": "object",
@@ -8584,7 +8713,7 @@
             }
           },
           "422": {
-            "description": "`LIMIT_EXCEEDED`: More than 5 screening questions.",
+            "description": "`LIMIT_EXCEEDED`: More than 5 screening questions (10 when `data_enrichment` is the only method).",
             "content": {
               "application/json": {
                 "schema": {
@@ -8616,7 +8745,12 @@
             "label": "Python",
             "source": "res = call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/questions\", {\n    \"skill_questions\": {\n        \"regenerate\": \"all\"\n    }\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/mandates/{mandate_id}/archive": {
@@ -8647,7 +8781,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "responses": {
@@ -8950,7 +9084,7 @@
                         },
                         "is_external": {
                           "type": "boolean",
-                          "description": "true when the mandate was created through the Blue Collar API, false when it was made in the Record playground"
+                          "description": "true when the mandate was created through the Partner API, false when it was made in the Record playground"
                         },
                         "created_at": {
                           "type": "string"
@@ -9117,7 +9251,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/archive\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/campaigns": {
@@ -9137,7 +9276,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -9569,7 +9708,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/campaigns\", {\n    \"mandate_id\": \"JM_261009101612456H3N8W2L5C9V1Z4\",\n    \"name\": \"Warehouse Associate - October batch\",\n    \"external_id\": \"ats-campaign-5521\",\n    \"start\": \"now\",\n    \"language\": \"en\",\n    \"candidates\": [\n        {\n            \"external_id\": \"cand-88231\",\n            \"name\": \"Ravi Kumar\",\n            \"phone\": \"98765 43210\"\n        },\n        {\n            \"external_id\": \"cand-88232\",\n            \"name\": \"Meena Devi\",\n            \"phone\": \"+91 98123 45678\"\n        },\n        {\n            \"external_id\": \"cand-88233\",\n            \"name\": \"Karthik Raj\",\n            \"phone\": \"99000 11122\"\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       },
       "get": {
         "operationId": "listCampaigns",
@@ -9888,7 +10032,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/campaigns?mandate_id=JM_261009101612456H3N8W2L5C9V1Z4&status=sending&limit=50\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/campaigns/{campaign_id}": {
@@ -10195,7 +10344,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f?candidates_limit=100\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/campaigns/{campaign_id}/start": {
@@ -10225,7 +10379,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "responses": {
@@ -10448,7 +10602,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/start\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/campaigns/{campaign_id}/candidates": {
@@ -10478,7 +10637,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -10857,7 +11016,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates\", {\n    \"candidates\": [\n        {\n            \"external_id\": \"cand-88240\",\n            \"name\": \"Anitha Selvam\",\n            \"phone\": \"97000 22211\"\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       },
       "get": {
         "operationId": "listCampaignCandidates",
@@ -11182,7 +11346,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates?status=interested&limit=100\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/campaigns/{campaign_id}/candidates/{candidate_id}/resend": {
@@ -11222,7 +11391,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "responses": {
@@ -11341,7 +11510,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01/resend\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/campaigns/{campaign_id}/pause": {
@@ -11371,7 +11545,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "responses": {
@@ -11594,7 +11768,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/pause\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/campaigns/{campaign_id}/resume": {
@@ -11624,7 +11803,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "responses": {
@@ -11847,7 +12026,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/resume\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/candidates/{candidate_id}/result": {
@@ -12300,7 +12484,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/candidates/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01/result?include=answers\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/mandates/{mandate_id}/campaigns": {
@@ -12487,7 +12676,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/campaigns?limit=50\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/campaigns/{campaign_id}/results": {
@@ -12807,38 +13001,6 @@
                                           }
                                         }
                                       },
-                                      "videos": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "object",
-                                          "properties": {
-                                            "question_index": {
-                                              "type": "integer"
-                                            },
-                                            "video_url": {
-                                              "anyOf": [
-                                                {
-                                                  "type": "string"
-                                                },
-                                                {
-                                                  "type": "null"
-                                                }
-                                              ]
-                                            },
-                                            "duration_seconds": {
-                                              "anyOf": [
-                                                {
-                                                  "type": "number"
-                                                },
-                                                {
-                                                  "type": "null"
-                                                }
-                                              ]
-                                            }
-                                          }
-                                        },
-                                        "description": "The interview session's recording of each question"
-                                      },
                                       "call_recording_url": {
                                         "anyOf": [
                                           {
@@ -13087,13 +13249,6 @@
                                 "rating": "Strong"
                               }
                             ],
-                            "videos": [
-                              {
-                                "question_index": 1,
-                                "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
-                                "duration_seconds": 42
-                              }
-                            ],
                             "call_recording_url": null,
                             "answers": [
                               {
@@ -13171,7 +13326,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/results?status=completed&limit=50\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/results/{candidate_id}": {
@@ -13438,38 +13598,6 @@
                                     }
                                   }
                                 },
-                                "videos": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "object",
-                                    "properties": {
-                                      "question_index": {
-                                        "type": "integer"
-                                      },
-                                      "video_url": {
-                                        "anyOf": [
-                                          {
-                                            "type": "string"
-                                          },
-                                          {
-                                            "type": "null"
-                                          }
-                                        ]
-                                      },
-                                      "duration_seconds": {
-                                        "anyOf": [
-                                          {
-                                            "type": "number"
-                                          },
-                                          {
-                                            "type": "null"
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  },
-                                  "description": "The interview session's recording of each question"
-                                },
                                 "call_recording_url": {
                                   "anyOf": [
                                     {
@@ -13683,13 +13811,6 @@
                             "rating": "Strong"
                           }
                         ],
-                        "videos": [
-                          {
-                            "question_index": 1,
-                            "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
-                            "duration_seconds": 42
-                          }
-                        ],
                         "call_recording_url": null,
                         "answers": [
                           {
@@ -13751,77 +13872,86 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/results/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
-    "/events": {
-      "get": {
-        "operationId": "listEvents",
+    "/events/pull": {
+      "post": {
+        "operationId": "pullEvents",
         "tags": [
           "Events"
         ],
-        "summary": "List events",
-        "description": "Every event you have not acknowledged, oldest first: the same data the webhook sends. `status=all` with `from` replays history (30 days).\n\n**Scope:** `events:read`",
-        "parameters": [
-          {
-            "name": "status",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "unacked",
-                "all"
-              ],
-              "default": "unacked"
-            },
-            "example": "unacked"
-          },
-          {
-            "name": "type",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "candidate.result"
-              ]
+        "summary": "Pull and confirm events",
+        "description": "One call does both jobs. Send the `ack` ids of the events you already processed, and get the next events back. An event keeps coming back until you put its id in `ack`. Use it when you cannot expose a URL, and as a safety net next to the webhook.\n\n**Scope:** `events:read`",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ack": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^evt_[a-f0-9]{32}$"
+                    },
+                    "maxItems": 100,
+                    "default": [],
+                    "description": "Up to 100 ids of events you processed. They are acknowledged before the page is read, so they do not come back"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "unacked",
+                      "all"
+                    ],
+                    "default": "unacked",
+                    "description": "`unacked` (default) gives only events you have not confirmed. `all` replays history (use it with `from`)."
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "candidate.result"
+                    ],
+                    "description": "Only this event type."
+                  },
+                  "from": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Only events created at or after this time (replay)"
+                  },
+                  "after": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Only events with a higher `sequence` than this"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 100,
+                    "description": "1 to 100, default 100"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "example": {
+                "ack": [
+                  "evt_9c2e4a6b8d0f1234567890abcdef1234"
+                ],
+                "status": "unacked",
+                "limit": 100
+              }
             }
-          },
-          {
-            "name": "from",
-            "in": "query",
-            "required": false,
-            "description": "Only events created at or after this time (replay)",
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          {
-            "name": "after",
-            "in": "query",
-            "required": false,
-            "description": "Only events with a higher `sequence` than this",
-            "schema": {
-              "type": "integer",
-              "minimum": 0
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "description": "1 to 100, default 100",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100,
-              "default": 100
-            },
-            "example": 100
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "One page, oldest first",
@@ -13883,7 +14013,7 @@
                               },
                               "acknowledged": {
                                 "type": "boolean",
-                                "description": "true once you acknowledged it (webhook 2xx or POST /events/ack)"
+                                "description": "true once you acknowledged it (webhook 2xx, or listed in `ack` of POST /events/pull)"
                               },
                               "data": {
                                 "type": "object",
@@ -14114,38 +14244,6 @@
                                               }
                                             }
                                           },
-                                          "videos": {
-                                            "type": "array",
-                                            "items": {
-                                              "type": "object",
-                                              "properties": {
-                                                "question_index": {
-                                                  "type": "integer"
-                                                },
-                                                "video_url": {
-                                                  "anyOf": [
-                                                    {
-                                                      "type": "string"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                },
-                                                "duration_seconds": {
-                                                  "anyOf": [
-                                                    {
-                                                      "type": "number"
-                                                    },
-                                                    {
-                                                      "type": "null"
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            },
-                                            "description": "The interview session's recording of each question"
-                                          },
                                           "call_recording_url": {
                                             "anyOf": [
                                               {
@@ -14322,6 +14420,10 @@
                         "count": {
                           "type": "integer"
                         },
+                        "acknowledged": {
+                          "type": "integer",
+                          "description": "How many of the `ack` ids were newly acknowledged by this call"
+                        },
                         "pending": {
                           "anyOf": [
                             {
@@ -14403,13 +14505,6 @@
                                   "rating": "Strong"
                                 }
                               ],
-                              "videos": [
-                                {
-                                  "question_index": 1,
-                                  "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
-                                  "duration_seconds": 42
-                                }
-                              ],
                               "call_recording_url": null,
                               "answers": [
                                 {
@@ -14437,6 +14532,7 @@
                       }
                     ],
                     "count": 1,
+                    "acknowledged": 1,
                     "pending": 1,
                     "next_cursor": null,
                     "has_more": false
@@ -14446,7 +14542,7 @@
             }
           },
           "400": {
-            "description": "`VALIDATION_FAILED`: Bad `status`, date or `limit` above 100.",
+            "description": "`VALIDATION_FAILED`: An `ack` id that is not an event id, more than 100 ids, a bad date, or `limit` above 100.",
             "content": {
               "application/json": {
                 "schema": {
@@ -14466,128 +14562,24 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall GET \"/api/v1/partner/events?status=unacked&limit=100\""
+            "source": "pcall POST \"/api/v1/partner/events/pull\" '{\n  \"ack\": [\n    \"evt_9c2e4a6b8d0f1234567890abcdef1234\"\n  ],\n  \"status\": \"unacked\",\n  \"limit\": 100\n}'"
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"GET\", \"/api/v1/partner/events?status=unacked&limit=100\");\nconst { data } = await res.json();"
+            "source": "const res = await call(\"POST\", \"/api/v1/partner/events/pull\", {\n  \"ack\": [\n    \"evt_9c2e4a6b8d0f1234567890abcdef1234\"\n  ],\n  \"status\": \"unacked\",\n  \"limit\": 100\n});\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"GET\", \"/api/v1/partner/events?status=unacked&limit=100\")\ndata = res.json()[\"data\"]"
-          }
-        ]
-      }
-    },
-    "/events/ack": {
-      "post": {
-        "operationId": "acknowledgeEvents",
-        "tags": [
-          "Events"
-        ],
-        "summary": "Acknowledge events",
-        "description": "Up to 100 ids. They stop coming back and no webhook retry is sent for them. Safe to repeat.\n\n**Scope:** `events:read`",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "event_ids": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "pattern": "^evt_[a-f0-9]{32}$"
-                    },
-                    "minItems": 1,
-                    "maxItems": 100
-                  }
-                },
-                "required": [
-                  "event_ids"
-                ],
-                "additionalProperties": false
-              },
-              "example": {
-                "event_ids": [
-                  "evt_9c2e4a6b8d0f1234567890abcdef1234"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "How many were newly acknowledged",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "const": true,
-                      "type": "boolean"
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "acknowledged": {
-                          "type": "integer"
-                        }
-                      }
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "data": {
-                    "acknowledged": 1
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "`VALIDATION_FAILED`: More than 100 ids, or an id that is not an event id.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "ApiKey": [],
-            "SecretKey": []
+            "source": "res = call(\"POST\", \"/api/v1/partner/events/pull\", {\n    \"ack\": [\n        \"evt_9c2e4a6b8d0f1234567890abcdef1234\"\n    ],\n    \"status\": \"unacked\",\n    \"limit\": 100\n})\ndata = res.json()[\"data\"]"
           }
         ],
-        "x-codeSamples": [
-          {
-            "lang": "bash",
-            "label": "cURL",
-            "source": "pcall POST \"/api/v1/partner/events/ack\" '{\n  \"event_ids\": [\n    \"evt_9c2e4a6b8d0f1234567890abcdef1234\"\n  ]\n}'"
-          },
-          {
-            "lang": "javascript",
-            "label": "JavaScript",
-            "source": "const res = await call(\"POST\", \"/api/v1/partner/events/ack\", {\n  \"event_ids\": [\n    \"evt_9c2e4a6b8d0f1234567890abcdef1234\"\n  ]\n});\nconst { data } = await res.json();"
-          },
-          {
-            "lang": "python",
-            "label": "Python",
-            "source": "res = call(\"POST\", \"/api/v1/partner/events/ack\", {\n    \"event_ids\": [\n        \"evt_9c2e4a6b8d0f1234567890abcdef1234\"\n    ]\n})\ndata = res.json()[\"data\"]"
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
           }
-        ]
+        }
       }
     },
     "/events/{event_id}": {
@@ -14666,7 +14658,7 @@
                         },
                         "acknowledged": {
                           "type": "boolean",
-                          "description": "true once you acknowledged it (webhook 2xx or POST /events/ack)"
+                          "description": "true once you acknowledged it (webhook 2xx, or listed in `ack` of POST /events/pull)"
                         },
                         "data": {
                           "type": "object",
@@ -14897,38 +14889,6 @@
                                         }
                                       }
                                     },
-                                    "videos": {
-                                      "type": "array",
-                                      "items": {
-                                        "type": "object",
-                                        "properties": {
-                                          "question_index": {
-                                            "type": "integer"
-                                          },
-                                          "video_url": {
-                                            "anyOf": [
-                                              {
-                                                "type": "string"
-                                              },
-                                              {
-                                                "type": "null"
-                                              }
-                                            ]
-                                          },
-                                          "duration_seconds": {
-                                            "anyOf": [
-                                              {
-                                                "type": "number"
-                                              },
-                                              {
-                                                "type": "null"
-                                              }
-                                            ]
-                                          }
-                                        }
-                                      },
-                                      "description": "The interview session's recording of each question"
-                                    },
                                     "call_recording_url": {
                                       "anyOf": [
                                         {
@@ -15153,13 +15113,6 @@
                               "rating": "Strong"
                             }
                           ],
-                          "videos": [
-                            {
-                              "question_index": 1,
-                              "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
-                              "duration_seconds": 42
-                            }
-                          ],
                           "call_recording_url": null,
                           "answers": [
                             {
@@ -15222,7 +15175,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/events/evt_9c2e4a6b8d0f1234567890abcdef1234\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/webhooks/endpoints": {
@@ -15242,7 +15200,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -15272,7 +15230,8 @@
                     },
                     "minItems": 1,
                     "maxItems": 1,
-                    "description": "Default: candidate.result"
+                    "description": "Default: candidate.result",
+                    "uniqueItems": true
                   },
                   "backfill_from": {
                     "type": "string",
@@ -15453,7 +15412,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/webhooks/endpoints\", {\n    \"url\": \"https://ats.example.com/hooks/record\",\n    \"description\": \"Production ATS\",\n    \"event_types\": [\n        \"candidate.result\"\n    ]\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       },
       "get": {
         "operationId": "listWebhookEndpoints",
@@ -15601,7 +15565,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/webhooks/endpoints\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/webhooks/endpoints/{endpoint_id}": {
@@ -15760,7 +15729,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/webhooks/endpoints/we_3f9a1c7e5b2d4086a1b3c5d7e9f01234\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       },
       "patch": {
         "operationId": "updateWebhookEndpoint",
@@ -15788,7 +15762,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -15816,7 +15790,8 @@
                       ]
                     },
                     "minItems": 1,
-                    "maxItems": 1
+                    "maxItems": 1,
+                    "uniqueItems": true
                   },
                   "status": {
                     "type": "string",
@@ -15980,7 +15955,12 @@
             "label": "Python",
             "source": "res = call(\"PATCH\", \"/api/v1/partner/webhooks/endpoints/we_3f9a1c7e5b2d4086a1b3c5d7e9f01234\", {\n    \"status\": \"paused\"\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       },
       "delete": {
         "operationId": "deleteWebhookEndpoint",
@@ -16008,7 +15988,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "responses": {
@@ -16078,7 +16058,12 @@
             "label": "Python",
             "source": "res = call(\"DELETE\", \"/api/v1/partner/webhooks/endpoints/we_3f9a1c7e5b2d4086a1b3c5d7e9f01234\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/webhooks/endpoints/{endpoint_id}/test": {
@@ -16194,7 +16179,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/webhooks/endpoints/we_3f9a1c7e5b2d4086a1b3c5d7e9f01234/test\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/webhooks/endpoints/{endpoint_id}/backfill": {
@@ -16224,7 +16214,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "requestBody": {
@@ -16322,7 +16312,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/webhooks/endpoints/we_3f9a1c7e5b2d4086a1b3c5d7e9f01234/backfill\", {\n    \"from\": \"2026-10-01T00:00:00Z\"\n})\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/webhooks/endpoints/{endpoint_id}/deliveries": {
@@ -16608,7 +16603,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/webhooks/endpoints/we_3f9a1c7e5b2d4086a1b3c5d7e9f01234/deliveries?status=dead&limit=50\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/webhooks/deliveries/{delivery_id}/retry": {
@@ -16638,7 +16638,7 @@
               "type": "string",
               "maxLength": 255
             },
-            "description": "Optional. A retry with the same key returns the first answer (kept 24 h)."
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
           }
         ],
         "responses": {
@@ -16818,7 +16818,12 @@
             "label": "Python",
             "source": "res = call(\"POST\", \"/api/v1/partner/webhooks/deliveries/dlv_7a1b3c5d7e9f0123456789abcdef0123/retry\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/analytics/workflows/{workflow_id}": {
@@ -17281,7 +17286,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/analytics/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8?mandate_id=JM_261009101612456H3N8W2L5C9V1Z4\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/analytics/mandates/{mandate_id}": {
@@ -17714,7 +17724,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/analytics/mandates/JM_261009101612456H3N8W2L5C9V1Z4\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     },
     "/analytics/campaigns/{campaign_id}": {
@@ -18146,7 +18161,12 @@
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/analytics/campaigns/asmnt_9f2c41d7a8b3e65f\")\ndata = res.json()[\"data\"]"
           }
-        ]
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
       }
     }
   },
@@ -18218,13 +18238,13 @@
         "type": "apiKey",
         "in": "header",
         "name": "x-api-key",
-        "description": "The key id (VFN_LIVE_… / VFN_TEST_…)"
+        "description": "Your key id, `VFN_TEST_…` or `VFN_LIVE_…`. Sent on every request."
       },
       "SecretKey": {
         "type": "apiKey",
         "in": "header",
         "name": "x-secret-key",
-        "description": "Your API secret key (VFN_SK_…)"
+        "description": "Your secret, `VFN_SK_…`. **Not a real header, and never sent to the API.** It is only a form field for Try it, which uses it to sign your request in your browser. In your own code you sign each request with the secret and send `x-api-key`, `x-timestamp` and `x-signature` (see Authentication)."
       }
     }
   }
