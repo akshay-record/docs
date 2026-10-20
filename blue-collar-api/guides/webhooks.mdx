@@ -728,7 +728,7 @@ pcall POST "/api/v1/partner/events/pull" '{ "ack": [], "limit": 100 }'
               "answered": 3,
               "total": 3,
               "skills": [
-                { "name": "Forklift Basic Operation", "rating": "Strong" }
+                { "name": "Forklift Basic Operation", "evidenceClass": "Sufficient" }
               ],
               "call_recording_url": null,
               "answers": [
@@ -736,10 +736,12 @@ pcall POST "/api/v1/partner/events/pull" '{ "ack": [], "limit": 100 }'
                   "skill": "Forklift Basic Operation",
                   "question": "What do you check before lifting a load?",
                   "answer": "I check the load weight against the forklift rating and that the forks are level.",
-                  "answer_native": null,
-                  "rating": "Strong",
+                  "answer_native": "லிஃப்ட் செய்வதற்கு முன் சுமையின் எடையை ஃபோர்க்லிஃப்டின் அளவுடன் ஒப்பிட்டு, ஃபோர்க்குகள் சமமாக இருக்கிறதா என்றும் சரிபார்ப்பேன்.",
+                  "evidenceClass": "Sufficient",
+                  "score": "8/10",
                   "summary": "Mentions weight limit and fork position.",
-                  "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4"
+                  "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
+                  "duration_seconds": 27
                 }
               ]
             },
@@ -847,7 +849,7 @@ pcall GET "/api/v1/partner/events/evt_9c2e4a6b8d0f1234567890abcdef1234"
           "answered": 3,
           "total": 3,
           "skills": [
-            { "name": "Forklift Basic Operation", "rating": "Strong" }
+            { "name": "Forklift Basic Operation", "evidenceClass": "Sufficient" }
           ],
           "call_recording_url": null,
           "answers": [
@@ -855,10 +857,12 @@ pcall GET "/api/v1/partner/events/evt_9c2e4a6b8d0f1234567890abcdef1234"
               "skill": "Forklift Basic Operation",
               "question": "What do you check before lifting a load?",
               "answer": "I check the load weight against the forklift rating and that the forks are level.",
-              "answer_native": null,
-              "rating": "Strong",
+              "answer_native": "லிஃப்ட் செய்வதற்கு முன் சுமையின் எடையை ஃபோர்க்லிஃப்டின் அளவுடன் ஒப்பிட்டு, ஃபோர்க்குகள் சமமாக இருக்கிறதா என்றும் சரிபார்ப்பேன்.",
+              "evidenceClass": "Sufficient",
+              "score": "8/10",
               "summary": "Mentions weight limit and fork position.",
-              "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4"
+              "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
+              "duration_seconds": 27
             }
           ]
         },
