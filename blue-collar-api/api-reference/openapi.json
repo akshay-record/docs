@@ -12995,8 +12995,16 @@
                                             "name": {
                                               "type": "string"
                                             },
-                                            "rating": {
-                                              "type": "string"
+                                            "evidenceClass": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ],
+                                              "description": "Sufficient, Partial, Minimal, Incorrect or No Response"
                                             }
                                           }
                                         }
@@ -13057,7 +13065,7 @@
                                                 }
                                               ]
                                             },
-                                            "rating": {
+                                            "evidenceClass": {
                                               "anyOf": [
                                                 {
                                                   "type": "string"
@@ -13065,7 +13073,19 @@
                                                 {
                                                   "type": "null"
                                                 }
-                                              ]
+                                              ],
+                                              "description": "Sufficient, Partial, Minimal, Incorrect or No Response"
+                                            },
+                                            "score": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ],
+                                              "description": "Score and the maximum as one value, like 7.5/10"
                                             },
                                             "summary": {
                                               "anyOf": [
@@ -13087,6 +13107,17 @@
                                                 }
                                               ],
                                               "description": "The video of this answer"
+                                            },
+                                            "duration_seconds": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "number"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ],
+                                              "description": "Length of the video of this answer, in seconds; null when there is no video"
                                             }
                                           }
                                         }
@@ -13246,7 +13277,7 @@
                             "skills": [
                               {
                                 "name": "Forklift Basic Operation",
-                                "rating": "Strong"
+                                "evidenceClass": "Sufficient"
                               }
                             ],
                             "call_recording_url": null,
@@ -13255,10 +13286,12 @@
                                 "skill": "Forklift Basic Operation",
                                 "question": "What do you check before lifting a load?",
                                 "answer": "I check the load weight against the forklift rating and that the forks are level.",
-                                "answer_native": null,
-                                "rating": "Strong",
+                                "answer_native": "லிஃப்ட் செய்வதற்கு முன் சுமையின் எடையை ஃபோர்க்லிஃப்டின் அளவுடன் ஒப்பிட்டு, ஃபோர்க்குகள் சமமாக இருக்கிறதா என்றும் சரிபார்ப்பேன்.",
+                                "evidenceClass": "Sufficient",
+                                "score": "8/10",
                                 "summary": "Mentions weight limit and fork position.",
-                                "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4"
+                                "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
+                                "duration_seconds": 27
                               }
                             ]
                           },
@@ -13592,8 +13625,16 @@
                                       "name": {
                                         "type": "string"
                                       },
-                                      "rating": {
-                                        "type": "string"
+                                      "evidenceClass": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ],
+                                        "description": "Sufficient, Partial, Minimal, Incorrect or No Response"
                                       }
                                     }
                                   }
@@ -13654,7 +13695,7 @@
                                           }
                                         ]
                                       },
-                                      "rating": {
+                                      "evidenceClass": {
                                         "anyOf": [
                                           {
                                             "type": "string"
@@ -13662,7 +13703,19 @@
                                           {
                                             "type": "null"
                                           }
-                                        ]
+                                        ],
+                                        "description": "Sufficient, Partial, Minimal, Incorrect or No Response"
+                                      },
+                                      "score": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ],
+                                        "description": "Score and the maximum as one value, like 7.5/10"
                                       },
                                       "summary": {
                                         "anyOf": [
@@ -13684,6 +13737,17 @@
                                           }
                                         ],
                                         "description": "The video of this answer"
+                                      },
+                                      "duration_seconds": {
+                                        "anyOf": [
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ],
+                                        "description": "Length of the video of this answer, in seconds; null when there is no video"
                                       }
                                     }
                                   }
@@ -13808,7 +13872,7 @@
                         "skills": [
                           {
                             "name": "Forklift Basic Operation",
-                            "rating": "Strong"
+                            "evidenceClass": "Sufficient"
                           }
                         ],
                         "call_recording_url": null,
@@ -13817,10 +13881,12 @@
                             "skill": "Forklift Basic Operation",
                             "question": "What do you check before lifting a load?",
                             "answer": "I check the load weight against the forklift rating and that the forks are level.",
-                            "answer_native": null,
-                            "rating": "Strong",
+                            "answer_native": "லிஃப்ட் செய்வதற்கு முன் சுமையின் எடையை ஃபோர்க்லிஃப்டின் அளவுடன் ஒப்பிட்டு, ஃபோர்க்குகள் சமமாக இருக்கிறதா என்றும் சரிபார்ப்பேன்.",
+                            "evidenceClass": "Sufficient",
+                            "score": "8/10",
                             "summary": "Mentions weight limit and fork position.",
-                            "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4"
+                            "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
+                            "duration_seconds": 27
                           }
                         ]
                       },
@@ -14238,8 +14304,16 @@
                                                 "name": {
                                                   "type": "string"
                                                 },
-                                                "rating": {
-                                                  "type": "string"
+                                                "evidenceClass": {
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ],
+                                                  "description": "Sufficient, Partial, Minimal, Incorrect or No Response"
                                                 }
                                               }
                                             }
@@ -14300,7 +14374,7 @@
                                                     }
                                                   ]
                                                 },
-                                                "rating": {
+                                                "evidenceClass": {
                                                   "anyOf": [
                                                     {
                                                       "type": "string"
@@ -14308,7 +14382,19 @@
                                                     {
                                                       "type": "null"
                                                     }
-                                                  ]
+                                                  ],
+                                                  "description": "Sufficient, Partial, Minimal, Incorrect or No Response"
+                                                },
+                                                "score": {
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ],
+                                                  "description": "Score and the maximum as one value, like 7.5/10"
                                                 },
                                                 "summary": {
                                                   "anyOf": [
@@ -14330,6 +14416,17 @@
                                                     }
                                                   ],
                                                   "description": "The video of this answer"
+                                                },
+                                                "duration_seconds": {
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "number"
+                                                    },
+                                                    {
+                                                      "type": "null"
+                                                    }
+                                                  ],
+                                                  "description": "Length of the video of this answer, in seconds; null when there is no video"
                                                 }
                                               }
                                             }
@@ -14502,7 +14599,7 @@
                               "skills": [
                                 {
                                   "name": "Forklift Basic Operation",
-                                  "rating": "Strong"
+                                  "evidenceClass": "Sufficient"
                                 }
                               ],
                               "call_recording_url": null,
@@ -14511,10 +14608,12 @@
                                   "skill": "Forklift Basic Operation",
                                   "question": "What do you check before lifting a load?",
                                   "answer": "I check the load weight against the forklift rating and that the forks are level.",
-                                  "answer_native": null,
-                                  "rating": "Strong",
+                                  "answer_native": "லிஃப்ட் செய்வதற்கு முன் சுமையின் எடையை ஃபோர்க்லிஃப்டின் அளவுடன் ஒப்பிட்டு, ஃபோர்க்குகள் சமமாக இருக்கிறதா என்றும் சரிபார்ப்பேன்.",
+                                  "evidenceClass": "Sufficient",
+                                  "score": "8/10",
                                   "summary": "Mentions weight limit and fork position.",
-                                  "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4"
+                                  "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
+                                  "duration_seconds": 27
                                 }
                               ]
                             },
@@ -14883,8 +14982,16 @@
                                           "name": {
                                             "type": "string"
                                           },
-                                          "rating": {
-                                            "type": "string"
+                                          "evidenceClass": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "description": "Sufficient, Partial, Minimal, Incorrect or No Response"
                                           }
                                         }
                                       }
@@ -14945,7 +15052,7 @@
                                               }
                                             ]
                                           },
-                                          "rating": {
+                                          "evidenceClass": {
                                             "anyOf": [
                                               {
                                                 "type": "string"
@@ -14953,7 +15060,19 @@
                                               {
                                                 "type": "null"
                                               }
-                                            ]
+                                            ],
+                                            "description": "Sufficient, Partial, Minimal, Incorrect or No Response"
+                                          },
+                                          "score": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "description": "Score and the maximum as one value, like 7.5/10"
                                           },
                                           "summary": {
                                             "anyOf": [
@@ -14975,6 +15094,17 @@
                                               }
                                             ],
                                             "description": "The video of this answer"
+                                          },
+                                          "duration_seconds": {
+                                            "anyOf": [
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ],
+                                            "description": "Length of the video of this answer, in seconds; null when there is no video"
                                           }
                                         }
                                       }
@@ -15110,7 +15240,7 @@
                           "skills": [
                             {
                               "name": "Forklift Basic Operation",
-                              "rating": "Strong"
+                              "evidenceClass": "Sufficient"
                             }
                           ],
                           "call_recording_url": null,
@@ -15119,10 +15249,12 @@
                               "skill": "Forklift Basic Operation",
                               "question": "What do you check before lifting a load?",
                               "answer": "I check the load weight against the forklift rating and that the forks are level.",
-                              "answer_native": null,
-                              "rating": "Strong",
+                              "answer_native": "லிஃப்ட் செய்வதற்கு முன் சுமையின் எடையை ஃபோர்க்லிஃப்டின் அளவுடன் ஒப்பிட்டு, ஃபோர்க்குகள் சமமாக இருக்கிறதா என்றும் சரிபார்ப்பேன்.",
+                              "evidenceClass": "Sufficient",
+                              "score": "8/10",
                               "summary": "Mentions weight limit and fork position.",
-                              "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4"
+                              "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
+                              "duration_seconds": 27
                             }
                           ]
                         },

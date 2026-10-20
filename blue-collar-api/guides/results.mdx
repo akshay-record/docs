@@ -59,10 +59,12 @@ A result is what Record **collected** from the candidate: the answers to your sc
           "skill": "Forklift Basic Operation",
           "question": "What do you check before lifting a load?",
           "answer": "I check the load weight against the forklift rating.",
-          "answer_native": null,
-          "rating": "Strong",
+          "answer_native": "லிஃப்ட் செய்வதற்கு முன் சுமையின் எடையை ஃபோர்க்லிஃப்டின் அளவுடன் ஒப்பிட்டுப் பார்ப்பேன்.",
+          "evidenceClass": "Sufficient",
+          "score": "8/10",
           "summary": "Mentions weight limit.",
-          "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4"
+          "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
+          "duration_seconds": 27
         }
       ]
     },
@@ -77,7 +79,8 @@ A result is what Record **collected** from the candidate: the answers to your sc
 - **Your own fields.** Send up to 10 fields of your own as `metadata` (with `external_id`) when you add a candidate: they come back unchanged on every result.
 - **Sections.** A section of `output` appears only once its data exists and only if that check ran for the job.
 - **Screening answers** are keyed by the question text. `qualified` is `true` when every yes/no answer is the wanted one (the opposite of its `knockout`, or `yes` when no knockout is set), and `null` when there is no yes/no answer to judge. `answers_native` holds the original-language text of voice answers.
-- **Skill verification** gives the `verdict`, `total_score`, a `rating` per skill, how many questions were `answered` of `total`, and recordings: one video per question, or `call_recording_url` when the candidate verified by phone.
+- **Skill verification** gives the `verdict`, `total_score`, an `evidenceClass` per skill (`Sufficient`, `Partial`, `Minimal`, `Incorrect` or `No Response`), and how many questions were `answered` of `total`. `answers` holds what the candidate said to each question, with its `evidenceClass`, its `score` as score and maximum in one value (like `7.5/10`) and a `summary`.
+- **Video or phone call.** The recording depends on how the candidate verified. On the video link, each answer has a `video_url` and its length in `duration_seconds`, and `call_recording_url` is `null`. By phone call there is one recording of the whole call in `call_recording_url`, and every answer's `video_url` and `duration_seconds` are `null`. So check `call_recording_url` first: when it is set, there are no videos. A candidate who did both gets the more recent one.
 - **Location.** `location_name` is the town the candidate was in when they allowed location on the verification link (`null` when they denied it, it could not be looked up, or they verified by phone call); coordinates are never returned.
 - **Privacy.** Phone numbers are never returned.
 
@@ -212,7 +215,7 @@ pcall GET "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/results?limit=50"
             "answered": 3,
             "total": 3,
             "skills": [
-              { "name": "Forklift Basic Operation", "rating": "Strong" }
+              { "name": "Forklift Basic Operation", "evidenceClass": "Sufficient" }
             ],
             "call_recording_url": null,
             "answers": [
@@ -220,10 +223,12 @@ pcall GET "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/results?limit=50"
                 "skill": "Forklift Basic Operation",
                 "question": "What do you check before lifting a load?",
                 "answer": "I check the load weight against the forklift rating and that the forks are level.",
-                "answer_native": null,
-                "rating": "Strong",
+                "answer_native": "லிஃப்ட் செய்வதற்கு முன் சுமையின் எடையை ஃபோர்க்லிஃப்டின் அளவுடன் ஒப்பிட்டு, ஃபோர்க்குகள் சமமாக இருக்கிறதா என்றும் சரிபார்ப்பேன்.",
+                "evidenceClass": "Sufficient",
+                "score": "8/10",
                 "summary": "Mentions weight limit and fork position.",
-                "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4"
+                "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
+                "duration_seconds": 27
               }
             ]
           },
@@ -316,7 +321,7 @@ pcall GET "/api/v1/partner/results/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01"
         "answered": 3,
         "total": 3,
         "skills": [
-          { "name": "Forklift Basic Operation", "rating": "Strong" }
+          { "name": "Forklift Basic Operation", "evidenceClass": "Sufficient" }
         ],
         "call_recording_url": null,
         "answers": [
@@ -324,10 +329,12 @@ pcall GET "/api/v1/partner/results/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01"
             "skill": "Forklift Basic Operation",
             "question": "What do you check before lifting a load?",
             "answer": "I check the load weight against the forklift rating and that the forks are level.",
-            "answer_native": null,
-            "rating": "Strong",
+            "answer_native": "லிஃப்ட் செய்வதற்கு முன் சுமையின் எடையை ஃபோர்க்லிஃப்டின் அளவுடன் ஒப்பிட்டு, ஃபோர்க்குகள் சமமாக இருக்கிறதா என்றும் சரிபார்ப்பேன்.",
+            "evidenceClass": "Sufficient",
+            "score": "8/10",
             "summary": "Mentions weight limit and fork position.",
-            "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4"
+            "video_url": "https://storage.googleapis.com/record-interviews/sess_91c2/q1.mp4",
+            "duration_seconds": 27
           }
         ]
       },
