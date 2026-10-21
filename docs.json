@@ -382,7 +382,8 @@
               "GET /results/{candidate_id}",
               "GET /mandates/{mandate_id}/campaigns",
               "GET /campaigns/{campaign_id}/candidates",
-              "GET /candidates/{candidate_id}/result"
+              "GET /candidates/{candidate_id}/result",
+              "GET /candidates/{candidate_id}/journey"
             ]
           },
           {
