@@ -791,6 +791,17 @@
       ]
     ]
   },
+  "getCandidateJourney": {
+    "title": "Get a candidate journey",
+    "description": "What Record has done with this candidate so far: invite, reply, reminders, SMS and each voice call, then what is waiting.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such `candidate_id` for this key."
+      ]
+    ]
+  },
   "createWebhookEndpoint": {
     "title": "Create an endpoint",
     "description": "Register the HTTPS URL that receives result events. Deliveries are signed with your API secret key.",

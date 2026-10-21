@@ -357,6 +357,85 @@ pcall GET "/api/v1/partner/results/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01"
 
 Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/results/get-a-result)
 
+### Get a candidate journey
+
+`GET /candidates/{candidate_id}/journey`
+
+What Record has done with one candidate so far, in order: the WhatsApp invite, their reply, reminders, the SMS and each voice call, then what is waiting. Use it to explain a `pending` or `failed` status. It is read on request; the webhook carries only the final result. Phone numbers are never returned.
+
+**Scope:** `results:read`
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("GET", "/api/v1/partner/candidates/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01/journey");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("GET", "/api/v1/partner/candidates/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01/journey")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall GET "/api/v1/partner/candidates/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01/journey"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "candidate_id": "a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01",
+    "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+    "status": "pending",
+    "reason": null,
+    "steps": [
+      { "key": "whatsapp_sent", "label": "WhatsApp message sent", "state": "done", "at": "2026-10-05T09:30:00.000Z", "detail": null },
+      { "key": "whatsapp_delivered", "label": "Delivered", "state": "done", "at": "2026-10-05T09:30:00.000Z", "detail": null },
+      { "key": "tapped_yes", "label": "Tapped Yes", "state": "done", "at": "2026-10-05T09:41:00.000Z", "detail": "link sent in the next message" },
+      { "key": "link_not_opened", "label": "Link not opened yet", "state": "pending", "at": "2026-10-05T13:30:00.000Z", "detail": "Reminder 1 goes out" },
+      { "key": "call", "label": "Call not answered", "state": "failed", "at": "2026-10-05T10:00:00.000Z", "detail": "Attempt 1 of 3" },
+      { "key": "call_queued", "label": "Voice call queued", "state": "pending", "at": "2026-10-05T14:00:00.000Z", "detail": "Attempt 2 of 3" },
+      { "key": "call_next", "label": "Next call, if no answer", "state": "scheduled", "at": "2026-10-05T18:00:00.000Z", "detail": null }
+    ],
+    "last_activity_at": "2026-10-05T09:41:00.000Z",
+    "responded_at": "2026-10-05T09:41:00.000Z",
+    "next_step": "voice_call",
+    "link_opened": false
+  }
+}
+```
+
+</CodeGroup>
+
+Match on `key`, never on `label` (display text that may be reworded). Steps come in the order they happen: what was done first, then what is waiting.
+
+| `state` | Meaning |
+|---|---|
+| `done` | It happened. `at` is when. |
+| `failed` | It did not work, such as a call not answered or a WhatsApp not delivered. |
+| `pending` | Waiting on the candidate or on Record. `at` is when it is due, or `null`. |
+| `scheduled` | Planned after a pending step. |
+
+| `key` | Step |
+|---|---|
+| `queued` | Nothing has gone out yet. |
+| `whatsapp_sent`, `whatsapp_delivered`, `whatsapp_failed` | The WhatsApp invite. |
+| `tapped_yes`, `tapped_no`, `link_opened` | The candidate's reply and the link. |
+| `reminder_sent`, `no_reply`, `link_not_opened` | Reminders and what Record is waiting for. |
+| `sms_sent`, `sms_failed` | The SMS sent next to the WhatsApp message. |
+| `call` | One voice call. |
+| `call_queued`, `call_next` | The next call, and the one after it if there is no answer. |
+| `completed` | The candidate finished the verification. |
+
+`next_step` is `voice_call`, `reminder` or `null` (nothing is due). `status` and `reason` are the same as on the [result record](#the-record).
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such `candidate_id` for this key. |
+
+Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/results/get-a-candidate-journey)
+
 ## Candidate rows and verdicts
 
 One row per candidate with progress, verdict and score, and one candidate's full result with a rating per skill.
