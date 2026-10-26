@@ -958,12 +958,17 @@
   },
   "getMandateAnalytics": {
     "title": "Get mandate analytics",
-    "description": "The same numbers for one job mandate, adding up all campaigns sent on it.",
+    "description": "The numbers shown on the job mandate Overview in the Record playground: funnel, verdicts, channels, languages, other interests and follow-ups. Adds up all campaigns sent on the mandate; add `campaign_id` to look at one of them.",
     "errors": [
       [
         404,
         "NOT_FOUND",
-        "No such mandate."
+        "No such mandate, or the `campaign_id` does not belong to it."
+      ],
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Malformed `campaign_id`."
       ]
     ]
   },
