@@ -13187,6 +13187,10 @@
                                                   },
                                                   "text": {
                                                     "type": "string"
+                                                  },
+                                                  "transcript": {
+                                                    "type": "string",
+                                                    "description": "What they said, in their own words; left out when empty"
                                                   }
                                                 }
                                               }
@@ -13301,6 +13305,24 @@
                               {
                                 "role": "Store Keeper",
                                 "years": "1 to 2 years"
+                              }
+                            ],
+                            "answers": [
+                              {
+                                "role": "Store Keeper",
+                                "summary": "Worked as a store keeper for 1 to 2 years.",
+                                "transcripts": [
+                                  {
+                                    "label": "Other work",
+                                    "text": "I worked as a store keeper in a warehouse.",
+                                    "transcript": "நான் ஒரு கிடங்கில் ஸ்டோர் கீப்பரா வேலை பார்த்தேன்."
+                                  },
+                                  {
+                                    "label": "Years of experience",
+                                    "text": "ஒன்றரை வருஷம்",
+                                    "transcript": "ஒன்றரை வருஷம்"
+                                  }
+                                ]
                               }
                             ]
                           }
@@ -13817,6 +13839,10 @@
                                             },
                                             "text": {
                                               "type": "string"
+                                            },
+                                            "transcript": {
+                                              "type": "string",
+                                              "description": "What they said, in their own words; left out when empty"
                                             }
                                           }
                                         }
@@ -13896,6 +13922,24 @@
                           {
                             "role": "Store Keeper",
                             "years": "1 to 2 years"
+                          }
+                        ],
+                        "answers": [
+                          {
+                            "role": "Store Keeper",
+                            "summary": "Worked as a store keeper for 1 to 2 years.",
+                            "transcripts": [
+                              {
+                                "label": "Other work",
+                                "text": "I worked as a store keeper in a warehouse.",
+                                "transcript": "நான் ஒரு கிடங்கில் ஸ்டோர் கீப்பரா வேலை பார்த்தேன்."
+                              },
+                              {
+                                "label": "Years of experience",
+                                "text": "ஒன்றரை வருஷம்",
+                                "transcript": "ஒன்றரை வருஷம்"
+                              }
+                            ]
                           }
                         ]
                       }
@@ -14783,6 +14827,10 @@
                                                       },
                                                       "text": {
                                                         "type": "string"
+                                                      },
+                                                      "transcript": {
+                                                        "type": "string",
+                                                        "description": "What they said, in their own words; left out when empty"
                                                       }
                                                     }
                                                   }
@@ -14910,6 +14958,24 @@
                                 {
                                   "role": "Store Keeper",
                                   "years": "1 to 2 years"
+                                }
+                              ],
+                              "answers": [
+                                {
+                                  "role": "Store Keeper",
+                                  "summary": "Worked as a store keeper for 1 to 2 years.",
+                                  "transcripts": [
+                                    {
+                                      "label": "Other work",
+                                      "text": "I worked as a store keeper in a warehouse.",
+                                      "transcript": "நான் ஒரு கிடங்கில் ஸ்டோர் கீப்பரா வேலை பார்த்தேன்."
+                                    },
+                                    {
+                                      "label": "Years of experience",
+                                      "text": "ஒன்றரை வருஷம்",
+                                      "transcript": "ஒன்றரை வருஷம்"
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -15461,6 +15527,10 @@
                                                 },
                                                 "text": {
                                                   "type": "string"
+                                                },
+                                                "transcript": {
+                                                  "type": "string",
+                                                  "description": "What they said, in their own words; left out when empty"
                                                 }
                                               }
                                             }
@@ -15551,6 +15621,24 @@
                             {
                               "role": "Store Keeper",
                               "years": "1 to 2 years"
+                            }
+                          ],
+                          "answers": [
+                            {
+                              "role": "Store Keeper",
+                              "summary": "Worked as a store keeper for 1 to 2 years.",
+                              "transcripts": [
+                                {
+                                  "label": "Other work",
+                                  "text": "I worked as a store keeper in a warehouse.",
+                                  "transcript": "நான் ஒரு கிடங்கில் ஸ்டோர் கீப்பரா வேலை பார்த்தேன்."
+                                },
+                                {
+                                  "label": "Years of experience",
+                                  "text": "ஒன்றரை வருஷம்",
+                                  "transcript": "ஒன்றரை வருஷம்"
+                                }
+                              ]
                             }
                           ]
                         }
@@ -17720,7 +17808,7 @@
           "Analytics"
         ],
         "summary": "Get mandate analytics",
-        "description": "The same numbers for one job mandate, adding up all campaigns sent on it.\n\n**Scope:** `analytics:read`",
+        "description": "The numbers shown on the job mandate Overview in the Record playground: funnel, verdicts, channels, languages, other interests and follow-ups. Adds up all campaigns sent on the mandate; add `campaign_id` to look at one of them.\n\n**Scope:** `analytics:read`",
         "parameters": [
           {
             "name": "mandate_id",
@@ -17732,6 +17820,16 @@
               "pattern": "^JM_[A-Z0-9]{10,40}$"
             },
             "example": "JM_261009101612456H3N8W2L5C9V1Z4"
+          },
+          {
+            "name": "campaign_id",
+            "in": "query",
+            "required": false,
+            "description": "Only this campaign of the mandate",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{4,64}$"
+            }
           }
         ],
         "responses": {
@@ -17756,14 +17854,7 @@
                           "type": "string"
                         },
                         "mandate_id": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                          "type": "string"
                         },
                         "campaign_id": {
                           "anyOf": [
@@ -17778,172 +17869,111 @@
                         "analytics": {
                           "type": "object",
                           "properties": {
-                            "assigned_candidates": {
+                            "campaigns": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "campaign_id": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "description": "Campaigns sent on the mandate, newest first"
+                            },
+                            "campaign_count": {
                               "type": "integer",
-                              "description": "Candidates added to the campaigns in scope"
+                              "description": "Campaigns in scope: all of them, or 1 when narrowed to `campaign_id`"
                             },
-                            "tracked_candidates": {
+                            "reached": {
                               "type": "integer",
-                              "description": "Candidates with a status row in the logs"
+                              "description": "People whose invite was sent; each person counts once, by their latest invite"
                             },
-                            "funnel": {
+                            "interested": {
+                              "type": "integer"
+                            },
+                            "not_interested": {
+                              "type": "integer",
+                              "description": "Anyone who said no, even if they then finished"
+                            },
+                            "no_response": {
+                              "type": "integer"
+                            },
+                            "in_progress": {
+                              "type": "integer"
+                            },
+                            "completed": {
+                              "type": "integer"
+                            },
+                            "avg_time_to_complete_ms": {
+                              "anyOf": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "Average time from first answer to completion; null when unknown"
+                            },
+                            "verdicts": {
                               "type": "object",
                               "properties": {
-                                "sent": {
-                                  "type": "integer",
-                                  "description": "Invites sent"
+                                "total": {
+                                  "type": "integer"
                                 },
-                                "started": {
-                                  "type": "integer",
-                                  "description": "Replied interested or started the verification"
+                                "good_fit": {
+                                  "type": "integer"
                                 },
-                                "not_started": {
-                                  "type": "integer",
-                                  "description": "Sent, but not started"
+                                "maybe": {
+                                  "type": "integer"
                                 },
-                                "completed": {
+                                "not_fit": {
+                                  "type": "integer"
+                                },
+                                "pending": {
                                   "type": "integer",
-                                  "description": "Finished the verification and have a verdict"
+                                  "description": "Completed, verdict not ready yet"
                                 }
                               }
                             },
-                            "verification_methods": {
+                            "reach": {
                               "type": "object",
                               "properties": {
-                                "total_completed": {
-                                  "type": "integer"
-                                },
-                                "video": {
-                                  "type": "integer"
-                                },
-                                "audio": {
-                                  "type": "integer",
-                                  "description": "Completed over a phone call"
-                                }
-                              }
-                            },
-                            "whatsapp": {
-                              "type": "object",
-                              "properties": {
-                                "sent": {
-                                  "type": "integer"
-                                },
-                                "delivered": {
-                                  "type": "integer"
-                                },
-                                "replied": {
-                                  "type": "integer"
-                                },
-                                "failed": {
-                                  "type": "integer"
-                                },
-                                "completed": {
-                                  "type": "integer"
-                                }
-                              }
-                            },
-                            "follow_ups": {
-                              "type": "object",
-                              "properties": {
-                                "initial_message": {
-                                  "type": "integer"
-                                },
-                                "follow_up_one": {
-                                  "type": "integer"
-                                },
-                                "follow_up_two": {
-                                  "type": "integer"
-                                },
-                                "follow_up_three": {
-                                  "type": "integer"
-                                },
-                                "completed_after_follow_up": {
-                                  "type": "integer",
-                                  "description": "Candidates who completed after at least one nudge"
-                                }
-                              }
-                            },
-                            "calls": {
-                              "type": "object",
-                              "properties": {
-                                "initiated": {
-                                  "type": "integer"
-                                },
-                                "completed": {
-                                  "type": "integer"
-                                },
-                                "not_answered": {
-                                  "type": "integer"
-                                },
-                                "not_interested": {
-                                  "type": "integer"
-                                }
-                              }
-                            },
-                            "channel_conversions": {
-                              "type": "object",
-                              "properties": {
-                                "total_completed": {
-                                  "type": "integer"
-                                },
                                 "whatsapp": {
-                                  "type": "integer",
-                                  "description": "Completed through the WhatsApp link"
+                                  "type": "integer"
                                 },
-                                "sms": {
+                                "no_whatsapp": {
                                   "type": "integer",
-                                  "description": "Completed through the SMS link"
+                                  "description": "Reached by phone call only"
+                                },
+                                "called": {
+                                  "type": "integer"
+                                },
+                                "calls_answered": {
+                                  "type": "integer"
+                                }
+                              }
+                            },
+                            "interest_source": {
+                              "type": "object",
+                              "properties": {
+                                "whatsapp_button": {
+                                  "type": "integer"
+                                },
+                                "job_page": {
+                                  "type": "integer"
                                 },
                                 "phone_call": {
                                   "type": "integer"
                                 }
-                              }
+                              },
+                              "description": "Where interested people said yes; one person can count in several, so these need not add up to `interested`"
                             },
-                            "drop_offs": {
-                              "type": "object",
-                              "properties": {
-                                "sent_not_started": {
-                                  "type": "object",
-                                  "properties": {
-                                    "count": {
-                                      "type": "integer"
-                                    },
-                                    "percentage": {
-                                      "type": "number",
-                                      "description": "In percent"
-                                    }
-                                  },
-                                  "description": "Sent, never started"
-                                },
-                                "started_no_verification": {
-                                  "type": "object",
-                                  "properties": {
-                                    "count": {
-                                      "type": "integer"
-                                    },
-                                    "percentage": {
-                                      "type": "number",
-                                      "description": "In percent"
-                                    }
-                                  },
-                                  "description": "Said interested or asked for a call later, but no verification yet"
-                                },
-                                "completed_no_verdict": {
-                                  "type": "object",
-                                  "properties": {
-                                    "count": {
-                                      "type": "integer"
-                                    },
-                                    "percentage": {
-                                      "type": "number",
-                                      "description": "In percent"
-                                    }
-                                  },
-                                  "description": "Marked completed without a verdict"
-                                }
-                              }
-                            },
-                            "completion_by_language": {
+                            "languages": {
                               "type": "array",
                               "items": {
                                 "type": "object",
@@ -17951,15 +17981,74 @@
                                   "language": {
                                     "type": "string"
                                   },
-                                  "reached": {
-                                    "type": "integer"
-                                  },
                                   "completed": {
                                     "type": "integer"
-                                  },
-                                  "completion_rate": {
-                                    "type": "number",
-                                    "description": "In percent"
+                                  }
+                                }
+                              },
+                              "description": "Completed people by the language they spoke; adds up to `completed`"
+                            },
+                            "channels": {
+                              "type": "object",
+                              "properties": {
+                                "whatsapp": {
+                                  "type": "object",
+                                  "properties": {
+                                    "reached": {
+                                      "type": "integer"
+                                    },
+                                    "responded": {
+                                      "type": "integer"
+                                    },
+                                    "interested": {
+                                      "type": "integer"
+                                    },
+                                    "not_interested": {
+                                      "type": "integer"
+                                    },
+                                    "completed": {
+                                      "type": "integer"
+                                    }
+                                  }
+                                },
+                                "sms": {
+                                  "type": "object",
+                                  "properties": {
+                                    "reached": {
+                                      "type": "integer"
+                                    },
+                                    "responded": {
+                                      "type": "integer"
+                                    },
+                                    "interested": {
+                                      "type": "integer"
+                                    },
+                                    "not_interested": {
+                                      "type": "integer"
+                                    },
+                                    "completed": {
+                                      "type": "integer"
+                                    }
+                                  }
+                                },
+                                "phone": {
+                                  "type": "object",
+                                  "properties": {
+                                    "reached": {
+                                      "type": "integer"
+                                    },
+                                    "responded": {
+                                      "type": "integer"
+                                    },
+                                    "interested": {
+                                      "type": "integer"
+                                    },
+                                    "not_interested": {
+                                      "type": "integer"
+                                    },
+                                    "completed": {
+                                      "type": "integer"
+                                    }
                                   }
                                 }
                               }
@@ -17967,14 +18056,24 @@
                             "other_interests": {
                               "type": "object",
                               "properties": {
-                                "completed_candidates": {
+                                "enabled": {
+                                  "type": "boolean",
+                                  "description": "Other interest is on for the campaigns in scope"
+                                },
+                                "answered": {
                                   "type": "integer"
                                 },
-                                "open_to_other": {
-                                  "type": "integer",
-                                  "description": "Of those, how many named another role they would take"
+                                "answered_completed": {
+                                  "type": "integer"
                                 },
-                                "interests": {
+                                "answered_declined": {
+                                  "type": "integer"
+                                },
+                                "open": {
+                                  "type": "integer",
+                                  "description": "Named another role they would take"
+                                },
+                                "roles": {
                                   "type": "array",
                                   "items": {
                                     "type": "object",
@@ -17984,24 +18083,99 @@
                                       },
                                       "count": {
                                         "type": "integer"
-                                      },
-                                      "percentage": {
-                                        "type": "number"
                                       }
                                     }
                                   }
                                 },
-                                "experience": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "object",
-                                    "properties": {
-                                      "label": {
-                                        "type": "string"
-                                      },
-                                      "count": {
-                                        "type": "integer"
+                                "other_roles": {
+                                  "type": "integer",
+                                  "description": "People who named a role outside `roles`"
+                                },
+                                "current_role": {
+                                  "type": "object",
+                                  "properties": {
+                                    "answered": {
+                                      "type": "integer"
+                                    },
+                                    "roles": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "name": {
+                                            "type": "string"
+                                          },
+                                          "count": {
+                                            "type": "integer"
+                                          }
+                                        }
                                       }
+                                    },
+                                    "other": {
+                                      "type": "integer"
+                                    }
+                                  }
+                                },
+                                "experience": {
+                                  "type": "object",
+                                  "properties": {
+                                    "fresher": {
+                                      "type": "integer"
+                                    },
+                                    "under_one": {
+                                      "type": "integer"
+                                    },
+                                    "one_to_three": {
+                                      "type": "integer"
+                                    },
+                                    "three_to_five": {
+                                      "type": "integer"
+                                    },
+                                    "over_five": {
+                                      "type": "integer"
+                                    },
+                                    "not_stated": {
+                                      "type": "integer"
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "follow_ups": {
+                              "type": "object",
+                              "properties": {
+                                "after_follow_up": {
+                                  "type": "integer",
+                                  "description": "Completed after at least one nudge"
+                                },
+                                "by_channel": {
+                                  "type": "object",
+                                  "properties": {
+                                    "whatsapp": {
+                                      "type": "integer"
+                                    },
+                                    "sms": {
+                                      "type": "integer"
+                                    },
+                                    "phone": {
+                                      "type": "integer"
+                                    }
+                                  }
+                                },
+                                "by_stage": {
+                                  "type": "object",
+                                  "properties": {
+                                    "initial": {
+                                      "type": "integer"
+                                    },
+                                    "follow_up_1": {
+                                      "type": "integer"
+                                    },
+                                    "follow_up_2": {
+                                      "type": "integer"
+                                    },
+                                    "calls": {
+                                      "type": "integer"
                                     }
                                   }
                                 }
@@ -18020,89 +18194,120 @@
                     "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
                     "campaign_id": null,
                     "analytics": {
-                      "assigned_candidates": 240,
-                      "tracked_candidates": 240,
-                      "funnel": {
-                        "sent": 236,
-                        "started": 132,
-                        "not_started": 104,
-                        "completed": 78
+                      "campaigns": [
+                        {
+                          "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+                          "name": "Forklift drive, October"
+                        }
+                      ],
+                      "campaign_count": 1,
+                      "reached": 236,
+                      "interested": 140,
+                      "not_interested": 31,
+                      "no_response": 65,
+                      "in_progress": 40,
+                      "completed": 78,
+                      "avg_time_to_complete_ms": 412000,
+                      "verdicts": {
+                        "total": 78,
+                        "good_fit": 35,
+                        "maybe": 20,
+                        "not_fit": 15,
+                        "pending": 8
                       },
-                      "verification_methods": {
-                        "total_completed": 78,
-                        "video": 60,
-                        "audio": 18
+                      "reach": {
+                        "whatsapp": 221,
+                        "no_whatsapp": 15,
+                        "called": 90,
+                        "calls_answered": 36
                       },
-                      "whatsapp": {
-                        "sent": 236,
-                        "delivered": 221,
-                        "replied": 140,
-                        "failed": 5,
-                        "completed": 60
-                      },
-                      "follow_ups": {
-                        "initial_message": 236,
-                        "follow_up_one": 120,
-                        "follow_up_two": 64,
-                        "follow_up_three": 0,
-                        "completed_after_follow_up": 31
-                      },
-                      "calls": {
-                        "initiated": 90,
-                        "completed": 18,
-                        "not_answered": 52,
-                        "not_interested": 9
-                      },
-                      "channel_conversions": {
-                        "total_completed": 78,
-                        "whatsapp": 52,
-                        "sms": 8,
+                      "interest_source": {
+                        "whatsapp_button": 120,
+                        "job_page": 98,
                         "phone_call": 18
                       },
-                      "drop_offs": {
-                        "sent_not_started": {
-                          "count": 104,
-                          "percentage": 44.1
-                        },
-                        "started_no_verification": {
-                          "count": 54,
-                          "percentage": 40.9
-                        },
-                        "completed_no_verdict": {
-                          "count": 0,
-                          "percentage": 0
-                        }
-                      },
-                      "completion_by_language": [
+                      "languages": [
                         {
                           "language": "tamil",
-                          "reached": 150,
-                          "completed": 51,
-                          "completion_rate": 34
+                          "completed": 51
                         },
                         {
                           "language": "hindi",
-                          "reached": 70,
-                          "completed": 22,
-                          "completion_rate": 31.4
+                          "completed": 22
+                        },
+                        {
+                          "language": "not detected",
+                          "completed": 5
                         }
                       ],
+                      "channels": {
+                        "whatsapp": {
+                          "reached": 221,
+                          "responded": 140,
+                          "interested": 122,
+                          "not_interested": 18,
+                          "completed": 52
+                        },
+                        "sms": {
+                          "reached": 236,
+                          "responded": 20,
+                          "interested": 14,
+                          "not_interested": 6,
+                          "completed": 8
+                        },
+                        "phone": {
+                          "reached": 90,
+                          "responded": 36,
+                          "interested": 18,
+                          "not_interested": 9,
+                          "completed": 18
+                        }
+                      },
                       "other_interests": {
-                        "completed_candidates": 78,
-                        "open_to_other": 21,
-                        "interests": [
+                        "enabled": true,
+                        "answered": 40,
+                        "answered_completed": 30,
+                        "answered_declined": 10,
+                        "open": 21,
+                        "roles": [
                           {
                             "name": "Forklift Operator",
-                            "count": 12,
-                            "percentage": 57.1
+                            "count": 12
                           }
                         ],
-                        "experience": [
-                          {
-                            "label": "1 to 2 years",
-                            "count": 9
-                          }
-                        ]
+                        "other_roles": 3,
+                        "current_role": {
+                          "answered": 25,
+                          "roles": [
+                            {
+                              "name": "Loader",
+                              "count": 9
+                            }
+                          ],
+                          "other": 4
+                        },
+                        "experience": {
+                          "fresher": 2,
+                          "under_one": 3,
+                          "one_to_three": 9,
+                          "three_to_five": 5,
+                          "over_five": 2,
+                          "not_stated": 0
+                        }
+                      },
+                      "follow_ups": {
+                        "after_follow_up": 31,
+                        "by_channel": {
+                          "whatsapp": 20,
+                          "sms": 5,
+                          "phone": 6
+                        },
+                        "by_stage": {
+                          "initial": 47,
+                          "follow_up_1": 15,
+                          "follow_up_2": 10,
+                          "calls": 6
+                        }
                       }
                     }
                   }
@@ -18110,8 +18315,18 @@
               }
             }
           },
+          "400": {
+            "description": "`VALIDATION_FAILED`: Malformed `campaign_id`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "404": {
-            "description": "`NOT_FOUND`: No such mandate.",
+            "description": "`NOT_FOUND`: No such mandate, or the `campaign_id` does not belong to it.",
             "content": {
               "application/json": {
                 "schema": {

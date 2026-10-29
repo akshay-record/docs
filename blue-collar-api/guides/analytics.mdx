@@ -138,9 +138,31 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 `GET /analytics/mandates/{mandate_id}`
 
-The same numbers for one job mandate, adding up all campaigns sent on it.
+The numbers shown on the job mandate Overview in the Record playground, adding up all campaigns sent on the mandate. Add `campaign_id` to look at one campaign; it must belong to this mandate. The `analytics` object has its own shape, described below, not the workflow one above.
 
 **Scope:** `analytics:read`
+
+| Query | Type | Description |
+|---|---|---|
+| `campaign_id` | `string` | Only this campaign of the mandate. |
+
+#### What you get
+
+Each person counts once, by their latest invite, even if they were invited in several campaigns.
+
+| Section | Contents |
+|---|---|
+| `campaigns`, `campaign_count` | The campaigns sent on the mandate (`campaign_id`, `name`), newest first, and how many are in scope: all of them, or 1 when you narrow to a `campaign_id`. |
+| `reached` | People whose invite was sent. |
+| `interested`, `not_interested`, `no_response`, `in_progress`, `completed` | Where those people stand. `not_interested` counts anyone who said no, even if they then finished, so such a person is in both `not_interested` and `completed`. |
+| `avg_time_to_complete_ms` | Average time from first answer to completion, in milliseconds. `null` when there is no data yet. |
+| `verdicts` | Completed skill assessments by verdict: `good_fit`, `maybe`, `not_fit` and `pending` (completed, verdict not ready), with their `total`. People who said no are left out. |
+| `reach` | `whatsapp` (reached on WhatsApp), `no_whatsapp` (phone call only), `called` and `calls_answered`. |
+| `interest_source` | Where interested people said yes: `whatsapp_button`, `job_page` and `phone_call`. One person can count in several, so these need not add up to `interested`. |
+| `languages` | Completed people by the language they spoke, most first, `not detected` last. Adds up to `completed`. |
+| `channels` | For `whatsapp`, `sms` and `phone`: `reached`, `responded`, `interested`, `not_interested` and `completed`. |
+| `other_interests` | Whether it is `enabled`, how many `answered` (split into `answered_completed` and `answered_declined`), how many are `open` to another role, the top `roles` and `other_roles` (people who named a role outside them), `current_role` and `experience` buckets. |
+| `follow_ups` | `after_follow_up` (completed after at least one nudge), the channel they came back on (`by_channel`) and the last message stage before they responded (`by_stage`: `initial`, `follow_up_1`, `follow_up_2`, `calls`). |
 
 <CodeGroup>
 
@@ -166,59 +188,52 @@ pcall GET "/api/v1/partner/analytics/mandates/JM_261009101612456H3N8W2L5C9V1Z4"
     "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
     "campaign_id": null,
     "analytics": {
-      "assigned_candidates": 240,
-      "tracked_candidates": 240,
-      "funnel": { "sent": 236, "started": 132, "not_started": 104, "completed": 78 },
-      "verification_methods": { "total_completed": 78, "video": 60, "audio": 18 },
-      "whatsapp": {
-        "sent": 236,
-        "delivered": 221,
-        "replied": 140,
-        "failed": 5,
-        "completed": 60
+      "campaigns": [
+        { "campaign_id": "asmnt_9f2c41d7a8b3e65f", "name": "Forklift drive, October" }
+      ],
+      "campaign_count": 1,
+      "reached": 236,
+      "interested": 140,
+      "not_interested": 31,
+      "no_response": 65,
+      "in_progress": 40,
+      "completed": 78,
+      "avg_time_to_complete_ms": 412000,
+      "verdicts": { "total": 78, "good_fit": 35, "maybe": 20, "not_fit": 15, "pending": 8 },
+      "reach": { "whatsapp": 221, "no_whatsapp": 15, "called": 90, "calls_answered": 36 },
+      "interest_source": { "whatsapp_button": 120, "job_page": 98, "phone_call": 18 },
+      "languages": [
+        { "language": "tamil", "completed": 51 },
+        { "language": "hindi", "completed": 22 },
+        { "language": "not detected", "completed": 5 }
+      ],
+      "channels": {
+        "whatsapp": { "reached": 221, "responded": 140, "interested": 122, "not_interested": 18, "completed": 52 },
+        "sms": { "reached": 236, "responded": 20, "interested": 14, "not_interested": 6, "completed": 8 },
+        "phone": { "reached": 90, "responded": 36, "interested": 18, "not_interested": 9, "completed": 18 }
+      },
+      "other_interests": {
+        "enabled": true,
+        "answered": 40,
+        "answered_completed": 30,
+        "answered_declined": 10,
+        "open": 21,
+        "roles": [{ "name": "Forklift Operator", "count": 12 }],
+        "other_roles": 3,
+        "current_role": { "answered": 25, "roles": [{ "name": "Loader", "count": 9 }], "other": 4 },
+        "experience": {
+          "fresher": 2,
+          "under_one": 3,
+          "one_to_three": 9,
+          "three_to_five": 5,
+          "over_five": 2,
+          "not_stated": 0
+        }
       },
       "follow_ups": {
-        "initial_message": 236,
-        "follow_up_one": 120,
-        "follow_up_two": 64,
-        "follow_up_three": 0,
-        "completed_after_follow_up": 31
-      },
-      "calls": {
-        "initiated": 90,
-        "completed": 18,
-        "not_answered": 52,
-        "not_interested": 9
-      },
-      "channel_conversions": { "total_completed": 78, "whatsapp": 52, "sms": 8, "phone_call": 18 },
-      "drop_offs": {
-        "sent_not_started": { "count": 104, "percentage": 44.1 },
-        "started_no_verification": { "count": 54, "percentage": 40.9 },
-        "completed_no_verdict": { "count": 0, "percentage": 0 }
-      },
-      "completion_by_language": [
-        {
-          "language": "tamil",
-          "reached": 150,
-          "completed": 51,
-          "completion_rate": 34
-        },
-        {
-          "language": "hindi",
-          "reached": 70,
-          "completed": 22,
-          "completion_rate": 31.4
-        }
-      ],
-      "other_interests": {
-        "completed_candidates": 78,
-        "open_to_other": 21,
-        "interests": [
-          { "name": "Forklift Operator", "count": 12, "percentage": 57.1 }
-        ],
-        "experience": [
-          { "label": "1 to 2 years", "count": 9 }
-        ]
+        "after_follow_up": 31,
+        "by_channel": { "whatsapp": 20, "sms": 5, "phone": 6 },
+        "by_stage": { "initial": 47, "follow_up_1": 15, "follow_up_2": 10, "calls": 6 }
       }
     }
   }
@@ -229,7 +244,8 @@ pcall GET "/api/v1/partner/analytics/mandates/JM_261009101612456H3N8W2L5C9V1Z4"
 
 | Error | When |
 |---|---|
-| 404 `NOT_FOUND` | No such mandate. |
+| 404 `NOT_FOUND` | No such mandate, or the `campaign_id` does not belong to it. |
+| 400 `VALIDATION_FAILED` | Malformed `campaign_id`. |
 
 Can also return the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/analytics/get-mandate-analytics)
 

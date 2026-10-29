@@ -749,6 +749,20 @@ pcall POST "/api/v1/partner/events/pull" '{ "ack": [], "limit": 100 }'
               "current_role": "Forklift Operator",
               "other_roles": [
                 { "role": "Store Keeper", "years": "1 to 2 years" }
+              ],
+              "answers": [
+                {
+                  "role": "Store Keeper",
+                  "summary": "Worked as a store keeper for 1 to 2 years.",
+                  "transcripts": [
+                    {
+                      "label": "Other work",
+                      "text": "I worked as a store keeper in a warehouse.",
+                      "transcript": "நான் ஒரு கிடங்கில் ஸ்டோர் கீப்பரா வேலை பார்த்தேன்."
+                    },
+                    { "label": "Years of experience", "text": "ஒன்றரை வருஷம்", "transcript": "ஒன்றரை வருஷம்" }
+                  ]
+                }
               ]
             }
           }
@@ -870,6 +884,20 @@ pcall GET "/api/v1/partner/events/evt_9c2e4a6b8d0f1234567890abcdef1234"
           "current_role": "Forklift Operator",
           "other_roles": [
             { "role": "Store Keeper", "years": "1 to 2 years" }
+          ],
+          "answers": [
+            {
+              "role": "Store Keeper",
+              "summary": "Worked as a store keeper for 1 to 2 years.",
+              "transcripts": [
+                {
+                  "label": "Other work",
+                  "text": "I worked as a store keeper in a warehouse.",
+                  "transcript": "நான் ஒரு கிடங்கில் ஸ்டோர் கீப்பரா வேலை பார்த்தேன்."
+                },
+                { "label": "Years of experience", "text": "ஒன்றரை வருஷம்", "transcript": "ஒன்றரை வருஷம்" }
+              ]
+            }
           ]
         }
       }
