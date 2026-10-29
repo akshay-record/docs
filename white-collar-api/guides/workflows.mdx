@@ -1,0 +1,79 @@
+---
+title: "Workflows"
+description: "The container your job mandates run under. Create it once and reuse it."
+---
+
+A workflow fixes that Record invites the candidates (it is *recruiter-led*) and whether Record emails them. Workflows made through the API appear in the Record playground, marked as external.
+
+## What you can read and change
+
+Reads cover every white-collar workflow your organisation has in this project and mode, made in the playground or through the API (`is_external` tells which). You can change and archive only the workflows you created through the API; on a playground workflow those calls answer `403 FORBIDDEN`. Another organisation's workflow answers `404`.
+
+## The workflow object
+
+| Field | Meaning |
+|---|---|
+| `workflow_id` | Record's id, `WF_WC_…`. |
+| `external_id` | Your own id, if you sent one. Unique among your workflows. |
+| `name` | Display name. |
+| `collar` | Always `white`. |
+| `integration_type` | `recruiter-led` for workflows made here. |
+| `status` | `active`, `inactive`, `draft` or `archived`. |
+| `delivery.email_notification` | `true`: Record emails each candidate their link. |
+| `is_external` | `true` when made through the API. |
+
+## Create a workflow
+
+`POST /workflows` · scope `wc_workflows:write` · `Idempotency-Key` required
+
+| Field | |
+|---|---|
+| `name` | Required, 1 to 200 characters. |
+| `external_id` | Optional. Your own id (`A-Z a-z 0-9 . _ : -`, up to 128). Must be unique. |
+| `status` | Optional: `active` (default), `inactive` or `draft`. |
+| `delivery.email_notification` | Optional, default `true`. |
+
+<CodeGroup>
+
+```json Request
+{ "name": "Backend hiring", "external_id": "ats-workflow-7", "delivery": { "email_notification": true } }
+```
+
+```json Response (201)
+{
+  "success": true,
+  "data": {
+    "workflow_id": "WF_WC_261029141523878IEIL336Z36ZO7E",
+    "external_id": "ats-workflow-7",
+    "name": "Backend hiring",
+    "collar": "white",
+    "integration_type": "recruiter-led",
+    "status": "active",
+    "delivery": { "email_notification": true },
+    "is_external": true,
+    "created_at": "2026-10-29T08:45:23.878Z",
+    "updated_at": "2026-10-29T08:45:23.878Z"
+  }
+}
+```
+
+</CodeGroup>
+
+Errors: `409 CONFLICT` if `external_id` is taken; `403 FORBIDDEN` if Test Mode already has 5 workflows.
+
+## List and get workflows
+
+- `GET /workflows` · scope `wc_workflows:read` or `wc_workflows:write`. Filters: `status`, `include_archived` (`true` to include archived), `limit` (1 to 100, default 50), `cursor`.
+- `GET /workflows/{workflow_id}` · same scopes. `404` if it is not yours.
+
+## Change a workflow
+
+`PATCH /workflows/{workflow_id}` · scope `wc_workflows:write` · `Idempotency-Key` optional
+
+Send only what changes: `name`, `status`, `external_id`, `delivery.email_notification`. At least one field is required. Errors: `403` on a playground workflow, `409` if it is archived.
+
+## Archive a workflow
+
+`DELETE /workflows/{workflow_id}` · scope `wc_workflows:write`
+
+A soft delete: the workflow is marked `archived` and set inactive, never erased, so past job mandates and results keep pointing at it. Refused with `409 WORKFLOW_IN_USE` while a job mandate under it is still open: [close it](/white-collar-api/guides/job-mandates#close-and-reopen-a-job) first. Archiving an archived workflow again changes nothing.

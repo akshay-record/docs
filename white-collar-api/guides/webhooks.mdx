@@ -1,0 +1,168 @@
+---
+title: "Webhooks and events"
+description: "Receive each candidate's result as soon as it is ready, or pull it. Nothing is lost."
+---
+
+Record announces results so you do not have to poll. There are two ways to receive them, and they share one set of events and one acknowledgement:
+
+- **Webhook.** Record POSTs each event to your HTTPS endpoint. Any `2xx` answer confirms it.
+- **Pull.** You call `POST /events/pull`, process what comes back, and confirm it on your next call. Use it when you cannot expose a URL, and as a safety net next to a webhook: confirming in either place closes the other.
+
+Delivery is **at least once**: an event can arrive more than once (your `2xx` may be lost on the way back), so de-duplicate on `event_id`.
+
+## The event
+
+There is one event type, `assessment.result`. It is written when a candidate's attempt **ends**:
+
+| `data.status` | When |
+|---|---|
+| `completed` | The candidate submitted. |
+| `timed_out` | Time ran out. |
+| `disqualified` | The candidate was disqualified. |
+| `failed` | The invitation email could not be delivered (`data.reason` is `undeliverable`). |
+
+A candidate who is merely invited or still answering is **not** announced; read them with [`GET /campaigns/{campaign_id}/candidates`](/white-collar-api/guides/results#list-the-candidates-of-a-campaign).
+
+Record waits until the result has stayed the same for about 45 seconds before it writes the event, because grading can land just after the submit. If the result changes later (a grade or the written feedback arrives, or you [reassign](/white-collar-api/guides/campaigns#resend-and-reassign) the candidate and they sit it again) a **new event with a higher `version`** follows. Keep the highest `version` for each `data.candidate_id`.
+
+```json Event
+{
+  "event_id": "evt_0123456789abcdef0123456789abcdef",
+  "type": "assessment.result",
+  "api_version": "2026-10-01",
+  "created_at": "2026-10-29T10:13:25.000Z",
+  "mode": "live",
+  "version": 1,
+  "sequence": 41,
+  "data": {
+    "candidate_id": "6fb8f7aa-08ae-4b26-8790-ccf83af15046",
+    "external_id": "cand-1",
+    "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+    "campaign_name": "October batch",
+    "mandate_id": "wcm_0123456789abcdef",
+    "workflow_id": "WF_WC_261029141523878IEIL336Z36ZO7E",
+    "name": "Asha Rao",
+    "email": "asha.rao@example.com",
+    "status": "completed",
+    "reason": null,
+    "attempt": 1,
+    "invited_at": "2026-10-29T09:00:03.000Z",
+    "started_at": "2026-10-29T09:20:00.000Z",
+    "ended_at": "2026-10-29T10:12:40.000Z",
+    "submitted_at": "2026-10-29T10:12:40.000Z",
+    "score": 16,
+    "total_marks": 20,
+    "pass_mark": 12,
+    "duration_minutes": 45,
+    "verdict": "hire",
+    "identity_verified": true,
+    "feedback": "Strong grasp of the fundamentals."
+  }
+}
+```
+
+`data` is exactly what [`GET /candidates/{candidate_id}/result`](/white-collar-api/guides/results#one-candidates-result) returns, so an event and a read can never disagree. `sequence` is the order of events in your stream. Events cover every white-collar campaign of your organisation in this project and mode, including ones made in the playground. Events are kept 30 days.
+
+## Webhooks
+
+### Create an endpoint
+
+`POST /webhooks/endpoints` · scope `wc_webhooks:manage`
+
+| Field | |
+|---|---|
+| `url` | Required. A public `https://` address on port 443. No credentials, no fragment, no private or local address. |
+| `description` | Optional. |
+| `event_types` | Optional. Default `["assessment.result"]`. |
+| `backfill_from` | Optional. Also deliver events from this time on, at most 30 days back. |
+
+Registering a URL you already have returns that endpoint (`existing: true`), never a second one. At most **5** endpoints. Each request is **signed with your API secret** (`VFN_SK_…`), so there is no extra secret to keep.
+
+<CodeGroup>
+
+```json Request
+{ "url": "https://ats.example.com/record/webhook", "description": "Production ATS", "backfill_from": "2026-10-01T00:00:00Z" }
+```
+
+```json Response (201)
+{
+  "success": true,
+  "data": {
+    "endpoint": {
+      "endpoint_id": "we_0123456789abcdef0123456789abcdef",
+      "url": "https://ats.example.com/record/webhook",
+      "event_types": ["assessment.result"],
+      "status": "active",
+      "consecutive_failures": 0
+    },
+    "existing": false
+  }
+}
+```
+
+</CodeGroup>
+
+### Verify the signature
+
+Every delivery carries:
+
+| Header | |
+|---|---|
+| `Record-Signature` | `t=<seconds>,v1=<hex>`. The hex is HMAC-SHA256 of `<t>.<raw body>`, keyed with your secret. |
+| `Record-Event-Id` | The event's `event_id`. |
+| `Record-Delivery-Id`, `Record-Attempt` | This delivery and which attempt it is. |
+
+Verify against the **raw body**, never a re-serialised one, and reject a `t` more than 5 minutes old:
+
+```javascript
+const crypto = require("crypto");
+
+function isFromRecord(rawBody, header, secret) {
+  const { t, v1 } = Object.fromEntries(header.split(",").map((part) => part.split("=")));
+  const expected = crypto.createHmac("sha256", secret).update(`${t}.${rawBody}`).digest("hex");
+  const fresh = Math.abs(Date.now() / 1000 - Number(t)) < 300;
+  return fresh && v1.length === expected.length && crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected));
+}
+```
+
+Answer `2xx` quickly, then process. Anything else, a timeout (10 s) or a redirect counts as a failure.
+
+### Retries and pausing
+
+A failed delivery is retried after 30 s, 2 min, 10 min, 30 min, 1 h, 2 h, 4 h, 8 h, 12 h and 24 h (about 52 hours, with a little jitter). After that it is kept as `dead` and can be replayed. **20 failures in a row** pause the endpoint (`auto_paused`); events keep being recorded and flow again, oldest first, when you resume it with `PATCH … { "status": "active" }`. Nothing is lost while it is paused.
+
+### Manage endpoints
+
+All need `wc_webhooks:manage`.
+
+| Call | What it does |
+|---|---|
+| `GET /webhooks/endpoints`, `GET /webhooks/endpoints/{endpoint_id}` | List and read. Shows `status`, `consecutive_failures`, `last_success_at`. |
+| `PATCH /webhooks/endpoints/{endpoint_id}` | Change `url`, `description`, `event_types`, or pause (`paused`) and resume (`active`). While paused, deliveries are held. |
+| `DELETE /webhooks/endpoints/{endpoint_id}` | Remove it. Deliveries still waiting stop; the events stay in the feed. |
+| `POST /webhooks/endpoints/{endpoint_id}/test` | Sends a signed `webhook.test` event now and reports what your server answered. Not stored, not retried. |
+| `POST /webhooks/endpoints/{endpoint_id}/backfill` | Queues past events (at most 30 days back, from `from`) as normal deliveries. Safe to repeat. |
+| `GET /webhooks/endpoints/{endpoint_id}/deliveries` | The delivery log, newest first: attempts, last HTTP status or error, next retry. Filter by `status`. |
+| `POST /webhooks/deliveries/{delivery_id}/retry` | Sends one delivery again now (dead, waiting or already delivered). |
+
+Delivery `status`: `pending`, `in_flight`, `retrying`, `held` (endpoint paused), `delivered`, `dead`.
+
+## Pull and confirm events
+
+`POST /events/pull` · scope `wc_events:read`
+
+One call confirms the events of your previous call and returns the next page, oldest first.
+
+```json Request
+{ "ack": ["evt_0123456789abcdef0123456789abcdef"], "limit": 100 }
+```
+
+| Field | |
+|---|---|
+| `ack` | Up to 100 ids you have processed. They are confirmed before the page is read, so they do not come back. |
+| `status` | `unacked` (default): everything you have not confirmed. `all`: replay history, with `from`. |
+| `from`, `after`, `type`, `limit` | Replay from a time, page by `sequence`, filter by type, 1 to 100 (default 100). |
+
+The answer has `items` (each event with `acknowledged`), `count`, `acknowledged` (how many of your `ack` were new), `pending` (events you still have to confirm), `next_cursor` and `has_more`.
+
+Loop: process the page, send its ids as `ack` on the next call, repeat. A call whose response is lost loses nothing: its events were not confirmed, so they come again. Confirming an id twice, or an unknown id, is accepted. `GET /events/{event_id}` fetches one event.

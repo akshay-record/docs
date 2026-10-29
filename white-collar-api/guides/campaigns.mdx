@@ -1,0 +1,121 @@
+---
+title: "Campaigns"
+description: "Invite candidates to a job's assessment by email, and manage the batch."
+---
+
+A campaign is one batch of candidates invited to the assessment of one job mandate. Each candidate gets an email with a link. Creating, starting and resuming a campaign **emails real people and spends credits**, so use a TEST key and addresses you own while you build.
+
+<Warning>
+  The scope `wc_campaigns:write` contacts real candidates. Record grants it per key.
+</Warning>
+
+## Before you create one
+
+- The job mandate is `live` (not closed) and its `questions.status` is `ready` (`409` otherwise — [write the questions](/white-collar-api/guides/job-mandates#questions) first).
+- You created the job mandate through the API. A campaign under a playground mandate answers `403`.
+- The organisation can pay: Record checks credits before anything is created, and answers `402 INSUFFICIENT_CREDITS` with nothing created.
+
+## The campaign object
+
+| Field | Meaning |
+|---|---|
+| `campaign_id` | Record's id, `asmnt_…`. |
+| `external_id`, `mandate_id`, `workflow_id`, `name` | Your id, the job mandate, its workflow, the campaign name. |
+| `status` | `draft`, `sending`, `sent`, `paused`, `completed` or `cancelled`. See [statuses](/white-collar-api/reference/statuses#campaigns). |
+| `candidates` | `{ total, pending, sent, completed, failed }`. |
+| `assessment` | The copy this campaign runs: `job_title`, `difficulty`, `total_marks`, `pass_mark`, `duration_minutes`. |
+| `created_at`, `started_at`, `paused_at` | When. |
+
+## Create a campaign
+
+`POST /campaigns` · scope `wc_campaigns:write` · `Idempotency-Key` required
+
+| Field | |
+|---|---|
+| `mandate_id` | Required. |
+| `start` | Required. `now` sends the invitations at once; `manual` only creates a draft. |
+| `candidates` | Required, 1 to 500 per call: `{ name, email, external_id? }`. |
+| `name` | Optional. Defaults to the job title and today's date. |
+| `external_id` | Optional. Your own id for the campaign. Must be unique. |
+
+<CodeGroup>
+
+```json Request
+{
+  "mandate_id": "wcm_0123456789abcdef",
+  "name": "October batch",
+  "start": "now",
+  "candidates": [
+    { "external_id": "cand-1", "name": "Asha Rao", "email": "asha.rao@example.com" },
+    { "external_id": "cand-2", "name": "Vikram Singh", "email": "vikram.singh@example.com" },
+    { "external_id": "cand-3", "name": "Asha again", "email": "ASHA.RAO@example.com" },
+    { "name": "Bad address", "email": "not-an-email" }
+  ]
+}
+```
+
+```json Response (201)
+{
+  "success": true,
+  "data": {
+    "campaign": {
+      "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+      "mandate_id": "wcm_0123456789abcdef",
+      "name": "October batch",
+      "status": "sending",
+      "candidates": { "total": 2, "pending": 2, "sent": 0, "completed": 0, "failed": 0 },
+      "is_external": true
+    },
+    "accepted": 2,
+    "rejected": [
+      { "index": 2, "external_id": "cand-3", "email": "asha.rao@example.com", "reason": "duplicate_in_request" },
+      { "index": 3, "external_id": null, "email": "not-an-email", "reason": "invalid_email" }
+    ]
+  }
+}
+```
+
+</CodeGroup>
+
+### Candidates that are left out
+
+A candidate is told apart by **email**, once per campaign. An address that is invalid, repeated in the request, or already in the campaign is **left out and listed in `rejected`** with its position and the reason (`invalid_email`, `duplicate_in_request`, `already_in_campaign`). The rest of the batch goes ahead. Only if nobody can be accepted does the call fail with `400`.
+
+### Sending is asynchronous
+
+`start: now` answers at once. The emails go out in the background, and the campaign reads `sending` until every candidate has been reached, then `sent`. A candidate whose email could not be delivered counts in `candidates.failed`.
+
+## Limits that protect you
+
+| Limit | Value |
+|---|---|
+| Candidates per call | 500. |
+| Candidates per campaign | 2000 (`422 LIMIT_EXCEEDED`). |
+| Different candidates per key per day | 2000 live, 200 test, counted per IST day (`429 DAILY_CAP`, with `Retry-After`). |
+| Test Mode | 50 candidates per workflow. |
+
+## Add candidates
+
+`POST /campaigns/{campaign_id}/candidates` · scope `wc_campaigns:write` · `Idempotency-Key` required
+
+Body: `{ "candidates": [ … ] }`, same shape and same `rejected` list. On a campaign that has been **sent**, the newcomers are invited at once. On a draft or a paused campaign they wait until it is started or resumed.
+
+## Start, pause and resume
+
+| Call | What it does |
+|---|---|
+| `POST /campaigns/{campaign_id}/start` | Sends the invitations of a draft. On a campaign that was already sent it retries the candidates whose invitation failed or never went out, and does nothing when everyone has been reached. |
+| `POST /campaigns/{campaign_id}/pause` | Stops new invitations: candidates not yet emailed wait. Candidates already invited keep their link. Only a campaign that has been sent can be paused. |
+| `POST /campaigns/{campaign_id}/resume` | The invitations that were held go out. A closed job cannot resume its campaigns: reopen it first. |
+
+All three need `wc_campaigns:write`; `start` and `resume` can answer `402`. Another call to start while the campaign is being sent answers `409` with `Retry-After`.
+
+## Resend and reassign
+
+- `POST /campaigns/{campaign_id}/candidates/{candidate_id}/resend` — emails the **same** link again. Only for a candidate who was invited and has not finished, while the campaign is running. One resend per candidate per minute (`429`).
+- `POST /campaigns/{campaign_id}/candidates/{candidate_id}/reassign` — lets the candidate take the assessment **again**: the current attempt is archived (it stays on record) and a fresh invitation goes out. Only once the candidate has started or finished (`409` before that). The next result is a new event with `attempt: 2`.
+
+## List and get campaigns
+
+- `GET /campaigns` · scope `wc_campaigns:write` or `wc_results:read`. Filters: `mandate_id`, `workflow_id`, `status` (including `sending`), `search` (part of the name), `limit`, `cursor`. Includes campaigns made in the playground (`is_external: false`), which you can read but not change.
+- `GET /campaigns/{campaign_id}`.

@@ -1,0 +1,27 @@
+---
+title: "Limits"
+description: "Rate limits and size limits."
+---
+
+Limits are a token bucket per key and endpoint class, plus a whole-key bucket (and a per-recruiter bucket when you send `x-on-behalf-of`). Every answer carries `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset`; a `429` adds `Retry-After`.
+
+| Endpoint class | Used by | Per second (burst) | Per minute | Per day (IST) |
+|---|---|---|---|---|
+| `workflowWrites` | Workflow writes | 5 (10) | 60 | 2000 |
+| `mandateWrites` | Job mandate and question writes | 10 (20) | 300 | 20,000 |
+| `campaignWrites` | Campaign writes | 2 (5) | 30 | 500 |
+| `reads` | Every read, events and webhooks | 20 (40) | 1200 | none |
+| `wholeKey` | All calls of the key together | 150 (300) | 6000 | none |
+
+A **TEST** key gets one tenth of every number. 100 rejections inside a minute put the key in a 60-second cooldown, doubling on repeats within the hour (up to 15 minutes). Record can raise the limits for a key.
+
+## Size and volume
+
+| | Limit |
+|---|---|
+| Request body | 256 KB, JSON only. |
+| Candidates per call | 500. |
+| Candidates per campaign | 2000. |
+| Different candidates per key per IST day | 2000 live, 200 test (`DAILY_CAP`). |
+| Webhook endpoints | 5. |
+| Events and deliveries | Kept 30 days. |

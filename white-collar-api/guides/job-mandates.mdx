@@ -1,0 +1,170 @@
+---
+title: "Job mandates and questions"
+description: "One role each, with the assessment its candidates sit and the questions it is made of."
+---
+
+A job mandate is one role. It holds the job details, the assessment settings (difficulty, question types, marks, pass mark, duration) and the questions. A campaign is created under a mandate and gets a **copy** of the assessment and questions, so later edits never change a campaign that already exists.
+
+## The job mandate object
+
+| Field | Meaning |
+|---|---|
+| `mandate_id` | Record's id, `wcm_…`. |
+| `workflow_id` | The workflow it runs under. |
+| `external_id` | Your own job id. Unique among your mandates. |
+| `job_title`, `company`, `experience`, `job_description`, `skills` | The job. The questions are written from these and the assessment settings. |
+| `assessment.difficulty` | `easy`, `medium` or `hard`. |
+| `assessment.question_types` | `[{ id, label, enabled, count, marks_each }]`. `id` is one of the [question types](#question-types). |
+| `assessment.total_marks` | What the enabled question types add up to. |
+| `assessment.pass_mark` | The score that counts as a pass. Not above `total_marks`. |
+| `assessment.duration_minutes` | Minutes a candidate has. |
+| `questions` | `{ status, count, generated_at }`. See [statuses](/white-collar-api/reference/statuses#questions). |
+| `status` | `live` or `closed`. |
+| `is_external` | `true` when made through the API. |
+
+You can read every white-collar job mandate your organisation has, and change only the ones you created through the API (a playground one answers `403 FORBIDDEN`).
+
+## Question types
+
+`GET /question-types` · scope `wc_mandates:read` or `wc_mandates:write`
+
+Returns the `id` values `assessment.question_types[].id` takes — `mcq`, `true-false`, `short-answer`, `long-answer`, `coding` — and the difficulties.
+
+## Create a job mandate
+
+`POST /mandates` · scope `wc_mandates:write` · `Idempotency-Key` required
+
+<CodeGroup>
+
+```json Request
+{
+  "workflow_id": "WF_WC_261029141523878IEIL336Z36ZO7E",
+  "external_id": "JOB-1042",
+  "job_title": "Senior Backend Engineer",
+  "company": "Acme Technologies",
+  "experience": "5 to 8 years",
+  "job_description": "Design and run Node.js services on AWS.",
+  "skills": ["Node.js", "PostgreSQL", "System design"],
+  "assessment": {
+    "difficulty": "medium",
+    "question_types": [
+      { "id": "mcq", "count": 2, "marks_each": 5 },
+      { "id": "short-answer", "count": 1, "marks_each": 10 }
+    ],
+    "pass_mark": 12,
+    "duration_minutes": 45
+  }
+}
+```
+
+```json Response (201)
+{
+  "success": true,
+  "data": {
+    "mandate_id": "wcm_0123456789abcdef",
+    "workflow_id": "WF_WC_261029141523878IEIL336Z36ZO7E",
+    "external_id": "JOB-1042",
+    "job_title": "Senior Backend Engineer",
+    "company": "Acme Technologies",
+    "skills": ["Node.js", "PostgreSQL", "System design"],
+    "assessment": {
+      "difficulty": "medium",
+      "question_types": [
+        { "id": "mcq", "label": "Multiple choice", "enabled": true, "count": 2, "marks_each": 5 },
+        { "id": "short-answer", "label": "Short answer", "enabled": true, "count": 1, "marks_each": 10 }
+      ],
+      "total_marks": 20,
+      "pass_mark": 12,
+      "duration_minutes": 45
+    },
+    "questions": { "status": "none", "count": 0, "generated_at": null },
+    "status": "live",
+    "is_external": true
+  }
+}
+```
+
+</CodeGroup>
+
+Rules the API checks:
+
+- `total_marks` is optional. It defaults to the sum of the enabled question types; if you send it, it must equal that sum (`400` otherwise).
+- `pass_mark` cannot be higher than the total marks.
+- `skills`: up to 20. `job_description`: up to 5000 characters. `question_types`: each type at most once, at least one enabled.
+- The workflow must be a white-collar, recruiter-led workflow of yours and not archived (`404` / `409`).
+
+## Read and change
+
+- `GET /mandates` · filters `workflow_id`, `status` (`live` or `closed`), `search` (part of the title or company), `limit`, `cursor`.
+- `GET /mandates/{mandate_id}`.
+- `PATCH /mandates/{mandate_id}` · scope `wc_mandates:write`. Send only what changes; `assessment` fields merge one by one. Changing `question_types` recalculates `total_marks`.
+
+<Warning>
+  Changing what the questions are written from (title, experience, description, skills, difficulty or question types) marks ready questions **`outdated`**. Write or save them again before you create the next campaign. Campaigns that already exist are not affected.
+</Warning>
+
+## Close and reopen a job
+
+- `POST /mandates/{mandate_id}/close` — no new campaigns can be created, and the job's running campaigns are **paused**. Closing a closed job changes nothing.
+- `POST /mandates/{mandate_id}/reopen` — the job takes campaigns again, and the campaigns the close paused are resumed (their invitations go out in the background).
+
+Close every open job before you [archive its workflow](/white-collar-api/guides/workflows#archive-a-workflow).
+
+## Questions
+
+A campaign can be created once the job's questions are `ready`. You have two ways to get them.
+
+### Have Record write the questions
+
+`POST /mandates/{mandate_id}/questions/generate` · scope `wc_mandates:write` · `Idempotency-Key` required
+
+Record's AI writes the assessment from the job details and the assessment settings, replacing any questions the job had. The call waits for the questions and **can take up to a minute**: if it times out, send the same call again with the same `Idempotency-Key`. A `502` means the questions could not be written; nothing changed, so try again.
+
+### Supply your own questions
+
+`PUT /mandates/{mandate_id}/questions` · scope `wc_mandates:write`
+
+Replaces the job's questions with 1 to 200 of yours and marks them `ready`. Sending the same list again changes nothing.
+
+| Field | |
+|---|---|
+| `type` | `mcq`, `true-false`, `short-answer`, `long-answer` or `coding`. |
+| `text` | The question. |
+| `marks` | Marks for it. |
+| `order` | Optional. Defaults to the position in your list. |
+| `options`, `correct_answer` | For an `mcq`: at least two options, and `correct_answer` must be one of them. |
+| `problem_statement`, `sample_input`, `sample_output`, `test_cases[]`, `allowed_languages` | For `coding`. `problem_statement` is required. |
+| `solution_language`, `solution_code`, `solution_explanation` | Optional reference solution. |
+
+```json Request
+{
+  "questions": [
+    { "type": "mcq", "text": "Which HTTP status code means not found?", "marks": 5, "options": ["200", "301", "404", "500"], "correct_answer": "404" },
+    { "type": "short-answer", "text": "Explain the difference between a process and a thread.", "marks": 15 }
+  ]
+}
+```
+
+The answer carries `total_marks`, the sum of the questions' marks. It **should equal** `assessment.total_marks`; the API does not force it, so check it.
+
+### Read the questions
+
+`GET /mandates/{mandate_id}/questions` · scope `wc_mandates:read` or `wc_mandates:write`
+
+The questions a campaign created now would be sent with, **including correct answers and solutions** — for you, not for the candidate.
+
+```json Response
+{
+  "success": true,
+  "data": {
+    "mandate_id": "wcm_0123456789abcdef",
+    "status": "ready",
+    "generated_at": "2026-10-29T08:50:00.000Z",
+    "count": 3,
+    "total_marks": 20,
+    "items": [
+      { "order": 1, "type": "mcq", "text": "What does HTTP 404 mean?", "marks": 5, "options": ["Not found", "OK", "Moved", "Teapot"], "correct_answer": "Not found", "...": "…" }
+    ]
+  }
+}
+```

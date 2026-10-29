@@ -1,0 +1,41 @@
+---
+title: "Requests and responses"
+description: "Conventions every endpoint follows: idempotency, paging, ids and what you can change."
+---
+
+## Idempotency
+
+Send an `Idempotency-Key` header (1 to 255 visible ASCII characters) on writes. A retry with the **same key and the same request** returns the first answer instead of doing the work twice. Keys are kept 24 hours and are per API key.
+
+| Situation | Answer |
+|---|---|
+| Endpoint requires a key and none was sent | `400 IDEMPOTENCY_KEY_REQUIRED`. |
+| Same key, different request | `422 IDEMPOTENCY_KEY_REUSED`. |
+| Same key while the first call is still running | `409 IDEMPOTENCY_IN_PROGRESS`, with `Retry-After`. |
+| The first call failed (4xx or 5xx) | Not kept: a retry with the same key really retries. |
+
+The key is required on `POST /workflows`, `POST /mandates`, `POST /mandates/{id}/questions/generate`, `POST /campaigns` and `POST /campaigns/{id}/candidates`.
+
+## Paging
+
+Every list is paged. Send `limit` and, for the next page, `cursor` set to the `next_cursor` of the page before. An answer carries `items`, `count`, `total` (matching your filters across all pages), `next_cursor` and `has_more`. Keep calling with `next_cursor` until `has_more` is `false`. Cursors are opaque: do not build them.
+
+## Ids
+
+| Object | Looks like |
+|---|---|
+| Workflow | `WF_WC_…` |
+| Job mandate | `wcm_` and 16 hex characters |
+| Campaign | `asmnt_…` |
+| Candidate | A UUID |
+| Event, endpoint, delivery | `evt_…`, `we_…`, `dlv_…` |
+
+You can attach your own id to a workflow, job mandate, campaign or candidate (`external_id`). It comes back on every answer and event so you can match records without a lookup.
+
+## What you can read and change
+
+Reads cover everything your organisation has in this project and mode, made in the Record playground or through the API. `is_external` tells which. **Changes apply only to what you created through the API**; on anything made in the playground they answer `403 FORBIDDEN`. Another organisation's data answers `404`. TEST and LIVE data never mix.
+
+## Dates and names
+
+Dates are ISO 8601 in UTC. Field names are `snake_case`. A field with no value is `null`, never missing.

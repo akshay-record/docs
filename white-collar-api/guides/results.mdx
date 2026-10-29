@@ -1,0 +1,112 @@
+---
+title: "Results and analytics"
+description: "Each candidate's status, score and hire / reject verdict, and the numbers per job and per campaign."
+---
+
+You can read results at any time. To be told when a result is ready instead of asking, use [webhooks or the event feed](/white-collar-api/guides/webhooks). They carry exactly the record that `GET /candidates/{candidate_id}/result` returns.
+
+All of these are reads. Reads cover every white-collar campaign your organisation has in this project and mode, including ones made in the Record playground. Another organisation's data answers `404`.
+
+## List the candidates of a campaign
+
+`GET /campaigns/{campaign_id}/candidates` · scope `wc_results:read` or `wc_campaigns:write`
+
+One row per candidate, sorted by name: the invitation state, and score and verdict once the candidate has taken the assessment.
+
+| Query | |
+|---|---|
+| `status` | `pending`, `sent`, `failed`, `in_progress`, `completed`, `timed_out` or `disqualified`. |
+| `verdict` | `hire` or `reject`. |
+| `search` | Part of the name or email. |
+| `limit`, `cursor` | 1 to 200 (default 50), and the `next_cursor` of the page before. |
+
+```json Response
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "candidate_id": "6fb8f7aa-08ae-4b26-8790-ccf83af15046",
+        "external_id": "cand-1",
+        "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+        "name": "Asha Rao",
+        "email": "asha.rao@example.com",
+        "status": "completed",
+        "invited_at": "2026-10-29T09:00:03.000Z",
+        "score": 16,
+        "total_marks": 20,
+        "verdict": "hire",
+        "submitted_at": "2026-10-29T10:12:40.000Z",
+        "can_resend": false
+      }
+    ],
+    "count": 1,
+    "total": 2,
+    "next_cursor": "eyJvIjoxfQ",
+    "has_more": true
+  }
+}
+```
+
+## Results across a job
+
+`GET /mandates/{mandate_id}/results` · scope `wc_results:read`
+
+The candidates of **all the job's campaigns** who have been invited (or have started), newest first, with score and verdict. Candidates still waiting for their invitation are left out. Filters: `campaign_id`, `status`, `verdict`, `search`, `limit`, `cursor`.
+
+## One candidate's result
+
+`GET /candidates/{candidate_id}/result` · scope `wc_results:read`
+
+The full record: the one webhooks and the event feed deliver.
+
+| Field | Meaning |
+|---|---|
+| `candidate_id`, `external_id` | Record's id, and yours if you sent one. |
+| `campaign_id`, `campaign_name`, `mandate_id`, `workflow_id` | Where it belongs. |
+| `name`, `email` | The candidate. |
+| `status` | See [statuses](/white-collar-api/reference/statuses#candidates). |
+| `reason` | `undeliverable` when `status` is `failed`: the invitation email could not be delivered. |
+| `attempt` | Which attempt: 1 for the first, 2 after a [reassign](/white-collar-api/guides/campaigns#resend-and-reassign). 0 before the candidate has a session. |
+| `invited_at`, `started_at`, `ended_at`, `submitted_at` | When. |
+| `score`, `total_marks`, `pass_mark`, `duration_minutes` | Marks scored (null until graded) and the campaign's settings. |
+| `verdict` | `hire` if `score` is at or above the pass mark, `reject` below it, `null` if not decided. |
+| `identity_verified` | Whether the candidate passed the identity check; `null` if it did not run. |
+| `feedback` | Record's written assessment of the attempt, once graded. |
+
+<Note>
+  Grading finishes a few seconds after the candidate submits, and the written `feedback` can arrive after the score. A webhook waits about 45 seconds for the result to settle, so it normally arrives complete. If something changes later, you get another event with a higher `version`.
+</Note>
+
+## Analytics
+
+Both need `wc_results:read`.
+
+- `GET /analytics/mandates/{mandate_id}` — the job's candidates in total and campaign by campaign.
+- `GET /analytics/campaigns/{campaign_id}` — one campaign.
+
+```json Response (mandate)
+{
+  "success": true,
+  "data": {
+    "mandate_id": "wcm_0123456789abcdef",
+    "job_title": "Senior Backend Engineer",
+    "campaigns": 1,
+    "stats": {
+      "candidates": 3, "invited": 3, "in_progress": 0, "completed": 2, "timed_out": 0, "disqualified": 0, "failed": 0,
+      "hired": 1, "rejected": 1, "average_score": 12, "completion_rate": 0.667, "pass_rate": 0.5
+    },
+    "by_campaign": [ { "campaign_id": "asmnt_9f2c41d7a8b3e65f", "name": "October batch", "stats": { "...": "…" } } ],
+    "generated_at": "2026-10-29T11:00:00.000Z"
+  }
+}
+```
+
+| Stat | Meaning |
+|---|---|
+| `candidates` | Everyone added, invited or not. |
+| `invited` | Invitations that went out (or candidates who opened the assessment regardless). |
+| `hired`, `rejected` | Candidates with verdict `hire` / `reject`. |
+| `average_score` | Mean score of the completed candidates with a score; `null` until there is one. |
+| `completion_rate` | `completed / invited`, 0 to 1. |
+| `pass_rate` | `hired / completed`, 0 to 1. |

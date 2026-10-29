@@ -1,0 +1,47 @@
+---
+title: "Statuses"
+description: "The states of a job mandate, its questions, a campaign and a candidate."
+---
+
+## Job mandates
+
+| `status` | Meaning |
+|---|---|
+| `live` | Takes campaigns. |
+| `closed` | No new campaigns, and its running campaigns are paused. [Reopen](/white-collar-api/guides/job-mandates#close-and-reopen-a-job) it to continue. |
+
+## Questions
+
+`questions.status` on a job mandate:
+
+| `status` | Meaning |
+|---|---|
+| `none` | The job has no questions yet. |
+| `ready` | The questions match the job and the assessment settings. A campaign can be created. |
+| `outdated` | The job or its assessment was changed after the questions were written. Write or save the questions again before the next campaign. |
+
+## Campaigns
+
+| `status` | Meaning |
+|---|---|
+| `draft` | Nobody has been invited. |
+| `sending` | Started, and some candidates are still waiting for their invitation. |
+| `sent` | Everyone has been reached. Some invitations may have `failed` (see `candidates.failed`); starting the campaign again retries them. |
+| `paused` | New invitations are held until you resume. |
+| `completed`, `cancelled` | Finished. |
+
+## Candidates
+
+`status` on a candidate row, a result and an event:
+
+| `status` | Meaning | Announced as an event |
+|---|---|---|
+| `pending` | Added, not invited yet. | No |
+| `sent` | Invited, has not started. | No |
+| `in_progress` | Started the assessment (or verified their identity and is about to). | No |
+| `completed` | Submitted. | **Yes** |
+| `timed_out` | Time ran out. | **Yes** |
+| `disqualified` | Disqualified. | **Yes** |
+| `failed` | The invitation email could not be delivered (`reason: undeliverable`). | **Yes** |
+
+`verdict` is `hire` when the score is at or above the pass mark, `reject` below it, and `null` while there is no decision.

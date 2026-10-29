@@ -1,0 +1,90 @@
+---
+title: "Quickstart"
+description: "Make your first signed call, then assess a candidate end to end."
+---
+
+Use a **TEST** key. Copy the [signing helper](/white-collar-api/authentication#signing-helper) first: every example below calls it. The examples are JavaScript; the Python and cURL helpers take the same arguments.
+
+<Steps>
+  <Step title="Check your key">
+    ```javascript
+    const res = await call("GET", "/api/v1/partner/white-collar/workflows?limit=1");
+    console.log(res.status, await res.json());
+    ```
+    A `200` means the key, secret and clock are right. `403 SCOPE_MISSING` means Record has not granted your key the `wc_*` scopes yet.
+  </Step>
+
+  <Step title="Create a workflow">
+    ```javascript
+    const wf = (await (await call("POST", "/api/v1/partner/white-collar/workflows", {
+      name: "Backend hiring",
+    })).json()).data;
+    // wf.workflow_id  →  "WF_WC_…"
+    ```
+    By default Record emails each candidate their link (`delivery.email_notification: true`).
+  </Step>
+
+  <Step title="Create the job mandate">
+    ```javascript
+    const mandate = (await (await call("POST", "/api/v1/partner/white-collar/mandates", {
+      workflow_id: wf.workflow_id,
+      job_title: "Senior Backend Engineer",
+      company: "Acme Technologies",
+      experience: "5 to 8 years",
+      job_description: "Design and run Node.js services on AWS.",
+      skills: ["Node.js", "PostgreSQL", "System design"],
+      assessment: {
+        difficulty: "medium",
+        question_types: [
+          { id: "mcq", count: 10, marks_each: 5 },
+          { id: "short-answer", count: 5, marks_each: 4 },
+          { id: "coding", count: 1, marks_each: 30 },
+        ],
+        pass_mark: 60,
+        duration_minutes: 60,
+      },
+    })).json()).data;
+    // mandate.mandate_id  →  "wcm_…";  total_marks is worked out for you (100)
+    ```
+  </Step>
+
+  <Step title="Have Record write the questions">
+    ```javascript
+    const questions = (await (await call(
+      "POST", `/api/v1/partner/white-collar/mandates/${mandate.mandate_id}/questions/generate`,
+    )).json()).data;
+    // questions.status === "ready"
+    ```
+    This waits for the questions and can take up to a minute. If it times out, send the same call again with the same `Idempotency-Key`.
+  </Step>
+
+  <Step title="Invite candidates">
+    ```javascript
+    const created = (await (await call("POST", "/api/v1/partner/white-collar/campaigns", {
+      mandate_id: mandate.mandate_id,
+      name: "October batch",
+      start: "now",
+      candidates: [
+        { external_id: "cand-1", name: "Asha Rao", email: "asha.rao@example.com" },
+        { external_id: "cand-2", name: "Vikram Singh", email: "vikram.singh@example.com" },
+      ],
+    })).json()).data;
+    // created.campaign.campaign_id  →  "asmnt_…";  created.rejected lists any email left out
+    ```
+    The emails go out in the background. The campaign reads `sending` until everyone has been reached, then `sent`.
+  </Step>
+
+  <Step title="Read the results">
+    ```javascript
+    const roster = (await (await call(
+      "GET", `/api/v1/partner/white-collar/campaigns/${created.campaign.campaign_id}/candidates`,
+    )).json()).data;
+    // each item: status, score, total_marks, verdict ("hire" | "reject" | null)
+    ```
+    Better than polling: [add a webhook](/white-collar-api/guides/webhooks) and Record sends you each result.
+  </Step>
+</Steps>
+
+<Warning>
+  A campaign emails real candidates and spends credits, even with a TEST key. Use addresses you own while you build.
+</Warning>

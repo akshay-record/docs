@@ -1,0 +1,597 @@
+{
+  "createWcWorkflow": {
+    "title": "Create a white-collar workflow",
+    "description": "The container job mandates run under: it fixes that Record invites the candidates and whether it emails them. It is visible in the playground (marked as external) and only ever to the API keys of the same org, project and mode.",
+    "errors": [
+      [
+        409,
+        "CONFLICT",
+        "`external_id` is already used by one of your workflows."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "Test Mode allows at most 5 workflows."
+      ]
+    ]
+  },
+  "listWcWorkflows": {
+    "title": "Your organisation's white-collar workflows",
+    "description": "Every white-collar workflow your organisation has in this project and mode, made in the Record playground or through this API (`is_external` tells which). You can change only the ones you created through the API.",
+    "errors": []
+  },
+  "getWcWorkflow": {
+    "title": "One workflow",
+    "description": "Any white-collar workflow of your organisation, made in the playground or through this API.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "updateWcWorkflow": {
+    "title": "Change some fields of one of your workflows",
+    "description": "Only the fields sent change. A workflow made in the playground answers 403: the API changes only what it created.",
+    "errors": [
+      [
+        403,
+        "FORBIDDEN",
+        "this was made in the Record playground. The API reads it but changes only what it created."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "the workflow is archived, or `external_id` is already used."
+      ]
+    ]
+  },
+  "archiveWcWorkflow": {
+    "title": "Archive one of your workflows (soft delete)",
+    "description": "The workflow is archived, not erased: past mandates and results keep pointing at it. Refused with 409 WORKFLOW_IN_USE while it has open job mandates. Archiving an archived workflow again changes nothing.",
+    "errors": [
+      [
+        403,
+        "FORBIDDEN",
+        "this was made in the Record playground. The API reads it but changes only what it created."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ],
+      [
+        409,
+        "WORKFLOW_IN_USE",
+        "a job mandate under it is still open. Close it first."
+      ]
+    ]
+  },
+  "createWcMandate": {
+    "title": "Create a job mandate under one of your workflows",
+    "description": "A job mandate is one role: its details and the assessment candidates sit (difficulty, which question types, how many, marks, pass mark, duration). It starts with no questions: write them with `POST /mandates/{mandate_id}/questions/generate` (Record's AI writes them from the job) or supply your own with `PUT /mandates/{mandate_id}/questions`. A campaign can be created once the questions are `ready`. The workflow must be a white-collar, recruiter-led one of your organisation.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "the workflow does not exist, or is not a white-collar one of yours."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "the workflow is archived, or `external_id` is already used."
+      ]
+    ]
+  },
+  "listWcMandates": {
+    "title": "Your organisation's white-collar job mandates",
+    "description": "Every white-collar job mandate your organisation has in this project and mode, made in the Record playground or through this API (`is_external` tells which). Oldest first.",
+    "errors": []
+  },
+  "getWcMandate": {
+    "title": "One job mandate",
+    "description": "Any white-collar job mandate of your organisation, made in the playground or through this API.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "updateWcMandate": {
+    "title": "Change some fields of one of your job mandates",
+    "description": "Only the fields sent change; assessment fields merge one by one. Changing what the questions are written from (title, experience, description, skills, difficulty, question types) marks ready questions `outdated`: regenerate or re-save them before creating a campaign. Campaigns that already exist keep the assessment they were created with. Changing question_types recalculates total_marks. A mandate made in the playground answers 403.",
+    "errors": [
+      [
+        403,
+        "FORBIDDEN",
+        "this was made in the Record playground. The API reads it but changes only what it created."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "`external_id` is already used by another of your job mandates."
+      ]
+    ]
+  },
+  "closeWcMandate": {
+    "title": "Close the job",
+    "description": "No new campaigns can be created, and the job's running campaigns are paused. Closing a closed job changes nothing.",
+    "errors": [
+      [
+        403,
+        "FORBIDDEN",
+        "this was made in the Record playground. The API reads it but changes only what it created."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "reopenWcMandate": {
+    "title": "Reopen a closed job",
+    "description": "The job takes campaigns again, and the campaigns the close paused are resumed (their invitations go out in the background). Reopening an open job changes nothing.",
+    "errors": [
+      [
+        403,
+        "FORBIDDEN",
+        "this was made in the Record playground. The API reads it but changes only what it created."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "getWcMandateQuestions": {
+    "title": "The assessment questions of a job mandate",
+    "description": "The questions a campaign created now would be sent with, including the answers and solutions (for you, not the candidate). Campaigns keep their own copy from the moment they are created.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "setWcMandateQuestions": {
+    "title": "Supply your own questions",
+    "description": "Replaces the job's questions with the ones sent (1 to 200) and marks them `ready`. Their marks should add up to the assessment's total marks: `total_marks` in the answer is the sum, so you can check it. Sending the same list again changes nothing.",
+    "errors": [
+      [
+        403,
+        "FORBIDDEN",
+        "this was made in the Record playground. The API reads it but changes only what it created."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "generateWcMandateQuestions": {
+    "title": "Have Record write the questions",
+    "description": "Record's AI writes the assessment from the job details and the assessment settings, replacing any questions the job had. The call waits for the questions and can take up to a minute: send an `Idempotency-Key` and, if it times out, retry with the same key. 502 means the questions could not be written; nothing changed, try again.",
+    "errors": [
+      [
+        403,
+        "FORBIDDEN",
+        "this was made in the Record playground. The API reads it but changes only what it created."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ],
+      [
+        500,
+        "SERVER_ERROR",
+        "the questions could not be written (HTTP 502). Nothing changed: try again with the same `Idempotency-Key`."
+      ]
+    ]
+  },
+  "createWcCampaign": {
+    "title": "Create a campaign for one of your job mandates, and start it",
+    "description": "Invites candidates to the job's assessment by email: each gets a link to take it. The job's questions must be `ready` and the job open. `start: now` sends the invitations at once, in the background (the campaign reads `sending` until everyone has been reached); `start: manual` only creates it, start it later with `POST /campaigns/{id}/start`. This emails real people and spends credits, so it needs the `wc_campaigns:write` scope, an `Idempotency-Key`, and is capped per day. An organisation that cannot pay answers 402 before anything is created. An address that is invalid or repeated is returned in `rejected` with the reason; the rest go ahead.",
+    "errors": [
+      [
+        402,
+        "INSUFFICIENT_CREDITS",
+        "the organisation cannot pay for the invitations. Nothing was created or sent."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "this was made in the Record playground. The API reads it but changes only what it created."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "the job mandate does not exist."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "the job is closed, its questions are not `ready`, or `external_id` is already used."
+      ],
+      [
+        429,
+        "DAILY_CAP",
+        "this key has put its daily allowance of different candidates into campaigns. Resets at midnight IST (see `Retry-After`)."
+      ]
+    ],
+    "danger": true
+  },
+  "listWcCampaigns": {
+    "title": "Your organisation's white-collar campaigns",
+    "description": "Every campaign your organisation has under its white-collar job mandates in this project and mode, made in the playground or through this API (`is_external` tells which). Oldest first.",
+    "errors": []
+  },
+  "addWcCampaignCandidates": {
+    "title": "Add more candidates to a campaign you created",
+    "description": "On a campaign that has been sent, the newcomers are invited at once; on a draft or a paused campaign they wait until it is started or resumed. A candidate already in the campaign (same email) is left out and listed in `rejected`; nothing else is affected. At most 2000 candidates per campaign.",
+    "errors": [
+      [
+        402,
+        "INSUFFICIENT_CREDITS",
+        "the organisation cannot pay for the invitations. Nothing was created or sent."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "this was made in the Record playground. The API reads it but changes only what it created."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "the campaign is completed or cancelled."
+      ],
+      [
+        422,
+        "LIMIT_EXCEEDED",
+        "the campaign would hold more than 2000 candidates."
+      ],
+      [
+        429,
+        "DAILY_CAP",
+        "this key has put its daily allowance of different candidates into campaigns. Resets at midnight IST (see `Retry-After`)."
+      ]
+    ],
+    "danger": true
+  },
+  "listWcCampaignCandidates": {
+    "title": "The candidates of a campaign, with the latest state of each",
+    "description": "One row per candidate: invitation state, and score and verdict once they have taken the assessment. Sorted by name. Any campaign of your organisation, made in the playground or through this API.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "startWcCampaign": {
+    "title": "Start a campaign you created with start: manual",
+    "description": "Sends the invitations, in the background. Calling it on a campaign that was already sent retries the candidates whose invitation failed or never went out, and does nothing when everyone has been reached. 402 if the organisation cannot pay for the invitations still to go.",
+    "errors": [
+      [
+        402,
+        "INSUFFICIENT_CREDITS",
+        "the organisation cannot pay for the invitations. Nothing was created or sent."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "this was made in the Record playground. The API reads it but changes only what it created."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "the campaign is paused, finished, has no candidates, its job is closed, or it is being sent right now (see `Retry-After`)."
+      ]
+    ],
+    "danger": true
+  },
+  "pauseWcCampaign": {
+    "title": "Pause a campaign: nobody new is invited until you resume it",
+    "description": "Candidates who have not been emailed yet wait. Candidates already invited keep their link and can still take the assessment. Only a campaign that has been sent can be paused.",
+    "errors": [
+      [
+        403,
+        "FORBIDDEN",
+        "this was made in the Record playground. The API reads it but changes only what it created."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "only a campaign that has been sent can be paused."
+      ]
+    ]
+  },
+  "resumeWcCampaign": {
+    "title": "Resume a paused campaign",
+    "description": "The invitations that were held go out, in the background. 402 if the organisation cannot pay for them. A closed job cannot resume its campaigns: reopen it first.",
+    "errors": [
+      [
+        402,
+        "INSUFFICIENT_CREDITS",
+        "the organisation cannot pay for the invitations. Nothing was created or sent."
+      ],
+      [
+        403,
+        "FORBIDDEN",
+        "this was made in the Record playground. The API reads it but changes only what it created."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "the campaign is not paused, or its job is closed."
+      ]
+    ],
+    "danger": true
+  },
+  "resendWcCampaignInvite": {
+    "title": "Send a candidate's invitation again",
+    "description": "Emails the same assessment link again. Only for a candidate who was invited and has not finished, while the campaign is running. A candidate waits a minute between two resends (429).",
+    "errors": [
+      [
+        403,
+        "FORBIDDEN",
+        "this was made in the Record playground. The API reads it but changes only what it created."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "the campaign is not running, or the candidate has not been invited yet or has finished."
+      ],
+      [
+        429,
+        "RATE_LIMITED",
+        "an invitation was sent to this candidate in the last minute."
+      ]
+    ],
+    "danger": true
+  },
+  "reassignWcCampaignCandidate": {
+    "title": "Let a candidate take the assessment again",
+    "description": "Archives the candidate's current attempt (it stays on record) and emails a fresh invitation. Only once the candidate has started or finished the assessment; before that, 409.",
+    "errors": [
+      [
+        403,
+        "FORBIDDEN",
+        "this was made in the Record playground. The API reads it but changes only what it created."
+      ],
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "the candidate has not started the assessment yet."
+      ]
+    ],
+    "danger": true
+  },
+  "getWcCampaign": {
+    "title": "One campaign: its status and how many candidates have been invited",
+    "description": "",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "listWcMandateResults": {
+    "title": "Every invited candidate across a job mandate's campaigns",
+    "description": "The candidates of all the job's campaigns that have been invited (or have started), newest first, with score and verdict. Filter by campaign, status, verdict or part of a name or email. Candidates still waiting for their invitation are left out.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "getWcCandidateResult": {
+    "title": "A candidate's full result",
+    "description": "Status, score, verdict and feedback, the attempt's start and end, and which attempt this is. It is the very record the `assessment.result` event delivers, so a webhook and this call always agree.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "getWcMandateAnalytics": {
+    "title": "Analytics of a job mandate",
+    "description": "How the job's candidates did, in total and campaign by campaign: invited, completed, hired, rejected, average score, completion and pass rate.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "getWcCampaignAnalytics": {
+    "title": "Analytics of a campaign",
+    "description": "",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "listWcQuestionTypes": {
+    "title": "The question types and difficulties an assessment can use",
+    "description": "The `id` values `assessment.question_types[].id` takes when you create or change a job mandate.",
+    "errors": []
+  },
+  "pullWcEvents": {
+    "title": "Pull your result events and confirm the last ones",
+    "description": "The same `assessment.result` events the webhook sends, for pulling, in one call: send the `ack` ids of the events you processed from the previous call, and get the next page back. With the default `status=unacked` you get every event you have not acknowledged, oldest first, so one you missed or failed to process comes again. Loop: process the page, pass its ids as `ack` of the next call, repeat. A call whose response is lost loses nothing: its events were not acknowledged yet and come again. Acknowledging is safe to repeat (ids already acknowledged, or unknown, are accepted) and also closes a webhook delivery still waiting for them. `status=all` (with `from`) replays history; events are kept 30 days. `after` is only a paging shortcut: rely on `unacked`. An event is written once a candidate's attempt has ended (completed, timed out, disqualified, or the invitation failed) and its result has stayed the same for a short while.",
+    "errors": []
+  },
+  "getWcEvent": {
+    "title": "One event",
+    "description": "",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "createWcWebhookEndpoint": {
+    "title": "Add a webhook endpoint",
+    "description": "Record sends every white-collar result event (`assessment.result`) to this URL and retries until you answer 2xx (about 52 hours, then the delivery is kept as dead and can be replayed). Each request is signed with your API secret key (VFN_SK_...), so there is no extra secret to keep. Registering a URL you already have returns that endpoint (`existing: true`), never a second one. At most 5 endpoints. `backfill_from` also sends results from the past 30 days; leave it out to receive only new ones.",
+    "errors": [
+      [
+        422,
+        "LIMIT_EXCEEDED",
+        "you already have 5 endpoints."
+      ],
+      [
+        400,
+        "VALIDATION_FAILED",
+        "the URL is not a public `https://` address on port 443."
+      ]
+    ]
+  },
+  "listWcWebhookEndpoints": {
+    "title": "Your webhook endpoints",
+    "description": "",
+    "errors": []
+  },
+  "getWcWebhookEndpoint": {
+    "title": "One webhook endpoint",
+    "description": "",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "updateWcWebhookEndpoint": {
+    "title": "Change, pause or resume an endpoint",
+    "description": "Send only what changes. `status: paused` holds deliveries (nothing is lost); `status: active` resumes them, oldest first.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ],
+      [
+        409,
+        "CONFLICT",
+        "another of your endpoints already uses this URL."
+      ]
+    ]
+  },
+  "deleteWcWebhookEndpoint": {
+    "title": "Delete an endpoint",
+    "description": "Deliveries still waiting for it stop. The events stay in the feed (`POST /events/pull`) for 30 days.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "testWcWebhookEndpoint": {
+    "title": "Send a test event",
+    "description": "Sends a signed `webhook.test` event now and reports what your server answered. It is not stored and not retried.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "backfillWcWebhookEndpoint": {
+    "title": "Send past results to an endpoint",
+    "description": "Queues the events of the past 30 days at most, from `from`, as normal deliveries. Safe to repeat: an event already delivered is not sent twice.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "listWcWebhookDeliveries": {
+    "title": "Delivery log of an endpoint",
+    "description": "Every send to this endpoint with its outcome, newest first: attempts, last HTTP status or error, when the next retry is due. Kept 30 days.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  },
+  "retryWcWebhookDelivery": {
+    "title": "Send one delivery again now",
+    "description": "Works on dead, waiting or already delivered ones. Its attempts count from zero again.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such object for this key's organisation, project and mode."
+      ]
+    ]
+  }
+}

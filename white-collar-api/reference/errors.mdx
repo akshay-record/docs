@@ -1,0 +1,39 @@
+---
+title: "Errors"
+description: "Every failure has the same shape and a code you can act on."
+---
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "body.assessment.total_marks: the enabled question types add up to 20 marks, not 99",
+    "details": [{ "path": "body.assessment.total_marks", "message": "…" }],
+    "request_id": "req_0123456789abcdef"
+  }
+}
+```
+
+Quote `request_id` (also the `x-request-id` header) to Record support.
+
+| Status | `code` | What to do |
+|---|---|---|
+| 400 | `VALIDATION_FAILED` | A field is wrong. `details` lists each one with its path. |
+| 400 | `IDEMPOTENCY_KEY_REQUIRED` | Add an `Idempotency-Key`. |
+| 401 | `UNAUTHORIZED` | Key, signature or clock is wrong, or a signed write was replayed. See [Authentication](/white-collar-api/authentication#if-you-get-401-unauthorized). |
+| 402 | `INSUFFICIENT_CREDITS` | The organisation cannot pay for the invitations. Nothing was created or sent. |
+| 403 | `SCOPE_MISSING` | The key lacks the `wc_*` scope the endpoint needs. |
+| 403 | `FORBIDDEN` | The object was made in the playground, or Test Mode's cap was reached. |
+| 403 | `HTTPS_REQUIRED` | Use `https://`. |
+| 404 | `NOT_FOUND` | No such object for this key's organisation, project and mode. |
+| 409 | `CONFLICT` | The object is in the wrong state: a closed job, questions not `ready`, a paused campaign, an `external_id` already used. Read it and retry. |
+| 409 | `WORKFLOW_IN_USE` | Close the open job mandates first. |
+| 409 | `IDEMPOTENCY_IN_PROGRESS` | Wait for `Retry-After`, then retry with the same key. |
+| 413 | `PAYLOAD_TOO_LARGE` | Bodies are limited to 256 KB. |
+| 415 | `UNSUPPORTED_MEDIA_TYPE` | Send `application/json`. |
+| 422 | `LIMIT_EXCEEDED` | A business limit, such as 2000 candidates in a campaign or 5 webhook endpoints. |
+| 422 | `IDEMPOTENCY_KEY_REUSED` | That key was used for a different request. Use a new one. |
+| 429 | `RATE_LIMITED`, `COOLDOWN`, `DAILY_CAP` | Wait `Retry-After` seconds. |
+| 500 | `SERVER_ERROR` | Retry with backoff and the same `Idempotency-Key`. A `502` from question generation means the questions could not be written: nothing changed. |
+| 503 | `SERVICE_DISABLED` | The API is switched off for maintenance. |
