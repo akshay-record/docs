@@ -77,6 +77,7 @@ Record switches the White Collar API on per key by granting scopes. A key withou
 | `wc_mandates:write` | Create, change, close and reopen job mandates; have Record write the questions or supply your own. Also everything in `wc_mandates:read`. |
 | `wc_campaigns:write` | Create, start, pause and resume campaigns, add candidates, resend and reassign. Also reads campaigns and candidate rows. **Emails real people and spends credits.** |
 | `wc_results:read` | Campaigns, candidate rows, results and analytics. |
+| `wc_recordings:read` | `GET /candidates/{candidate_id}/recording`: a short-lived link to a candidate's screen and camera recording. **Footage of a person**, so it is separate from results. |
 | `wc_events:read` | The event feed: `POST /events/pull` and `GET /events/{event_id}`. |
 | `wc_webhooks:manage` | Webhook endpoints, delivery logs, tests and backfills. |
 

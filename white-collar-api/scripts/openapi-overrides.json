@@ -448,6 +448,22 @@
       ]
     ]
   },
+  "getWcCandidateRecording": {
+    "title": "A link to the candidate's screen and camera recording",
+    "description": "A fresh private link to the video of the candidate's latest attempt: their screen with the camera on it. The link works for 15 minutes (`expires_at`), so do not store it: call this again when you need to watch. `url` is null until `status` is `ready`, a little after the candidate submits; the result's `recording_status` and an `assessment.result` event with a higher `version` tell you when. Needs `wc_recordings:read`.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "no such candidate for this key's organisation, project and mode."
+      ],
+      [
+        503,
+        "SERVICE_DISABLED",
+        "recordings are temporarily unavailable; try again after the `Retry-After` seconds."
+      ]
+    ]
+  },
   "getWcMandateAnalytics": {
     "title": "Analytics of a job mandate",
     "description": "How the job's candidates did, in total and campaign by campaign: invited, completed, hired, rejected, average score, completion and pass rate.",

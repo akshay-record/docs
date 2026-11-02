@@ -73,10 +73,32 @@ The full record: the one webhooks and the event feed deliver.
 | `verdict` | `hire` if `score` is at or above the pass mark, `reject` below it, `null` if not decided. |
 | `identity_verified` | Whether the candidate passed the identity check; `null` if it did not run. |
 | `feedback` | Record's written assessment of the attempt, once graded. |
+| `recording_status` | The screen and camera recording of the attempt: `not_started`, `in_progress`, `processing`, `ready` or `failed`; `null` with no attempt. When it becomes `ready` you get another event with a higher `version`. |
 
 <Note>
   Grading finishes a few seconds after the candidate submits, and the written `feedback` can arrive after the score. A webhook waits about 45 seconds for the result to settle, so it normally arrives complete. If something changes later, you get another event with a higher `version`.
 </Note>
+
+## The recording
+
+`GET /candidates/{candidate_id}/recording` · scope `wc_recordings:read`
+
+The recording of the candidate's latest attempt: their screen with the camera on it, as one video. It is private, so the call returns a fresh link that works for **15 minutes**. Do not store the link: call again when you need to watch.
+
+```json Response
+{
+  "success": true,
+  "data": {
+    "candidate_id": "cand_0123456789abcdef",
+    "attempt": 1,
+    "status": "ready",
+    "url": "https://storage.googleapis.com/…?X-Goog-Signature=…",
+    "expires_at": "2026-11-02T10:15:00.000Z"
+  }
+}
+```
+
+`url` and `expires_at` are `null` until `status` is `ready`. A recording is prepared a little after the candidate submits. `503 SERVICE_DISABLED` means recordings are briefly unavailable: retry after the `Retry-After` seconds. The scope is separate from results because it is footage of a person: Record grants it only when you need it.
 
 ## Analytics
 

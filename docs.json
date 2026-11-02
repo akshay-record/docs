@@ -514,7 +514,8 @@
             "pages": [
               "GET /campaigns/{campaign_id}/candidates",
               "GET /mandates/{mandate_id}/results",
-              "GET /candidates/{candidate_id}/result"
+              "GET /candidates/{candidate_id}/result",
+              "GET /candidates/{candidate_id}/recording"
             ]
           },
           {
