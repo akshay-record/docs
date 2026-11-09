@@ -4,9 +4,9 @@
   "name": "Skills & Verification API",
   "description": "Unified documentation for Skills management and Record Skills Verification APIs.",
   "colors": {
-    "primary": "#7C6AF7",
-    "light": "#A78BFA",
-    "dark": "#5A4FCF"
+    "primary": "#E8552D",
+    "light": "#FF8A5B",
+    "dark": "#C9421F"
   },
   "favicon": "/favicon.svg",
   "logo": {
