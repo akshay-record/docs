@@ -421,6 +421,106 @@
         ]
       },
       {
+        "tab": "Enrichment API Guides",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              "enrichment-api/index",
+              "enrichment-api/quickstart",
+              "enrichment-api/authentication"
+            ]
+          },
+          {
+            "group": "Integration",
+            "pages": [
+              "enrichment-api/guides/enrichments",
+              "enrichment-api/guides/campaigns",
+              "enrichment-api/guides/candidates-and-results",
+              "enrichment-api/guides/webhooks"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "enrichment-api/reference/statuses",
+              "enrichment-api/reference/limits"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Enrichment API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "enrichment-api/api-reference/introduction"
+            ]
+          },
+          {
+            "group": "Enrichments",
+            "openapi": "enrichment-api/api-reference/openapi.json",
+            "pages": [
+              "POST /enrichments",
+              "GET /enrichments",
+              "GET /enrichments/{enrichment_id}",
+              "DELETE /enrichments/{enrichment_id}",
+              "GET /enrichments/{enrichment_id}/overview"
+            ]
+          },
+          {
+            "group": "Campaigns",
+            "openapi": "enrichment-api/api-reference/openapi.json",
+            "pages": [
+              "POST /enrichments/{enrichment_id}/campaigns",
+              "GET /enrichments/{enrichment_id}/campaigns",
+              "GET /enrichments/{enrichment_id}/campaigns/{campaign_id}",
+              "POST /enrichments/{enrichment_id}/campaigns/{campaign_id}/pause",
+              "POST /enrichments/{enrichment_id}/campaigns/{campaign_id}/resume"
+            ]
+          },
+          {
+            "group": "Candidates",
+            "openapi": "enrichment-api/api-reference/openapi.json",
+            "pages": [
+              "GET /enrichments/{enrichment_id}/candidates",
+              "GET /enrichments/{enrichment_id}/candidates/{candidate_id}"
+            ]
+          },
+          {
+            "group": "Results",
+            "openapi": "enrichment-api/api-reference/openapi.json",
+            "pages": [
+              "GET /enrichments/{enrichment_id}/results"
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "openapi": "enrichment-api/api-reference/openapi.json",
+            "pages": [
+              "POST /webhooks/endpoints",
+              "GET /webhooks/endpoints",
+              "GET /webhooks/endpoints/{endpoint_id}",
+              "PATCH /webhooks/endpoints/{endpoint_id}",
+              "DELETE /webhooks/endpoints/{endpoint_id}",
+              "POST /webhooks/endpoints/{endpoint_id}/test",
+              "POST /webhooks/endpoints/{endpoint_id}/backfill",
+              "GET /webhooks/endpoints/{endpoint_id}/deliveries",
+              "POST /webhooks/deliveries/{delivery_id}/retry"
+            ]
+          },
+          {
+            "group": "Events",
+            "openapi": "enrichment-api/api-reference/openapi.json",
+            "pages": [
+              "POST /events/pull",
+              "GET /events/{event_id}"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "Meta Config",
         "hidden": true,
         "pages": [

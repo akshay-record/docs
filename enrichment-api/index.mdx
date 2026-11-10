@@ -1,0 +1,63 @@
+---
+title: "Introduction"
+description: "Collect work, location, shift and salary details from your own candidate database with the Record Enrichment API."
+---
+
+Record contacts your candidates on WhatsApp, follows up by phone call and SMS, and asks them the questions you choose. The Enrichment API lets your ATS or backend run that whole flow and read every candidate's answers.
+
+<Note>
+  Answers are **self-reported and not verified**. Enrichment collects what a candidate says about their work, location, shift and salary. It does not check it.
+</Note>
+
+## Enrich candidates from your own system, in 3 steps
+
+Do the steps in this order. Each one returns an id that the next one needs.
+
+<Steps>
+  <Step title="Enrichment">
+    The questions (1 to 15, yes/no or voice) and the window candidates are contacted in. Create it once and reuse it for any number of campaigns. You get `enrichment_id`.
+  </Step>
+  <Step title="Campaign">
+    The people: name and phone number of each candidate. Record contacts them straight away. Needs `enrichment_id`, you get `campaign_id`.
+  </Step>
+  <Step title="Candidates and results">
+    Where each candidate stands, what they answered, and a final result once they finish. Needs `enrichment_id`, you get `candidate_id` and `result_id`.
+  </Step>
+</Steps>
+
+## The 6 calls you need
+
+1. [`POST /enrichments`](/enrichment-api/guides/enrichments#create-an-enrichment) → save `enrichment_id`
+2. [`GET /enrichments/{enrichment_id}`](/enrichment-api/guides/enrichments#get-an-enrichment) → repeat until `questions_status` is `ready`
+3. [`POST /enrichments/{enrichment_id}/campaigns`](/enrichment-api/guides/campaigns#create-a-campaign) → save `campaign_id`
+4. [`GET /enrichments/{enrichment_id}/campaigns/{campaign_id}`](/enrichment-api/guides/campaigns#get-a-campaign) → watch it go out
+5. [`GET /enrichments/{enrichment_id}/candidates`](/enrichment-api/guides/candidates-and-results#list-candidates) → who answered, who did not
+6. [`GET /enrichments/{enrichment_id}/results`](/enrichment-api/guides/candidates-and-results#list-results) → the final result of each candidate who finished. Or have each one sent to you as it happens with an [`enrichment.result` webhook](/enrichment-api/guides/webhooks)
+
+## 4 rules to remember
+
+- You only need your **key id and secret**. Timestamp, signature and `Idempotency-Key` are made by the [helper](/blue-collar-api/authentication#signing-helper) (or by **Try it**).
+- An enrichment is **never edited**. Different questions mean a new enrichment.
+- A campaign **starts as soon as you create it** and contacts real people. Use a **TEST key** first.
+- Every error is `{ "success": false, "error": { "code", … } }`; all codes are explained in [Errors](/blue-collar-api/reference/errors).
+
+## Before you start
+
+- An API key pair from the Record playground, under **Settings → API keys**.
+- The Enrichment API switched on for that key. Record does this by granting [scopes](/enrichment-api/authentication#scopes).
+- A **TEST** key for development. It sees only test data, gets one tenth of every rate limit, and an enrichment holds at most 50 candidates.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/enrichment-api/quickstart">
+    Make your first signed call and run the three steps.
+  </Card>
+  <Card title="Authentication" icon="key" href="/enrichment-api/authentication">
+    API keys, scopes and request signing.
+  </Card>
+  <Card title="Campaigns" icon="paper-plane" href="/enrichment-api/guides/campaigns">
+    Send candidates, then pause or resume.
+  </Card>
+  <Card title="API reference" icon="code" href="/enrichment-api/api-reference/introduction">
+    Every endpoint with its schema and Try it.
+  </Card>
+</CardGroup>

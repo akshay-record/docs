@@ -1,0 +1,189 @@
+---
+title: "Enrichments"
+description: "Step 1. Define the questions and the contact window."
+---
+
+An enrichment is a set of questions plus the window candidates are contacted in. Create it once and reuse it for any number of campaigns.
+
+| Needs | You get | Scope |
+|---|---|---|
+| Nothing | `enrichment_id` | `enrichment:write` (reads also allow `enrichment:read` and `enrichment:campaigns`) |
+
+<Note>
+  An enrichment is **never edited**, and neither are its questions. To ask something different, create a new enrichment.
+</Note>
+
+## Questions
+
+- 1 to 15 questions, each up to 300 characters, asked in the order you send them.
+- `yes_no` is answered with a tap and needs a `preferred_answer` (`yes` or `no`): the answer that counts as qualified.
+- `voice` is spoken or recorded and is not scored.
+- `required` defaults to `true`. A candidate is complete only after answering every required question.
+
+## Schedule
+
+| Field | Description |
+|---|---|
+| `language` | Opening language of messages and calls: `english`, `hindi`, `tamil`, `kannada`, `telugu`, `malayalam`, `bengali` or `marathi`. The candidate can switch. |
+| `start_time`, `end_time` | The daily window, `HH:MM` in 24 hours. `start_time` must be before `end_time`. |
+| `days` | `mon` to `sun`, each listed once. |
+| `timezone` | An IANA time zone, such as `Asia/Kolkata`. |
+| `max_retries` | Follow-up call attempts, 1 to 20. |
+| `retry_after_hours` | Hours before a retry, 1 to 48. |
+
+## Channels
+
+WhatsApp and the AI voice call are always on. Send `delivery: { "sms_backup": true }` to also send an SMS with the link.
+
+## `questions_status`
+
+Record translates the questions and records their voice in every language in the background.
+
+| Status | Meaning |
+|---|---|
+| `pending` | Being prepared. A campaign created now waits and goes out by itself. |
+| `ready` | Done. Campaigns send at once. |
+| `failed` | Preparation failed. Creating a campaign starts it again. |
+
+## Endpoints
+
+### Create an enrichment
+
+`POST /enrichments`
+
+Returns `enrichment_id`.
+
+**Scope:** `enrichment:write` · **Idempotency-Key:** required
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | `string` | **Required.** 1–120 characters. |
+| `schedule` | `object` | **Required.** All six fields above. |
+| `questions` | `array<object>` | **Required.** 1–15 of `{ question_text, type, preferred_answer?, required? }`. |
+| `external_id` | `string` | Your own id. Unique per organisation and mode. |
+| `description` | `string` | Optional, up to 500 characters. |
+| `delivery` | `object` | Optional. `{ "sms_backup": true }` adds SMS. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("POST", "/api/v1/partner/enrichments", {
+  external_id: "enr-chennai-warehouse",
+  name: "Warehouse talent pool - Chennai",
+  schedule: {
+    language: "english",
+    start_time: "10:00",
+    end_time: "18:00",
+    days: ["mon", "tue", "wed", "thu", "fri", "sat"],
+    timezone: "Asia/Kolkata",
+    max_retries: 3,
+    retry_after_hours: 4,
+  },
+  questions: [
+    { question_text: "Are you open to a new job right now?", type: "yes_no", preferred_answer: "yes" },
+    { question_text: "Tell us about the work you do and where you want to work.", type: "voice" },
+  ],
+});
+const { data } = await res.json();
+```
+
+```python Python
+res = call("POST", "/api/v1/partner/enrichments", {
+    "external_id": "enr-chennai-warehouse",
+    "name": "Warehouse talent pool - Chennai",
+    "schedule": {
+        "language": "english",
+        "start_time": "10:00",
+        "end_time": "18:00",
+        "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
+        "timezone": "Asia/Kolkata",
+        "max_retries": 3,
+        "retry_after_hours": 4,
+    },
+    "questions": [
+        {"question_text": "Are you open to a new job right now?", "type": "yes_no", "preferred_answer": "yes"},
+        {"question_text": "Tell us about the work you do and where you want to work.", "type": "voice"},
+    ],
+})
+data = res.json()["data"]
+```
+
+</CodeGroup>
+
+```json Response · 201
+{
+  "success": true,
+  "data": {
+    "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+    "external_id": "enr-chennai-warehouse",
+    "name": "Warehouse talent pool - Chennai",
+    "status": "active",
+    "questions_status": "pending",
+    "delivery": { "whatsapp": true, "voice_call": true, "sms": false },
+    "question_count": 2,
+    "counts": { "campaigns": 0, "candidates": 0, "sent": 0, "completed": 0 },
+    "is_external": true,
+    "questions": [
+      { "question_id": "EQ_261110101530001A", "order": 0, "question_text": "Are you open to a new job right now?", "type": "yes_no", "preferred_answer": "yes", "required": true },
+      { "question_id": "EQ_261110101530002B", "order": 1, "question_text": "Tell us about the work you do and where you want to work.", "type": "voice", "preferred_answer": null, "required": true }
+    ]
+  }
+}
+```
+
+**Errors:** `400 VALIDATION_FAILED` (a field missing or wrong, a `yes_no` without `preferred_answer`, a start time not before the end time), `409 CONFLICT` (`external_id` already used).
+
+### List enrichments
+
+`GET /enrichments`
+
+Your organisation's enrichments, made here or in the playground (`is_external` says which), newest first.
+
+**Scope:** `enrichment:read`
+
+| Query | Description |
+|---|---|
+| `status` | `active` (default) or `archived`. |
+| `search` | Part of the name or the `enrichment_id`. |
+| `language` | Only enrichments with a campaign in this language. |
+| `limit`, `cursor` | Paging. `limit` 1 to 100, default 25. Send the `next_cursor` of the page before. |
+
+Each item has the fields of the response above without `questions`, and `counts` shows `campaigns`, `candidates`, `sent` (WhatsApp invites that went out) and `completed` (candidates who finished, including those who declined).
+
+### Get an enrichment
+
+`GET /enrichments/{enrichment_id}`
+
+One enrichment with its questions. Repeat it until `questions_status` is `ready`.
+
+**Scope:** `enrichment:read` · **Errors:** `404 NOT_FOUND`
+
+### Archive an enrichment
+
+`DELETE /enrichments/{enrichment_id}`
+
+Archives an enrichment **you created**. Nothing is erased: campaigns, candidates and results stay readable. Campaigns already live keep running until you [pause](/enrichment-api/guides/campaigns#pause-a-campaign) them. Archiving again changes nothing. An archived enrichment takes no new campaign.
+
+**Scope:** `enrichment:write` · **Idempotency-Key:** optional · **Errors:** `403 FORBIDDEN` (made in the playground), `404 NOT_FOUND`
+
+### Get the overview
+
+`GET /enrichments/{enrichment_id}/overview`
+
+Funnel numbers across all campaigns.
+
+**Scope:** `enrichment:read`
+
+```json Response · 200
+{
+  "success": true,
+  "data": {
+    "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+    "campaign_count": 1,
+    "kpis": { "uploaded": 120, "rejected": 6, "sent": 118, "delivered": 110, "link_opened": 64, "completed": 41, "opted_out": 2 },
+    "standing": { "completed": 41, "in_progress": 8, "sent": 62, "not_interested": 5, "opted_out": 2 }
+  }
+}
+```
+
+`standing` counts candidates per [status](/enrichment-api/reference/statuses).
