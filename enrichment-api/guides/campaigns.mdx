@@ -1,0 +1,162 @@
+---
+title: "Campaigns"
+description: "Step 2. Send candidates for an enrichment. Record contacts them."
+---
+
+A campaign sends your candidates (name + mobile number) to an enrichment. Record contacts them on WhatsApp, follows up by call and SMS, and asks the enrichment's questions.
+
+| Needs | You get | Scope |
+|---|---|---|
+| `enrichment_id` from [step 1](/enrichment-api/guides/enrichments) | `campaign_id` | `enrichment:campaigns` (reads also allow `enrichment:read`) |
+
+<Warning>
+  **This contacts real people and spends credits.** There is no separate start step: contacting begins as soon as the campaign is created. The phone numbers in the samples are placeholders, so replace them with your own test numbers. If the enrichment's `questions_status` is not yet `ready`, the campaign waits and goes out by itself.
+</Warning>
+
+## Candidates
+
+- `phone_number` is an Indian mobile number: 10 digits (`98765 43210`) or with the country code (`+91 98765 43210`). It is returned in full as `+91…`.
+- `external_id` is your id for the candidate. It comes back on every candidate and result.
+- Up to 1,000 candidates per call.
+- **A row that cannot be contacted never fails the call.** It is left out and listed in `skipped` with its position and a reason: `invalid_phone`, `opted_out` (the number replied STOP earlier) or `duplicate` (already earlier in the same list). If no row can be contacted, the call answers `400` and `details` say why for each one.
+- A TEST key holds at most 50 candidates per enrichment (`403 FORBIDDEN` beyond that).
+
+## Campaign status
+
+| Status | Meaning |
+|---|---|
+| `sent` | Live. Candidates are being contacted. |
+| `paused` | Paused by you. Nothing more goes out. |
+| `completed` | Finished. |
+| `cancelled` | Stopped for good. |
+
+`awaiting_questions: true` means the questions are still being prepared and nothing has gone out yet.
+
+## Endpoints
+
+### Create a campaign
+
+`POST /enrichments/{enrichment_id}/campaigns`
+
+Returns `campaign_id`, the candidates and the skipped rows.
+
+**Scope:** `enrichment:campaigns` · **Idempotency-Key:** required
+
+<Warning>This contacts real people.</Warning>
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | `string` | **Required.** 1–200 characters. |
+| `candidates` | `array<object>` | **Required.** 1–1,000 of `{ name, phone_number, external_id? }`. |
+| `language` | `string` | Invite language. Defaults to the enrichment's schedule language. |
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("POST", `/api/v1/partner/enrichments/${enrichmentId}/campaigns`, {
+  name: "November talent pool",
+  candidates: [
+    { name: "Ravi Kumar", phone_number: "98765 43210", external_id: "cand-1001" },
+    { name: "Meena S", phone_number: "91234 56780", external_id: "cand-1002" },
+    { name: "Test Number", phone_number: "0000000000" },
+  ],
+});
+const { data } = await res.json();
+```
+
+```python Python
+res = call("POST", f"/api/v1/partner/enrichments/{enrichment_id}/campaigns", {
+    "name": "November talent pool",
+    "candidates": [
+        {"name": "Ravi Kumar", "phone_number": "98765 43210", "external_id": "cand-1001"},
+        {"name": "Meena S", "phone_number": "91234 56780", "external_id": "cand-1002"},
+        {"name": "Test Number", "phone_number": "0000000000"},
+    ],
+})
+data = res.json()["data"]
+```
+
+</CodeGroup>
+
+```json Response · 201
+{
+  "success": true,
+  "data": {
+    "campaign": {
+      "campaign_id": "EC_261110103045123M4P8T2K6Q9R",
+      "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+      "name": "November talent pool",
+      "language": "english",
+      "status": "sent",
+      "awaiting_questions": true,
+      "question_count": 2,
+      "channels": { "whatsapp": true, "voice_call": true, "sms": false },
+      "rejected_count": 1,
+      "counts": { "candidates": 2, "sent": 0, "completed": 0 }
+    },
+    "candidates": [
+      { "candidate_id": "6f1d2c3e-8a4b-4c57-9d10-2b7e5a9c1f33", "external_id": "cand-1001", "name": "Ravi Kumar", "phone_number": "+919876543210" },
+      { "candidate_id": "0c9b7e21-5d3f-4a68-b1e4-77a2c8d9e054", "external_id": "cand-1002", "name": "Meena S", "phone_number": "+919123456780" }
+    ],
+    "skipped": [
+      { "index": 2, "name": "Test Number", "phone_number": "0000000000", "reason": "invalid_phone" }
+    ]
+  }
+}
+```
+
+**Errors:** `400 VALIDATION_FAILED` (no contactable number, or a field wrong), `403 FORBIDDEN` (the enrichment was made in the playground, or the TEST limit), `404 NOT_FOUND` (no such enrichment, or it is archived).
+
+### List campaigns
+
+`GET /enrichments/{enrichment_id}/campaigns`
+
+The campaigns of an enrichment, newest first, with `counts` of candidates, sent and completed. Takes `limit` and `cursor`.
+
+**Scope:** `enrichment:read`
+
+### Get a campaign
+
+`GET /enrichments/{enrichment_id}/campaigns/{campaign_id}`
+
+Progress of one campaign: the funnel, numbers per channel and where candidates drop off per question.
+
+**Scope:** `enrichment:read`
+
+```json Response · 200
+{
+  "success": true,
+  "data": {
+    "campaign_id": "EC_261110103045123M4P8T2K6Q9R",
+    "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+    "kpis": {
+      "uploaded": 3, "rejected": 1, "sent": 2,
+      "sent_by": { "whatsapp": 2, "sms": 0, "call": 1 },
+      "link_opened": 1, "completed": 1, "opted_out": 0, "failed": 0
+    },
+    "drop_off": {
+      "started": 1,
+      "questions": [
+        { "order": 0, "question_text": "Are you open to a new job right now?", "answered": 1 },
+        { "order": 1, "question_text": "Tell us about the work you do and where you want to work.", "answered": 1 }
+      ]
+    }
+  }
+}
+```
+
+### Pause a campaign
+
+`POST /enrichments/{enrichment_id}/campaigns/{campaign_id}/pause`
+
+Nothing more goes out (no invite, follow-up, SMS or call) until you resume. Only a live campaign can be paused.
+
+**Scope:** `enrichment:campaigns` · **Idempotency-Key:** optional · **Errors:** `403 FORBIDDEN`, `404 NOT_FOUND`, `409 CONFLICT` (the campaign is not live)
+
+### Resume a campaign
+
+`POST /enrichments/{enrichment_id}/campaigns/{campaign_id}/resume`
+
+Sending carries on where it stopped. Only a paused campaign can be resumed.
+
+**Scope:** `enrichment:campaigns` · **Idempotency-Key:** optional · **Errors:** `403 FORBIDDEN`, `404 NOT_FOUND`, `409 CONFLICT` (the campaign is not paused)

@@ -1,0 +1,46 @@
+---
+title: "Authentication"
+description: "API keys, scopes and request signing for the Enrichment API."
+---
+
+The Enrichment API is part of the Record Partner API and uses the **same API keys and the same request signing** as the Blue Collar API. If you already call the Blue Collar API, your signing code works unchanged.
+
+```text Base URL
+https://api-bc.userecord.io/api/v1/partner
+```
+
+## API keys
+
+Create a key pair in the Record playground under **Settings → API keys**: a key id (`VFN_LIVE_…` or `VFN_TEST_…`) and a secret (`VFN_SK_…`). The secret never leaves your backend and is never sent: it signs each request.
+
+## Signing
+
+Every request carries `x-api-key`, `x-timestamp` and `x-signature`; creating calls also carry an `Idempotency-Key`. The exact rules, a ready-made `call()` helper in JavaScript and Python, and the reasons behind them are on the Blue Collar [Authentication](/blue-collar-api/authentication#signing-helper) page. Copy the helper once: every code sample in this tab uses it.
+
+## Scopes
+
+Record switches the Enrichment API on per key by granting scopes. Any one scope listed on an endpoint opens it.
+
+| Scope | Lets the key |
+|---|---|
+| `enrichment:read` | Read enrichments, campaigns, candidates and results. |
+| `enrichment:write` | Create and archive enrichments. Also includes everything in `enrichment:read`. |
+| `enrichment:campaigns` | Create, pause and resume campaigns. **Contacts real people and spends credits.** Also includes `enrichment:read`. |
+
+<Warning>
+  `enrichment:write` alone cannot create a campaign. Starting a campaign needs `enrichment:campaigns`, so a key that only manages questions can never message your candidates.
+</Warning>
+
+Receiving results by webhook or the pull feed also needs `webhooks:manage` or `events:read`; see [Webhooks](/enrichment-api/guides/webhooks).
+
+A key with no scopes is not enabled and every call answers `403 SCOPE_MISSING`. Ask your Record contact to grant the scopes you need.
+
+## What you can read and change
+
+- **Read:** every enrichment of your organisation in the key's mode, made through the API or on the Enrichment page of the playground. `is_external` says which.
+- **Change:** only enrichments created through the API. Archiving or adding a campaign to a playground-made enrichment answers `403 FORBIDDEN`.
+- **Other organisations:** their data answers `404 NOT_FOUND`, never `403`.
+
+## Test and live
+
+A `VFN_TEST_` key sees only test data, gets one tenth of every [rate limit](/enrichment-api/reference/limits), and an enrichment holds at most 50 test candidates. A `VFN_LIVE_` key contacts real people.

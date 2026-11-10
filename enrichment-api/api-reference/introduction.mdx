@@ -1,0 +1,40 @@
+---
+title: "API reference"
+sidebarTitle: "Introduction"
+description: "Every Enrichment API endpoint, with its request and response schema."
+---
+
+```text Base URL
+https://api-bc.userecord.io/api/v1/partner
+```
+
+Each endpoint adds its path to the base URL. For example, **Create an enrichment** is `POST https://api-bc.userecord.io/api/v1/partner/enrichments`, and **List results** is `GET https://api-bc.userecord.io/api/v1/partner/enrichments/{enrichment_id}/results`.
+
+You need two things: your **key id** and your **secret**. The signature, timestamp and `Idempotency-Key` are generated for you. Copy the `call()` helper from [Authentication](/blue-collar-api/authentication#signing-helper) first: the code samples on each endpoint page use it.
+
+## Try it
+
+Every endpoint page has a **Try it** button. Enter your key id in `x-api-key` and your secret in `x-secret-key`, fill the request and press **Send**. `x-secret-key` is only a form field: the page signs the request in your browser and removes the secret before sending. See [Why does Try it say `x-secret-key`?](/blue-collar-api/authentication#why-does-try-it-say-x-secret-key).
+
+<Warning>
+  **Create a campaign** really contacts the numbers you send. Use a TEST key.
+</Warning>
+
+## On each endpoint page
+
+- **Scope**: the scope the key needs. Any one listed is enough.
+- **Idempotency-Key**: whether the endpoint needs one, accepts one, or ignores it. Try it makes one for you.
+- **Responses**: the success answer and the errors specific to that endpoint. Errors any endpoint can return, such as `401`, `429` and `500`, are listed in [Errors](/blue-collar-api/reference/errors).
+
+## Endpoints
+
+| Group | What it covers |
+|---|---|
+| Enrichments | Create, list, read and archive an enrichment, and its overview. |
+| Campaigns | Send candidates, follow progress, pause and resume. |
+| Candidates | Where each candidate stands, and one candidate in full. |
+| Results | The final result of each candidate who finished. |
+| Webhooks | Register the URL that receives each `enrichment.result`, send a test event, replay and read the delivery log. These are the Blue Collar webhook calls, shown here so you can set up and test results in one place. |
+| Events | Pull `enrichment.result` events instead of receiving them. |
+
+Two ways to get results: [poll `GET /results`](/enrichment-api/guides/candidates-and-results#two-ways-to-get-results), or have them sent to you. The step-by-step, including how to test, is in the [Webhooks guide](/enrichment-api/guides/webhooks#test-it-end-to-end).

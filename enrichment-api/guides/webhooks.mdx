@@ -1,0 +1,148 @@
+---
+title: "Webhooks"
+description: "Step 4 (optional). Receive each candidate's result as soon as they finish."
+---
+
+Instead of polling [`GET /results`](/enrichment-api/guides/candidates-and-results#list-results), have Record send you each result. When a candidate finishes an enrichment, or declines it, Record POSTs one `enrichment.result` event to your endpoint, signed with your API secret and retried until you answer `2xx`.
+
+| Needs | You get | Scope |
+|---|---|---|
+| A public HTTPS URL, and an enrichment | One `enrichment.result` event per candidate | `webhooks:manage` plus an enrichment scope |
+
+<Note>
+  Enrichment webhooks use the **same endpoints, signing, retries and delivery log** as the Blue Collar webhooks. This page covers what is different. For the signature check, retries, the delivery log and replays, see the Blue Collar [Webhooks guide](/blue-collar-api/guides/webhooks).
+</Note>
+
+## Calls you use
+
+These are the same calls as the Blue Collar webhooks. Each has a page with **Try it** under **Webhooks** and **Events** in this tab's [API reference](/enrichment-api/api-reference/introduction).
+
+| Job | Call |
+|---|---|
+| Register your URL | [`POST /webhooks/endpoints`](/api-reference/enrichment-webhooks/create-an-endpoint) with `event_types: ["enrichment.result"]` |
+| Check your URL and signature code | [`POST /webhooks/endpoints/{endpoint_id}/test`](/api-reference/enrichment-webhooks/send-a-test-event) |
+| List, read, pause, resume or delete | [`GET`](/api-reference/enrichment-webhooks/list-endpoints), [`PATCH`](/api-reference/enrichment-webhooks/update-an-endpoint), [`DELETE`](/api-reference/enrichment-webhooks/delete-an-endpoint) on `/webhooks/endpoints` |
+| Replay results your server missed | [`POST /webhooks/endpoints/{endpoint_id}/backfill`](/api-reference/enrichment-webhooks/backfill-past-results) |
+| See every send and your server's answer | [`GET /webhooks/endpoints/{endpoint_id}/deliveries`](/api-reference/enrichment-webhooks/list-deliveries) |
+| Send a dead delivery again | [`POST /webhooks/deliveries/{delivery_id}/retry`](/api-reference/enrichment-webhooks/retry-a-delivery) |
+| Pull instead of receiving | [`POST /events/pull`](/api-reference/enrichment-events/pull-and-confirm-events) with `type: "enrichment.result"` |
+| Read one event | [`GET /events/{event_id}`](/api-reference/enrichment-events/get-an-event) |
+
+## Turn it on
+
+It is **opt-in**. A webhook endpoint listens for `candidate.result` (Blue Collar verification results) by default. To also receive enrichment results, add `enrichment.result` to `event_types`:
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("POST", "/api/v1/partner/webhooks/endpoints", {
+  url: "https://ats.example.com/hooks/record-enrichment",
+  description: "Enrichment results",
+  event_types: ["enrichment.result"],
+  backfill_from: "2026-11-01T00:00:00Z",
+});
+const { endpoint } = (await res.json()).data;
+```
+
+```python Python
+res = call("POST", "/api/v1/partner/webhooks/endpoints", {
+    "url": "https://ats.example.com/hooks/record-enrichment",
+    "description": "Enrichment results",
+    "event_types": ["enrichment.result"],
+    "backfill_from": "2026-11-01T00:00:00Z",
+})
+endpoint = res.json()["data"]["endpoint"]
+```
+
+</CodeGroup>
+
+- The key that creates or changes the endpoint needs `webhooks:manage` **and** an enrichment scope (`enrichment:read`, `enrichment:write` or `enrichment:campaigns`). Without one the call answers `403 SCOPE_MISSING`.
+- `event_types: ["candidate.result", "enrichment.result"]` receives both. Leave `event_types` out and you receive only `candidate.result`, as before.
+- `backfill_from` also sends the results of the last 30 days at most. Leave it out to receive only new ones.
+- Enrichment data has no project, so a result goes to every endpoint of its **organisation and mode** (live or test) that listens for it.
+
+## The event
+
+```json enrichment.result
+{
+  "event_id": "evt_4c1e0b7f9a3d4e2c8b5a6f7d1e2c3b4a",
+  "type": "enrichment.result",
+  "api_version": "2026-10-01",
+  "created_at": "2026-11-10T11:02:12.000Z",
+  "mode": "live",
+  "version": 1,
+  "sequence": 12,
+  "data": {
+    "result_id": "ERS_261110110210123X5T9",
+    "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+    "campaign_id": "EC_261110103045123M4P8T2K6Q9R",
+    "candidate_id": "6f1d2c3e-8a4b-4c57-9d10-2b7e5a9c1f33",
+    "external_id": "cand-1001",
+    "name": "Ravi Kumar",
+    "phone_number": "+919876543210",
+    "status": "completed",
+    "completed_channel": "whatsapp",
+    "completed_at": "2026-11-10T11:02:10.000Z",
+    "summary": { "answered_count": 2, "required_count": 2, "qualified_count": 1 },
+    "answers": [
+      { "question_id": "EQ_261110101530001A", "order": 0, "question_text": "Are you open to a new job right now?", "type": "yes_no", "value": true, "qualified": true, "channel": "whatsapp" }
+    ]
+  }
+}
+```
+
+`data` is exactly one item of [`GET /results`](/enrichment-api/guides/candidates-and-results#list-results), so one parser serves both.
+
+| Field | Description |
+|---|---|
+| `event_id` | Stable forever. Keep the ones you processed and skip repeats: a delivery can arrive more than once. |
+| `version` | `1` for an enrichment result. A result never changes, so you will not see a higher version. |
+| `sequence` | The order of events in your stream. |
+| `data.status` | `completed`, or `not_interested` when the candidate declined. You get an event for both. |
+| `data.external_id` | Your own id for the candidate, if you sent one. |
+
+<Warning>
+  The event carries the candidate's **full phone number**, like the rest of the Enrichment API. Treat the endpoint and its logs as personal data.
+</Warning>
+
+## Verify and answer
+
+Verify the signature of each request exactly as in the Blue Collar [Webhooks guide](/blue-collar-api/guides/webhooks), then answer `2xx` as soon as you have stored the event. Anything else is retried for about 52 hours, after which the delivery is kept as dead and can be replayed.
+
+## No public URL? Pull instead
+
+Use [`POST /events/pull`](/blue-collar-api/guides/webhooks#pull-and-confirm-events) with `type: "enrichment.result"`. It needs `events:read` **plus** an enrichment scope. Without the scope, asking for `enrichment.result` answers `403 SCOPE_MISSING`, and an unfiltered pull simply leaves enrichment results out.
+
+```json Request
+{ "type": "enrichment.result", "ack": ["evt_4c1e0b7f9a3d4e2c8b5a6f7d1e2c3b4a"], "limit": 100 }
+```
+
+## Test it end to end
+
+Do this with a **TEST key** first. Test and live events are separate, so a test run never reaches your live endpoint.
+
+<Steps>
+  <Step title="Register your URL">
+    Create an endpoint with `event_types: ["enrichment.result"]`. Any HTTPS URL that answers `2xx` works, such as a request catcher.
+  </Step>
+  <Step title="Check the connection">
+    Call [`POST /webhooks/endpoints/{endpoint_id}/test`](/api-reference/enrichment-webhooks/send-a-test-event). Your URL receives a signed `webhook.test` event and the answer shows what your server returned. This proves your URL and signature check. It is **not** a result: a real `enrichment.result` only comes from a candidate finishing.
+  </Step>
+  <Step title="Make a real result">
+    [Create an enrichment](/enrichment-api/guides/enrichments), then a [campaign](/enrichment-api/guides/campaigns) with your own phone number, and answer the questions on WhatsApp. A TEST key holds at most 50 candidates per enrichment.
+  </Step>
+  <Step title="Watch it arrive">
+    The `enrichment.result` reaches your URL within about 15 seconds. Open [`GET /webhooks/endpoints/{endpoint_id}/deliveries`](/api-reference/enrichment-webhooks/list-deliveries) to see each send and what your server answered.
+  </Step>
+  <Step title="Replay if you missed it">
+    Use [`/backfill`](/api-reference/enrichment-webhooks/backfill-past-results) from a time before your test, or [`/retry`](/api-reference/enrichment-webhooks/retry-a-delivery) on one delivery.
+  </Step>
+</Steps>
+
+<Note>
+  **Try it** sends your request from the browser, so it cannot receive a webhook. Use a request-catcher URL as the endpoint, and watch deliveries in Try it.
+</Note>
+
+## How fast
+
+A result reaches your endpoint within about 15 seconds of the candidate finishing, whether they answered on a call or on the link. A daily check repairs anything missed. Events are kept for 30 days.

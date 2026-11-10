@@ -1,0 +1,26 @@
+---
+title: "Limits"
+description: "Rate limits and caps in the Enrichment API."
+---
+
+Limits use a token bucket per key and endpoint class, plus a whole-key bucket. Every answer carries `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset`; a `429` adds `Retry-After`. A `VFN_TEST_` key gets one tenth of each number (at least 1).
+
+| Endpoints | Class | Per second (burst) | Per minute | Per day (IST) |
+|---|---|---|---|---|
+| Create and archive an enrichment | `enrichmentWrites` | 5 (10) | 60 | 2,000 |
+| Create, pause and resume a campaign | `campaignWrites` | 2 (5) | 30 | 500 |
+| Every read | `reads` | 20 (40) | 1,200 | none |
+| All calls of a key | `wholeKey` | 150 (300) | 6,000 | none |
+
+Record can raise or lower these for a key. Errors and the rate-limit rules that repeat offenders hit are in [Errors](/blue-collar-api/reference/errors).
+
+## Caps
+
+| What | Limit |
+|---|---|
+| Questions per enrichment | 15, each up to 300 characters |
+| Candidates per campaign call | 1,000 |
+| Candidates per enrichment, TEST key | 50 |
+| `limit` on a list | 100 (default 25) |
+| Request body | 256 KB |
+| `Idempotency-Key` memory | 24 hours |

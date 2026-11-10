@@ -1,0 +1,40 @@
+---
+title: "Statuses"
+description: "Candidate, campaign and question statuses in the Enrichment API."
+---
+
+## Candidate status
+
+A candidate's `status` follows the first rule that matches, from the top.
+
+| Status | Meaning |
+|---|---|
+| `not_interested` | Declined the invite (WhatsApp **No**) or the link. A result is written with `status: not_interested`. |
+| `opted_out` | Replied STOP. Never contacted again. |
+| `completed` | Finished: answered every required question, or a call ended part-way. A result is written. |
+| `in_progress` | Started answering, not finished. |
+| `failed` | The message could not be delivered. |
+| `interested` | Tapped **Yes** on the WhatsApp invite, not started yet. |
+| `link_opened` | Opened the link, not started. |
+| `sent` | The WhatsApp invite went out, no action yet. |
+| `queued` | Not sent yet. |
+
+## Campaign status
+
+| Status | Meaning |
+|---|---|
+| `sent` | Live. |
+| `paused` | Paused by you. |
+| `completed` | Finished. |
+| `cancelled` | Stopped for good. |
+
+## Enrichment
+
+| Field | Values |
+|---|---|
+| `status` | `active`, `archived`. |
+| `questions_status` | `pending`, `ready`, `failed`. See [Enrichments](/enrichment-api/guides/enrichments#questions_status). |
+
+## Completion channel
+
+`completed_channel` is `whatsapp` or `sms` (the link was opened from that message), `voice` (the AI call), `web` (the link, source unknown) or `null`.
