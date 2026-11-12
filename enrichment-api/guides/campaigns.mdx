@@ -19,6 +19,7 @@ A campaign sends your candidates (name + mobile number) to an enrichment. Record
 - `external_id` is your id for the candidate. It comes back on every candidate and result.
 - Up to 1,000 candidates per call.
 - **A row that cannot be contacted never fails the call.** It is left out and listed in `skipped` with its position and a reason: `invalid_phone`, `opted_out` (the number replied STOP earlier) or `duplicate` (already earlier in the same list). If no row can be contacted, the call answers `400` and `details` say why for each one.
+- **Daily allowance:** a key may put **2,000 different people** into campaigns a day (**200** for a TEST key), counted together with its Blue Collar campaigns and reset at midnight IST. A call that would go past it is refused whole with `429 DAILY_CAP` and creates nothing. Skipped rows do not count.
 - A TEST key holds at most 50 candidates per enrichment (`403 FORBIDDEN` beyond that).
 
 ## Campaign status
@@ -105,7 +106,7 @@ data = res.json()["data"]
 }
 ```
 
-**Errors:** `400 VALIDATION_FAILED` (no contactable number, or a field wrong), `403 FORBIDDEN` (the enrichment was made in the playground, or the TEST limit), `404 NOT_FOUND` (no such enrichment, or it is archived).
+**Errors:** `400 VALIDATION_FAILED` (no contactable number, or a field wrong), `403 FORBIDDEN` (the enrichment was made in the playground, or the TEST limit), `404 NOT_FOUND` (no such enrichment, or it is archived), `429 DAILY_CAP` (the key's daily allowance of different people is used up).
 
 ### List campaigns
 
