@@ -496,6 +496,16 @@
               }
             }
           },
+          "403": {
+            "description": "`FORBIDDEN`: A TEST key's organisation already has 5 active enrichments. Archive one.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "409": {
             "description": "`CONFLICT`: `external_id` is already used by another enrichment.",
             "content": {
@@ -1973,6 +1983,16 @@
           },
           "404": {
             "description": "`NOT_FOUND`: No such enrichment, or it is archived.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`DAILY_CAP`: The key has put its daily allowance of different people into campaigns (2,000, or 200 for a TEST key). Resets at midnight IST.",
             "content": {
               "application/json": {
                 "schema": {

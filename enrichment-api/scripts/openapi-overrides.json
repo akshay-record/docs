@@ -17,6 +17,11 @@
         "`name`, `schedule` or `questions` missing, a `yes_no` question without `preferred_answer`, `start_time` not before `end_time`, an unknown language, empty or repeated `days`, or an unknown field."
       ],
       [
+        403,
+        "FORBIDDEN",
+        "A TEST key's organisation already has 5 active enrichments. Archive one."
+      ],
+      [
         409,
         "CONFLICT",
         "`external_id` is already used by another enrichment."
@@ -96,6 +101,11 @@
         404,
         "NOT_FOUND",
         "No such enrichment, or it is archived."
+      ],
+      [
+        429,
+        "DAILY_CAP",
+        "The key has put its daily allowance of different people into campaigns (2,000, or 200 for a TEST key). Resets at midnight IST."
       ]
     ]
   },

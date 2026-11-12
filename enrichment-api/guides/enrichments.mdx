@@ -131,7 +131,7 @@ data = res.json()["data"]
 }
 ```
 
-**Errors:** `400 VALIDATION_FAILED` (a field missing or wrong, a `yes_no` without `preferred_answer`, a start time not before the end time), `409 CONFLICT` (`external_id` already used).
+**Errors:** `400 VALIDATION_FAILED` (a field missing or wrong, a `yes_no` without `preferred_answer`, a start time not before the end time), `403 FORBIDDEN` (a TEST key's organisation already has 5 active enrichments: archive one), `409 CONFLICT` (`external_id` already used).
 
 ### List enrichments
 
