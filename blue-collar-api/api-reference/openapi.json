@@ -8226,7 +8226,7 @@
           "Job mandates"
         ],
         "summary": "Get mandate questions",
-        "description": "See what a candidate will be asked, in `en` `ta` `hi` `kn` `te` or `ml` (English where a translation is not ready). Read-only: change them with `PUT …/questions`.\n\n**Scope:** `mandates:read` or `mandates:write`",
+        "description": "See what a candidate will be asked, in `en` `ta` `hi` `kn` `te` `ml` `bn` or `mr` (English where a translation is not ready). Read-only: change them with `PUT …/questions`.\n\n**Scope:** `mandates:read` or `mandates:write`",
         "parameters": [
           {
             "name": "mandate_id",
@@ -8251,7 +8251,9 @@
                 "hi",
                 "kn",
                 "te",
-                "ml"
+                "ml",
+                "bn",
+                "mr"
               ],
               "default": "en"
             },
@@ -9323,9 +9325,11 @@
                       "ta",
                       "te",
                       "kn",
-                      "ml"
+                      "ml",
+                      "bn",
+                      "mr"
                     ],
-                    "description": "The language candidates are contacted in. Default en"
+                    "description": "The language candidates are contacted in: en, ta, hi, kn, te, ml, bn (Bengali) or mr (Marathi). Default en"
                   },
                   "candidates": {
                     "type": "array",

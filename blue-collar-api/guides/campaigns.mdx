@@ -50,7 +50,7 @@ Send your candidates (name + phone) for a mandate. Record contacts and verifies 
 | `mandate_id` | `string` | **Required.** From step 2 (or send your own `job_id` instead, never both). |
 | `start` | `string` | **Required.** `now` sends at once; `manual` only creates a draft (start it later). |
 | `candidates` | `array<object>` | **Required.** 1–1,000 of `{ name, phone, external_id? }`. Phone: 10 digits or with country code. Bad numbers come back in `rejected`. Each candidate can also carry `metadata`: up to 10 fields of your own (needs `external_id`), returned unchanged on every result and event. |
-| `name`, `external_id`, `language` | `string` | Campaign name, your unique id for it, language `en` `hi` `ta` `te` `kn` `ml` (default `en`). |
+| `name`, `external_id`, `language` | `string` | Campaign name, your unique id for it, language `en` `hi` `ta` `te` `kn` `ml` `bn` `mr` (default `en`). |
 | `job_id` | `string` | Your own job id, if the mandate was created with one. Send this or mandate_id, not both. |
 
 <CodeGroup>
