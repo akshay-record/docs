@@ -10,7 +10,7 @@ A campaign sends your candidates (name + mobile number) to a mandate. Record con
 | `mandate_id` from [step 2](/blue-collar-api/guides/job-mandates) | `campaign_id` | `campaigns:write` (reads also allow `results:read`) |
 
 <Warning>
-  **This contacts real people and spends credits** (1 per candidate when skill verification is on). The phone numbers in the samples are placeholders, so replace them with your own test numbers. A TEST key may only reach numbers Record listed for it (otherwise `403 FORBIDDEN`). If the mandate is still `preparing`, the campaign waits and goes out by itself when it is `ready`.
+  **This contacts real people and spends credits** (1 per candidate when skill verification is on). The phone numbers in the samples are placeholders and **may belong to real people**. Replace them with your own number, or with candidates who have agreed to be contacted, before you send a request. A TEST key contacts any number you send, just like a live key. If the mandate is still `preparing`, the campaign waits and goes out by itself when it is `ready`.
 </Warning>
 
 ## Candidates
@@ -43,7 +43,7 @@ Send your candidates (name + phone) for a mandate. Record contacts and verifies 
 
 **Scope:** `campaigns:write` · **Idempotency-Key:** required
 
-<Warning>This contacts real people.</Warning>
+<Warning>This contacts real people. The sample numbers are placeholders and may belong to real people, so use your own number.</Warning>
 
 | Field | Type | Description |
 |---|---|---|
@@ -172,7 +172,7 @@ Save `data.campaign.campaign_id` for the next step.
 |---|---|
 | 400 `VALIDATION_FAILED` | Both or neither of `mandate_id` / `job_id`, or no usable phone number. |
 | 402 `INSUFFICIENT_CREDITS` | Not enough credits (1 per candidate when skill verification is on). |
-| 403 `FORBIDDEN` | TEST key with a number not on its list, or the mandate was made in the playground. |
+| 403 `FORBIDDEN` | The mandate was made in the playground. |
 | 404 `NOT_FOUND` | No such mandate. |
 | 409 `CONFLICT` | Mandate is archived, or campaign `external_id` is taken. |
 | 429 `DAILY_CAP` | 2,000 different candidates already added today. |
@@ -376,7 +376,7 @@ pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/start"
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such campaign. |
-| 403 `FORBIDDEN` | Campaign was made in the playground, or TEST key number not allowed. |
+| 403 `FORBIDDEN` | Campaign was made in the playground. |
 | 409 `CONFLICT` | Already started, or the job is archived. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/campaigns/start-a-campaign)
@@ -391,7 +391,7 @@ Add more people (up to 1,000 a call). A number already in the campaign is skippe
 
 **Scope:** `campaigns:write` · **Idempotency-Key:** required
 
-<Warning>This contacts real people.</Warning>
+<Warning>This contacts real people. The sample numbers are placeholders and may belong to real people, so use your own number.</Warning>
 
 | Field | Type | Description |
 |---|---|---|
@@ -467,7 +467,7 @@ pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates" '{
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such campaign. |
-| 403 `FORBIDDEN` | Campaign was made in the playground, or TEST key number not allowed. |
+| 403 `FORBIDDEN` | Campaign was made in the playground. |
 | 409 `CONFLICT` | Campaign is completed / cancelled, or the job is archived. |
 | 422 `LIMIT_EXCEEDED` | More than 20,000 candidates in the campaign. |
 | 402 `INSUFFICIENT_CREDITS` | Not enough credits. |
