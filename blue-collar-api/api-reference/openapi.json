@@ -3132,15 +3132,7 @@
                         "type": "array",
                         "items": {
                           "type": "string",
-                          "enum": [
-                            "mon",
-                            "tue",
-                            "wed",
-                            "thu",
-                            "fri",
-                            "sat",
-                            "sun"
-                          ]
+                          "description": "mon, tue, wed, thu, fri, sat or sun (any casing; full names such as Monday also work)"
                         },
                         "minItems": 1,
                         "maxItems": 7,
@@ -4136,15 +4128,7 @@
                         "type": "array",
                         "items": {
                           "type": "string",
-                          "enum": [
-                            "mon",
-                            "tue",
-                            "wed",
-                            "thu",
-                            "fri",
-                            "sat",
-                            "sun"
-                          ]
+                          "description": "mon, tue, wed, thu, fri, sat or sun (any casing; full names such as Monday also work)"
                         },
                         "minItems": 1,
                         "maxItems": 7,
