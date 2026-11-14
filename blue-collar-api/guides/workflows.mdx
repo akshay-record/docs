@@ -38,7 +38,7 @@ Create the template your jobs run under: how candidates are reached, when, and w
 | `schedule` | `object` | **Required.** Send all six keys below. |
 | `schedule.start_time` | `string` | **Required.** Send window start, "HH:MM" (24-hour). |
 | `schedule.end_time` | `string` | **Required.** Send window end, "HH:MM" (24-hour). |
-| `schedule.days` | `array<string>` | **Required.** At least one of mon…sun, each once. Always lowercase in the API; the playground shows them as Mon…Sun. |
+| `schedule.days` | `array<string>` | **Required.** At least one of mon…sun, each once. Any casing is accepted (`mon`, `Mon`, `Monday`); the API always returns lowercase and the playground shows them as Mon…Sun. |
 | `schedule.timezone` | `string` | **Required.** IANA time zone, for example `Asia/Kolkata`. |
 | `schedule.max_retries` | `integer` | **Required.** Follow-up calls, 1 to 3. |
 | `schedule.retry_after_hours` | `integer` | **Required.** Hours before a retry: `6`, `8` or `12`. |
