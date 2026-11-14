@@ -9650,7 +9650,7 @@
             }
           },
           "403": {
-            "description": "`FORBIDDEN`: TEST key with a number not on its list, or the mandate was made in the playground.",
+            "description": "`FORBIDDEN`: The mandate was made in the playground.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10554,7 +10554,7 @@
             }
           },
           "403": {
-            "description": "`FORBIDDEN`: Campaign was made in the playground, or TEST key number not allowed.",
+            "description": "`FORBIDDEN`: Campaign was made in the playground.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10948,7 +10948,7 @@
             }
           },
           "403": {
-            "description": "`FORBIDDEN`: Campaign was made in the playground, or TEST key number not allowed.",
+            "description": "`FORBIDDEN`: Campaign was made in the playground.",
             "content": {
               "application/json": {
                 "schema": {
@@ -12866,6 +12866,17 @@
                                 ],
                                 "description": "The town the candidate was in when they allowed location on the verification link. null when they denied it, it could not be looked up, or they verified by phone call"
                               },
+                              "pincode": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "The pincode of `location_name`. null when location was not shared, or no pincode could be found for the town"
+                              },
                               "metadata": {
                                 "type": "object",
                                 "additionalProperties": {
@@ -13262,6 +13273,7 @@
                         "attempts": 3,
                         "language": "tamil",
                         "location_name": "Coimbatore",
+                        "pincode": "641001",
                         "metadata": {
                           "ats_application_id": "app_991"
                         },
@@ -13517,6 +13529,17 @@
                             }
                           ],
                           "description": "The town the candidate was in when they allowed location on the verification link. null when they denied it, it could not be looked up, or they verified by phone call"
+                        },
+                        "pincode": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "The pincode of `location_name`. null when location was not shared, or no pincode could be found for the town"
                         },
                         "metadata": {
                           "type": "object",
@@ -13879,6 +13902,7 @@
                     "attempts": 3,
                     "language": "tamil",
                     "location_name": "Coimbatore",
+                    "pincode": "641001",
                     "metadata": {
                       "ats_application_id": "app_991"
                     },
@@ -14506,6 +14530,17 @@
                                     ],
                                     "description": "The town the candidate was in when they allowed location on the verification link. null when they denied it, it could not be looked up, or they verified by phone call"
                                   },
+                                  "pincode": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ],
+                                    "description": "The pincode of `location_name`. null when location was not shared, or no pincode could be found for the town"
+                                  },
                                   "metadata": {
                                     "type": "object",
                                     "additionalProperties": {
@@ -14915,6 +14950,7 @@
                           "attempts": 3,
                           "language": "tamil",
                           "location_name": "Coimbatore",
+                          "pincode": "641001",
                           "metadata": {
                             "ats_application_id": "app_991"
                           },
@@ -15205,6 +15241,17 @@
                                 }
                               ],
                               "description": "The town the candidate was in when they allowed location on the verification link. null when they denied it, it could not be looked up, or they verified by phone call"
+                            },
+                            "pincode": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ],
+                              "description": "The pincode of `location_name`. null when location was not shared, or no pincode could be found for the town"
                             },
                             "metadata": {
                               "type": "object",
@@ -15578,6 +15625,7 @@
                       "attempts": 3,
                       "language": "tamil",
                       "location_name": "Coimbatore",
+                      "pincode": "641001",
                       "metadata": {
                         "ats_application_id": "app_991"
                       },

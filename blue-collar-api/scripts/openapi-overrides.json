@@ -546,7 +546,7 @@
       [
         403,
         "FORBIDDEN",
-        "TEST key with a number not on its list, or the mandate was made in the playground."
+        "The mandate was made in the playground."
       ],
       [
         404,
@@ -600,7 +600,7 @@
       [
         403,
         "FORBIDDEN",
-        "Campaign was made in the playground, or TEST key number not allowed."
+        "Campaign was made in the playground."
       ],
       [
         409,
@@ -622,7 +622,7 @@
       [
         403,
         "FORBIDDEN",
-        "Campaign was made in the playground, or TEST key number not allowed."
+        "Campaign was made in the playground."
       ],
       [
         409,
