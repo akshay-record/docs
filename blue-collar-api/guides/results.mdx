@@ -34,6 +34,7 @@ A result is what Record **collected** from the candidate: the answers to your sc
   "attempts": 3,
   "language": "tamil",
   "location_name": "Coimbatore",
+  "pincode": "641001",
   "metadata": { "ats_application_id": "app_991" },
   "started_at": "2026-10-05T09:30:00.000Z",
   "completed_at": "2026-10-05T12:41:10.000Z",
@@ -96,7 +97,7 @@ A result is what Record **collected** from the candidate: the answers to your sc
 - **Skill verification** gives the `verdict`, `total_score`, an `evidenceClass` per skill (`Sufficient`, `Partial`, `Minimal`, `Incorrect` or `No Response`), and how many questions were `answered` of `total`. `answers` holds what the candidate said to each question, with its `evidenceClass`, its `score` as score and maximum in one value (like `7.5/10`) and a `summary`.
 - **Other roles (post-screening).** `answers` in `interest_collection` holds what the candidate said for each role. Every entry in `transcripts` has a `label`, the `text` as Record shows it, and `transcript` (what they said, in their own words). `transcript` is left out of the entry when nothing was said, not sent as `null`.
 - **Video or phone call.** The recording depends on how the candidate verified. On the video link, each answer has a `video_url` and its length in `duration_seconds`, and `call_recording_url` is `null`. By phone call there is one recording of the whole call in `call_recording_url`, and every answer's `video_url` and `duration_seconds` are `null`. So check `call_recording_url` first: when it is set, there are no videos. A candidate who did both gets the more recent one.
-- **Location.** `location_name` is the town the candidate was in when they allowed location on the verification link (`null` when they denied it, it could not be looked up, or they verified by phone call); coordinates are never returned.
+- **Location.** `location_name` is the town the candidate was in when they allowed location on the verification link (`null` when they denied it, it could not be looked up, or they verified by phone call); `pincode` is that town's pincode (`null` when no pincode could be found); coordinates are never returned.
 - **Privacy.** Phone numbers are never returned.
 
 ## Endpoints
@@ -211,6 +212,7 @@ pcall GET "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/results?limit=50"
         "attempts": 3,
         "language": "tamil",
         "location_name": "Coimbatore",
+        "pincode": "641001",
         "metadata": { "ats_application_id": "app_991" },
         "started_at": "2026-10-05T09:30:00.000Z",
         "completed_at": "2026-10-05T12:41:10.000Z",
@@ -331,6 +333,7 @@ pcall GET "/api/v1/partner/results/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01"
     "attempts": 3,
     "language": "tamil",
     "location_name": "Coimbatore",
+    "pincode": "641001",
     "metadata": { "ats_application_id": "app_991" },
     "started_at": "2026-10-05T09:30:00.000Z",
     "completed_at": "2026-10-05T12:41:10.000Z",

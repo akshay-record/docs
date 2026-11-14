@@ -321,7 +321,7 @@
   },
   "getMandateQuestionsById": {
     "title": "Get mandate questions",
-    "description": "See what a candidate will be asked, in `en` `ta` `hi` `kn` `te` or `ml` (English where a translation is not ready). Read-only: change them with `PUT …/questions`.",
+    "description": "See what a candidate will be asked, in `en` `ta` `hi` `kn` `te` `ml` `bn` or `mr` (English where a translation is not ready). Read-only: change them with `PUT …/questions`.",
     "errors": [
       [
         404,
@@ -530,7 +530,7 @@
       "mandate_id": "From step 2 (or send your own `job_id` instead, never both).",
       "start": "`now` sends at once; `manual` only creates a draft (start it later).",
       "candidates": "1–1,000 of `{ name, phone, external_id? }`. Phone: 10 digits or with country code. Bad numbers come back in `rejected`.",
-      "name, external_id, language": "Campaign name, your unique id for it, language `en` `hi` `ta` `te` `kn` `ml` (default `en`)."
+      "name, external_id, language": "Campaign name, your unique id for it, language `en` `hi` `ta` `te` `kn` `ml` `bn` `mr` (default `en`)."
     },
     "errors": [
       [
@@ -546,7 +546,7 @@
       [
         403,
         "FORBIDDEN",
-        "TEST key with a number not on its list, or the mandate was made in the playground."
+        "The mandate was made in the playground."
       ],
       [
         404,
@@ -600,7 +600,7 @@
       [
         403,
         "FORBIDDEN",
-        "Campaign was made in the playground, or TEST key number not allowed."
+        "Campaign was made in the playground."
       ],
       [
         409,
@@ -622,7 +622,7 @@
       [
         403,
         "FORBIDDEN",
-        "Campaign was made in the playground, or TEST key number not allowed."
+        "Campaign was made in the playground."
       ],
       [
         409,

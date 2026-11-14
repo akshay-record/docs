@@ -519,13 +519,13 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 `GET /mandates/{mandate_id}/questions`
 
-See what a candidate will be asked, in `en` `ta` `hi` `kn` `te` or `ml` (English where a translation is not ready). Read-only: change them with `PUT …/questions`.
+See what a candidate will be asked, in `en` `ta` `hi` `kn` `te` `ml` `bn` or `mr` (English where a translation is not ready). Read-only: change them with `PUT …/questions`.
 
 **Scope:** `mandates:read` or `mandates:write`
 
 | Query | Type | Description |
 |---|---|---|
-| `language` | `string` | One of `en`, `ta`, `hi`, `kn`, `te`, `ml`. Default `"en"`. |
+| `language` | `string` | One of `en`, `ta`, `hi`, `kn`, `te`, `ml`, `bn`, `mr`. Default `"en"`. |
 
 <CodeGroup>
 

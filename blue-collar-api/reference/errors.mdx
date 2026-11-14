@@ -25,7 +25,7 @@ Every failure has the same shape. Match on `error.code`, never on the message. F
 | 401 | `UNAUTHORIZED` | Key or signature is wrong, your clock is 5+ minutes off, or a signature was used twice. | Re-check key and secret, sign every request afresh, sync your clock. |
 | 402 | `INSUFFICIENT_CREDITS` | Not enough credits for this campaign. | Top up credits (1 per candidate when skill verification is on), then retry. |
 | 403 | `SCOPE_MISSING` | The key is valid but not allowed to call this endpoint. | Ask Record to add the scope named in the message. |
-| 403 | `FORBIDDEN` | You can read this object but not change it (made in the playground), or a TEST key used a number that is not on its list. | Work with objects created through the API; with a TEST key use the numbers Record listed. |
+| 403 | `FORBIDDEN` | You can read this object but not change it (made in the playground). | Work with objects created through the API. |
 | 403 | `HTTPS_REQUIRED` | Plain `http://` is refused on the live host. | Call the `https://` address. |
 | 404 | `NOT_FOUND` | No such object for this key’s organisation, project and mode. | Check the id. TEST and LIVE data are separate. |
 | 409 | `CONFLICT` | Wrong state or the id is taken: archived, already started, duplicate `external_id` / `job_id`, still preparing. | Read the message; wait for `Retry-After`, or use a new id. |
