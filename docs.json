@@ -421,6 +421,27 @@
         ]
       },
       {
+        "tab": "Zoho Recruit Platform",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              "zoho-recruit/index"
+            ]
+          },
+          {
+            "group": "Set up Zoho Recruit",
+            "pages": [
+              "zoho-recruit/setup/job-fields",
+              "zoho-recruit/setup/layout-rules",
+              "zoho-recruit/setup/connect-and-sync",
+              "zoho-recruit/setup/check-setup",
+              "zoho-recruit/setup/automation"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "Meta Config",
         "hidden": true,
         "pages": [

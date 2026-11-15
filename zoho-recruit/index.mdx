@@ -1,0 +1,46 @@
+---
+title: "Zoho Recruit platform"
+description: "Connect Zoho Recruit to Record: a recruiter adds one Workflow ID to a job and Record verifies the applicants."
+---
+
+The Zoho Recruit integration lets recruiters run Record verification without leaving Zoho. A recruiter creates a job in Zoho and adds one value: the Record **Workflow ID**. Record turns that job into a job mandate, then a campaign, invites the applicants, and reports back inside Zoho. White-collar and blue-collar jobs work the same way.
+
+## How it works
+
+<Steps>
+  <Step title="Sync">
+    Record copies your Zoho jobs, candidates and applications. The sync runs from the **Sync source data** button and on a schedule.
+  </Step>
+  <Step title="Check">
+    For each job, Record checks that the Workflow ID exists, is active, and matches the job's collar type. If something is wrong, nothing is created and the reason is written to the job's **Record Sync Status** field.
+  </Step>
+  <Step title="Create the mandate">
+    Record creates the job mandate from the job's title, skills, experience, location and salary, and prepares the questions.
+  </Step>
+  <Step title="Approve and invite">
+    Unless the workflow is set to auto-send, a recruiter approves the mandate first. Record then creates a campaign and invites the applicants.
+  </Step>
+  <Step title="Results in Zoho">
+    Verification results are written back to the job in Zoho.
+  </Step>
+</Steps>
+
+## Who owns what
+
+| Data | Owner |
+| --- | --- |
+| Job details: title, experience, skills, description, salary, location, positions | Zoho. The next sync overwrites any change made in Record. |
+| Questions, enrichment, marks | Record. |
+
+## Set up the integration
+
+Set up takes about 5 minutes and you do it once per Zoho account. Follow the steps in order.
+
+| Step | What you do | Where |
+| --- | --- | --- |
+| 1 | [Add the Record fields to Job Openings](/zoho-recruit/setup/job-fields) | Zoho Recruit |
+| 2 | [Show the right fields for each collar type](/zoho-recruit/setup/layout-rules) | Zoho Recruit |
+| 3 | [Connect Zoho Recruit and run a sync](/zoho-recruit/setup/connect-and-sync) | Record platform |
+| 4 | [Check your setup](/zoho-recruit/setup/check-setup) | Record platform |
+| 5 | [Choose approve-first or auto-send](/zoho-recruit/setup/automation) | Record platform |
+
