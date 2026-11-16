@@ -6,8 +6,7 @@
       "name": "Display name, 1–120 characters.",
       "external_id": "Your own id (A-Z a-z 0-9 . _ : -, up to 128). Unique per organisation and mode.",
       "description": "Optional note, up to 500 characters.",
-      "delivery": "Optional. WhatsApp and the AI voice call are always on. Send `sms_backup: true` to also send an SMS with the link.",
-      "schedule": "Required. Send all six: `language` (english, hindi, tamil, kannada, telugu, malayalam, bengali, marathi), `start_time` and `end_time` (\"HH:MM\", start before end), `days` (mon…sun, each once), `timezone` (IANA), `max_retries` 1 to 20, `retry_after_hours` 1 to 48.",
+      "schedule": "Required. Send all six: `language` (english, hindi, tamil, kannada, telugu, malayalam), `start_time` and `end_time` (\"HH:MM\", start before end), `days` (mon…sun, each once), `timezone` (IANA), `max_retries` 1 to 20, `retry_after_hours` 1 to 48.",
       "questions": "Required. 1 to 15 of `{ question_text, type, preferred_answer?, required? }`. `type` is `yes_no` (needs `preferred_answer`) or `voice`. `required` defaults to true."
     },
     "errors": [
@@ -80,7 +79,7 @@
   "createEnrichmentCampaign": {
     "title": "Create a campaign",
     "danger": true,
-    "description": "Add candidates (name and mobile number) to one of your enrichments. Record starts contacting them straight away: there is no separate start step. If the questions are still being prepared, the campaign waits and goes out by itself. Returns `campaign_id`, the candidates and every row that was skipped.",
+    "description": "Add candidates (name and mobile number) to one of your enrichments. Record starts contacting them straight away: there is no separate start step. If the questions are still being prepared, the campaign waits and goes out by itself. Returns `campaign_id`, the candidates and every row that was skipped. Credits are charged per candidate added and checked for the whole batch first.",
     "fields": {
       "name": "Campaign name, 1–200 characters.",
       "language": "Optional invite language. Defaults to the enrichment's schedule language.",
@@ -91,6 +90,11 @@
         400,
         "VALIDATION_FAILED",
         "No candidate has a contactable number (`details` say why), or a field is missing or unknown."
+      ],
+      [
+        402,
+        "INSUFFICIENT_CREDITS",
+        "The organisation's credits do not cover every candidate in the batch (live wallet for a live key, test wallet for a TEST key). Nothing is created."
       ],
       [
         403,
@@ -134,7 +138,7 @@
   "pauseEnrichmentCampaign": {
     "title": "Pause a campaign",
     "danger": false,
-    "description": "Stop everything still to go out (invites, follow-ups, SMS, calls) until you resume. Only a live campaign can be paused.",
+    "description": "Stop everything still to go out (invites, follow-ups, SMS, calls) until you resume. Only a live campaign can be paused, and one whose candidates have all finished has nothing left to pause.",
     "errors": [
       [
         403,
@@ -149,7 +153,7 @@
       [
         409,
         "CONFLICT",
-        "The campaign is not live."
+        "The campaign is not live, or every candidate has already finished."
       ]
     ]
   },

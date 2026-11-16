@@ -24,7 +24,7 @@ An enrichment is a set of questions plus the window candidates are contacted in.
 
 | Field | Description |
 |---|---|
-| `language` | Opening language of messages and calls: `english`, `hindi`, `tamil`, `kannada`, `telugu`, `malayalam`, `bengali` or `marathi`. The candidate can switch. |
+| `language` | Opening language of messages and calls: `english`, `hindi`, `tamil`, `kannada`, `telugu` or `malayalam`. The candidate can switch. |
 | `start_time`, `end_time` | The daily window, `HH:MM` in 24 hours. `start_time` must be before `end_time`. |
 | `days` | `mon` to `sun`, each listed once. |
 | `timezone` | An IANA time zone, such as `Asia/Kolkata`. |
@@ -33,7 +33,7 @@ An enrichment is a set of questions plus the window candidates are contacted in.
 
 ## Channels
 
-WhatsApp and the AI voice call are always on. Send `delivery: { "sms_backup": true }` to also send an SMS with the link.
+WhatsApp, the AI voice call and SMS are all on for every enrichment. There is nothing to choose or send.
 
 ## `questions_status`
 
@@ -62,7 +62,6 @@ Returns `enrichment_id`.
 | `questions` | `array<object>` | **Required.** 1–15 of `{ question_text, type, preferred_answer?, required? }`. |
 | `external_id` | `string` | Your own id. Unique per organisation and mode. |
 | `description` | `string` | Optional, up to 500 characters. |
-| `delivery` | `object` | Optional. `{ "sms_backup": true }` adds SMS. |
 
 <CodeGroup>
 
@@ -114,12 +113,12 @@ data = res.json()["data"]
 {
   "success": true,
   "data": {
-    "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+    "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
     "external_id": "enr-chennai-warehouse",
     "name": "Warehouse talent pool - Chennai",
     "status": "active",
     "questions_status": "pending",
-    "delivery": { "whatsapp": true, "voice_call": true, "sms": false },
+    "delivery": { "whatsapp": true, "voice_call": true, "sms": true },
     "question_count": 2,
     "counts": { "campaigns": 0, "candidates": 0, "sent": 0, "completed": 0 },
     "is_external": true,
@@ -178,7 +177,7 @@ Funnel numbers across all campaigns.
 {
   "success": true,
   "data": {
-    "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+    "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
     "campaign_count": 1,
     "kpis": { "uploaded": 120, "rejected": 6, "sent": 118, "delivered": 110, "link_opened": 64, "completed": 41, "opted_out": 2 },
     "standing": { "completed": 41, "in_progress": 8, "sent": 62, "not_interested": 5, "opted_out": 2 }
