@@ -23,13 +23,12 @@ There is one event type, `assessment.result`. It is written when a candidate's a
 
 A candidate who is merely invited or still answering is **not** announced; read them with [`GET /campaigns/{campaign_id}/candidates`](/white-collar-api/guides/results#list-the-candidates-of-a-campaign).
 
-Record waits until the result has stayed the same for about 45 seconds before it writes the event, because grading can land just after the submit. If the result changes later (a grade or the written feedback arrives, or you [reassign](/white-collar-api/guides/campaigns#resend-and-reassign) the candidate and they sit it again) a **new event with a higher `version`** follows. Keep the highest `version` for each `data.candidate_id`.
+Record writes the event once the result is **final**: the score, the written feedback and the recording status are all in. That is normally shortly after the candidate submits (preparing the recording is the main wait), and at the latest 10 minutes after the attempt ended, whatever is still missing. The event is available to pull, and sent to your webhook, as soon as it is written. If the result changes afterwards (a recording or feedback that arrives after that, or you [reassign](/white-collar-api/guides/campaigns#resend-and-reassign) the candidate and they sit it again) a **new event with a higher `version`** follows. Keep the highest `version` for each `data.candidate_id`.
 
 ```json Event
 {
   "event_id": "evt_0123456789abcdef0123456789abcdef",
   "type": "assessment.result",
-  "api_version": "2026-10-01",
   "created_at": "2026-10-29T10:13:25.000Z",
   "mode": "live",
   "version": 1,

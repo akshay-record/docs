@@ -73,10 +73,10 @@ The full record: the one webhooks and the event feed deliver.
 | `verdict` | `hire` if `score` is at or above the pass mark, `reject` below it, `null` if not decided. |
 | `identity_verified` | Whether the candidate passed the identity check; `null` if it did not run. |
 | `feedback` | Record's written assessment of the attempt, once graded. |
-| `recording_status` | The screen and camera recording of the attempt: `not_started`, `in_progress`, `processing`, `ready` or `failed`; `null` with no attempt. When it becomes `ready` you get another event with a higher `version`. |
+| `recording_status` | The screen and camera recording of the attempt: `not_started`, `in_progress`, `processing`, `ready` or `failed`; `null` with no attempt. Record waits for it to be `ready` or `failed` before it writes the event, so it normally arrives with one of those; if it only becomes `ready` later, you get another event with a higher `version`. |
 
 <Note>
-  Grading finishes a few seconds after the candidate submits, and the written `feedback` can arrive after the score. A webhook waits about 45 seconds for the result to settle, so it normally arrives complete. If something changes later, you get another event with a higher `version`.
+  Grading finishes a few seconds after the candidate submits, and the written `feedback` and the recording can arrive after the score. Record writes the event once the result is final, so it normally arrives complete, at the latest 10 minutes after the attempt ended. If something changes later, you get another event with a higher `version`.
 </Note>
 
 ## The recording
