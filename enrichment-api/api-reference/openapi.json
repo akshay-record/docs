@@ -76,17 +76,6 @@
                     "default": "",
                     "description": "Optional note, up to 500 characters."
                   },
-                  "delivery": {
-                    "type": "object",
-                    "properties": {
-                      "sms_backup": {
-                        "type": "boolean",
-                        "description": "Also send an SMS with the link; default false"
-                      }
-                    },
-                    "additionalProperties": false,
-                    "description": "WhatsApp and the AI voice call are always on; only SMS is optional"
-                  },
                   "schedule": {
                     "type": "object",
                     "properties": {
@@ -98,9 +87,7 @@
                           "hindi",
                           "kannada",
                           "telugu",
-                          "malayalam",
-                          "bengali",
-                          "marathi"
+                          "malayalam"
                         ],
                         "default": "english",
                         "description": "Opening language of messages and calls (the candidate can switch)"
@@ -160,7 +147,7 @@
                       "retry_after_hours"
                     ],
                     "additionalProperties": false,
-                    "description": "Required. Send all six: `language` (english, hindi, tamil, kannada, telugu, malayalam, bengali, marathi), `start_time` and `end_time` (\"HH:MM\", start before end), `days` (mon…sun, each once), `timezone` (IANA), `max_retries` 1 to 20, `retry_after_hours` 1 to 48."
+                    "description": "Required. Send all six: `language` (english, hindi, tamil, kannada, telugu, malayalam), `start_time` and `end_time` (\"HH:MM\", start before end), `days` (mon…sun, each once), `timezone` (IANA), `max_retries` 1 to 20, `retry_after_hours` 1 to 48."
                   },
                   "questions": {
                     "type": "array",
@@ -424,7 +411,7 @@
                 "example": {
                   "success": true,
                   "data": {
-                    "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+                    "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
                     "external_id": "enr-chennai-warehouse",
                     "name": "Warehouse talent pool - Chennai",
                     "description": "",
@@ -433,7 +420,7 @@
                     "delivery": {
                       "whatsapp": true,
                       "voice_call": true,
-                      "sms": false
+                      "sms": true
                     },
                     "schedule": {
                       "language": "english",
@@ -591,9 +578,7 @@
                 "hindi",
                 "kannada",
                 "telugu",
-                "malayalam",
-                "bengali",
-                "marathi"
+                "malayalam"
               ]
             }
           },
@@ -796,7 +781,7 @@
                   "data": {
                     "items": [
                       {
-                        "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+                        "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
                         "external_id": "enr-chennai-warehouse",
                         "name": "Warehouse talent pool - Chennai",
                         "description": "",
@@ -805,7 +790,7 @@
                         "delivery": {
                           "whatsapp": true,
                           "voice_call": true,
-                          "sms": false
+                          "sms": true
                         },
                         "schedule": {
                           "language": "english",
@@ -902,7 +887,7 @@
               "type": "string",
               "pattern": "^WF_[A-Z]{2}_[A-Z0-9]{10,40}$"
             },
-            "example": "WF_BG_261110101530123K7M2P9Q4X7R5T8"
+            "example": "WF_EN_261110101530123K7M2P9Q4X7R5T8"
           }
         ],
         "responses": {
@@ -1080,7 +1065,7 @@
                 "example": {
                   "success": true,
                   "data": {
-                    "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+                    "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
                     "external_id": "enr-chennai-warehouse",
                     "name": "Warehouse talent pool - Chennai",
                     "description": "",
@@ -1089,7 +1074,7 @@
                     "delivery": {
                       "whatsapp": true,
                       "voice_call": true,
-                      "sms": false
+                      "sms": true
                     },
                     "schedule": {
                       "language": "english",
@@ -1163,17 +1148,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall GET \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8\""
+            "source": "pcall GET \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8\""
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"GET\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8\");\nconst { data } = await res.json();"
+            "source": "const res = await call(\"GET\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8\");\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"GET\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8\")\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"GET\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8\")\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -1198,7 +1183,7 @@
               "type": "string",
               "pattern": "^WF_[A-Z]{2}_[A-Z0-9]{10,40}$"
             },
-            "example": "WF_BG_261110101530123K7M2P9Q4X7R5T8"
+            "example": "WF_EN_261110101530123K7M2P9Q4X7R5T8"
           },
           {
             "name": "Idempotency-Key",
@@ -1386,7 +1371,7 @@
                 "example": {
                   "success": true,
                   "data": {
-                    "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+                    "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
                     "external_id": "enr-chennai-warehouse",
                     "name": "Warehouse talent pool - Chennai",
                     "description": "",
@@ -1395,7 +1380,7 @@
                     "delivery": {
                       "whatsapp": true,
                       "voice_call": true,
-                      "sms": false
+                      "sms": true
                     },
                     "schedule": {
                       "language": "english",
@@ -1479,17 +1464,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall DELETE \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8\""
+            "source": "pcall DELETE \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8\""
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"DELETE\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8\");\nconst { data } = await res.json();"
+            "source": "const res = await call(\"DELETE\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8\");\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"DELETE\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8\")\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"DELETE\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8\")\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -1516,7 +1501,7 @@
               "type": "string",
               "pattern": "^WF_[A-Z]{2}_[A-Z0-9]{10,40}$"
             },
-            "example": "WF_BG_261110101530123K7M2P9Q4X7R5T8"
+            "example": "WF_EN_261110101530123K7M2P9Q4X7R5T8"
           }
         ],
         "responses": {
@@ -1583,7 +1568,7 @@
                 "example": {
                   "success": true,
                   "data": {
-                    "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+                    "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
                     "campaign_count": 1,
                     "kpis": {
                       "uploaded": 120,
@@ -1627,17 +1612,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall GET \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/overview\""
+            "source": "pcall GET \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/overview\""
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"GET\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/overview\");\nconst { data } = await res.json();"
+            "source": "const res = await call(\"GET\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/overview\");\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"GET\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/overview\")\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"GET\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/overview\")\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -1654,7 +1639,7 @@
           "Enrichment campaigns"
         ],
         "summary": "Create a campaign",
-        "description": "Add candidates (name and mobile number) to one of your enrichments. Record starts contacting them straight away: there is no separate start step. If the questions are still being prepared, the campaign waits and goes out by itself. Returns `campaign_id`, the candidates and every row that was skipped.\n\n**Scope:** `enrichment:campaigns` · **Idempotency-Key:** optional\n\n> **This contacts real candidates.** Build against a TEST key first.",
+        "description": "Add candidates (name and mobile number) to one of your enrichments. Record starts contacting them straight away: there is no separate start step. If the questions are still being prepared, the campaign waits and goes out by itself. Returns `campaign_id`, the candidates and every row that was skipped. Credits are charged per candidate added and checked for the whole batch first.\n\n**Scope:** `enrichment:campaigns` · **Idempotency-Key:** optional\n\n> **This contacts real candidates.** Build against a TEST key first.",
         "parameters": [
           {
             "name": "enrichment_id",
@@ -1664,7 +1649,7 @@
               "type": "string",
               "pattern": "^WF_[A-Z]{2}_[A-Z0-9]{10,40}$"
             },
-            "example": "WF_BG_261110101530123K7M2P9Q4X7R5T8"
+            "example": "WF_EN_261110101530123K7M2P9Q4X7R5T8"
           },
           {
             "name": "Idempotency-Key",
@@ -1698,9 +1683,7 @@
                       "hindi",
                       "kannada",
                       "telugu",
-                      "malayalam",
-                      "bengali",
-                      "marathi"
+                      "malayalam"
                     ],
                     "description": "Invite language; defaults to the enrichment's schedule language"
                   },
@@ -1915,7 +1898,7 @@
                   "data": {
                     "campaign": {
                       "campaign_id": "EC_261110103045123M4P8T2K6Q9R",
-                      "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+                      "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
                       "name": "November talent pool",
                       "language": "english",
                       "status": "sent",
@@ -1924,7 +1907,7 @@
                       "channels": {
                         "whatsapp": true,
                         "voice_call": true,
-                        "sms": false
+                        "sms": true
                       },
                       "rejected_count": 1,
                       "created_at": "2026-11-10T10:30:45.000Z",
@@ -1963,6 +1946,16 @@
           },
           "400": {
             "description": "`VALIDATION_FAILED`: No candidate has a contactable number (`details` say why), or a field is missing or unknown.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "`INSUFFICIENT_CREDITS`: The organisation's credits do not cover every candidate in the batch (live wallet for a live key, test wallet for a TEST key). Nothing is created.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2012,17 +2005,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall POST \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/campaigns\" '{\n  \"name\": \"November talent pool\",\n  \"candidates\": [\n    {\n      \"name\": \"Ravi Kumar\",\n      \"phone_number\": \"9876543210\",\n      \"external_id\": \"cand-1001\"\n    },\n    {\n      \"name\": \"Meena S\",\n      \"phone_number\": \"9123456780\",\n      \"external_id\": \"cand-1002\"\n    },\n    {\n      \"name\": \"Test Number\",\n      \"phone_number\": \"0000000000\"\n    }\n  ]\n}'"
+            "source": "pcall POST \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/campaigns\" '{\n  \"name\": \"November talent pool\",\n  \"candidates\": [\n    {\n      \"name\": \"Ravi Kumar\",\n      \"phone_number\": \"9876543210\",\n      \"external_id\": \"cand-1001\"\n    },\n    {\n      \"name\": \"Meena S\",\n      \"phone_number\": \"9123456780\",\n      \"external_id\": \"cand-1002\"\n    },\n    {\n      \"name\": \"Test Number\",\n      \"phone_number\": \"0000000000\"\n    }\n  ]\n}'"
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"POST\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/campaigns\", {\n  \"name\": \"November talent pool\",\n  \"candidates\": [\n    {\n      \"name\": \"Ravi Kumar\",\n      \"phone_number\": \"9876543210\",\n      \"external_id\": \"cand-1001\"\n    },\n    {\n      \"name\": \"Meena S\",\n      \"phone_number\": \"9123456780\",\n      \"external_id\": \"cand-1002\"\n    },\n    {\n      \"name\": \"Test Number\",\n      \"phone_number\": \"0000000000\"\n    }\n  ]\n});\nconst { data } = await res.json();"
+            "source": "const res = await call(\"POST\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/campaigns\", {\n  \"name\": \"November talent pool\",\n  \"candidates\": [\n    {\n      \"name\": \"Ravi Kumar\",\n      \"phone_number\": \"9876543210\",\n      \"external_id\": \"cand-1001\"\n    },\n    {\n      \"name\": \"Meena S\",\n      \"phone_number\": \"9123456780\",\n      \"external_id\": \"cand-1002\"\n    },\n    {\n      \"name\": \"Test Number\",\n      \"phone_number\": \"0000000000\"\n    }\n  ]\n});\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"POST\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/campaigns\", {\n    \"name\": \"November talent pool\",\n    \"candidates\": [\n        {\n            \"name\": \"Ravi Kumar\",\n            \"phone_number\": \"9876543210\",\n            \"external_id\": \"cand-1001\"\n        },\n        {\n            \"name\": \"Meena S\",\n            \"phone_number\": \"9123456780\",\n            \"external_id\": \"cand-1002\"\n        },\n        {\n            \"name\": \"Test Number\",\n            \"phone_number\": \"0000000000\"\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"POST\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/campaigns\", {\n    \"name\": \"November talent pool\",\n    \"candidates\": [\n        {\n            \"name\": \"Ravi Kumar\",\n            \"phone_number\": \"9876543210\",\n            \"external_id\": \"cand-1001\"\n        },\n        {\n            \"name\": \"Meena S\",\n            \"phone_number\": \"9123456780\",\n            \"external_id\": \"cand-1002\"\n        },\n        {\n            \"name\": \"Test Number\",\n            \"phone_number\": \"0000000000\"\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -2047,7 +2040,7 @@
               "type": "string",
               "pattern": "^WF_[A-Z]{2}_[A-Z0-9]{10,40}$"
             },
-            "example": "WF_BG_261110101530123K7M2P9Q4X7R5T8"
+            "example": "WF_EN_261110101530123K7M2P9Q4X7R5T8"
           },
           {
             "name": "limit",
@@ -2203,7 +2196,7 @@
                     "items": [
                       {
                         "campaign_id": "EC_261110103045123M4P8T2K6Q9R",
-                        "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+                        "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
                         "name": "November talent pool",
                         "language": "english",
                         "status": "sent",
@@ -2212,7 +2205,7 @@
                         "channels": {
                           "whatsapp": true,
                           "voice_call": true,
-                          "sms": false
+                          "sms": true
                         },
                         "rejected_count": 1,
                         "created_at": "2026-11-10T10:30:45.000Z",
@@ -2253,17 +2246,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall GET \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/campaigns?limit=25\""
+            "source": "pcall GET \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/campaigns?limit=25\""
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"GET\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/campaigns?limit=25\");\nconst { data } = await res.json();"
+            "source": "const res = await call(\"GET\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/campaigns?limit=25\");\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"GET\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/campaigns?limit=25\")\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"GET\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/campaigns?limit=25\")\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -2290,7 +2283,7 @@
               "type": "string",
               "pattern": "^WF_[A-Z]{2}_[A-Z0-9]{10,40}$"
             },
-            "example": "WF_BG_261110101530123K7M2P9Q4X7R5T8"
+            "example": "WF_EN_261110101530123K7M2P9Q4X7R5T8"
           },
           {
             "name": "campaign_id",
@@ -2400,7 +2393,7 @@
                   "success": true,
                   "data": {
                     "campaign_id": "EC_261110103045123M4P8T2K6Q9R",
-                    "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+                    "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
                     "kpis": {
                       "uploaded": 3,
                       "rejected": 1,
@@ -2456,17 +2449,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall GET \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R\""
+            "source": "pcall GET \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R\""
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"GET\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R\");\nconst { data } = await res.json();"
+            "source": "const res = await call(\"GET\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R\");\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"GET\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R\")\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"GET\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R\")\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -2483,7 +2476,7 @@
           "Enrichment campaigns"
         ],
         "summary": "Pause a campaign",
-        "description": "Stop everything still to go out (invites, follow-ups, SMS, calls) until you resume. Only a live campaign can be paused.\n\n**Scope:** `enrichment:campaigns` · **Idempotency-Key:** optional",
+        "description": "Stop everything still to go out (invites, follow-ups, SMS, calls) until you resume. Only a live campaign can be paused, and one whose candidates have all finished has nothing left to pause.\n\n**Scope:** `enrichment:campaigns` · **Idempotency-Key:** optional",
         "parameters": [
           {
             "name": "enrichment_id",
@@ -2493,7 +2486,7 @@
               "type": "string",
               "pattern": "^WF_[A-Z]{2}_[A-Z0-9]{10,40}$"
             },
-            "example": "WF_BG_261110101530123K7M2P9Q4X7R5T8"
+            "example": "WF_EN_261110101530123K7M2P9Q4X7R5T8"
           },
           {
             "name": "campaign_id",
@@ -2606,7 +2599,7 @@
                   "success": true,
                   "data": {
                     "campaign_id": "EC_261110103045123M4P8T2K6Q9R",
-                    "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+                    "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
                     "name": "November talent pool",
                     "language": "english",
                     "status": "paused",
@@ -2615,7 +2608,7 @@
                     "channels": {
                       "whatsapp": true,
                       "voice_call": true,
-                      "sms": false
+                      "sms": true
                     },
                     "rejected_count": 1,
                     "created_at": "2026-11-10T10:30:45.000Z",
@@ -2650,7 +2643,7 @@
             }
           },
           "409": {
-            "description": "`CONFLICT`: The campaign is not live.",
+            "description": "`CONFLICT`: The campaign is not live, or every candidate has already finished.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2670,17 +2663,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall POST \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R/pause\""
+            "source": "pcall POST \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R/pause\""
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"POST\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R/pause\");\nconst { data } = await res.json();"
+            "source": "const res = await call(\"POST\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R/pause\");\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"POST\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R/pause\")\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"POST\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R/pause\")\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -2707,7 +2700,7 @@
               "type": "string",
               "pattern": "^WF_[A-Z]{2}_[A-Z0-9]{10,40}$"
             },
-            "example": "WF_BG_261110101530123K7M2P9Q4X7R5T8"
+            "example": "WF_EN_261110101530123K7M2P9Q4X7R5T8"
           },
           {
             "name": "campaign_id",
@@ -2820,7 +2813,7 @@
                   "success": true,
                   "data": {
                     "campaign_id": "EC_261110103045123M4P8T2K6Q9R",
-                    "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+                    "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
                     "name": "November talent pool",
                     "language": "english",
                     "status": "sent",
@@ -2829,7 +2822,7 @@
                     "channels": {
                       "whatsapp": true,
                       "voice_call": true,
-                      "sms": false
+                      "sms": true
                     },
                     "rejected_count": 1,
                     "created_at": "2026-11-10T10:30:45.000Z",
@@ -2884,17 +2877,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall POST \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R/resume\""
+            "source": "pcall POST \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R/resume\""
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"POST\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R/resume\");\nconst { data } = await res.json();"
+            "source": "const res = await call(\"POST\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R/resume\");\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"POST\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R/resume\")\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"POST\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/campaigns/EC_261110103045123M4P8T2K6Q9R/resume\")\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -2921,7 +2914,7 @@
               "type": "string",
               "pattern": "^WF_[A-Z]{2}_[A-Z0-9]{10,40}$"
             },
-            "example": "WF_BG_261110101530123K7M2P9Q4X7R5T8"
+            "example": "WF_EN_261110101530123K7M2P9Q4X7R5T8"
           },
           {
             "name": "campaign_id",
@@ -3199,17 +3192,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall GET \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/candidates?campaign_id=EC_261110103045123M4P8T2K6Q9R&status=completed&limit=25\""
+            "source": "pcall GET \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/candidates?campaign_id=EC_261110103045123M4P8T2K6Q9R&status=completed&limit=25\""
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"GET\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/candidates?campaign_id=EC_261110103045123M4P8T2K6Q9R&status=completed&limit=25\");\nconst { data } = await res.json();"
+            "source": "const res = await call(\"GET\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/candidates?campaign_id=EC_261110103045123M4P8T2K6Q9R&status=completed&limit=25\");\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"GET\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/candidates?campaign_id=EC_261110103045123M4P8T2K6Q9R&status=completed&limit=25\")\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"GET\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/candidates?campaign_id=EC_261110103045123M4P8T2K6Q9R&status=completed&limit=25\")\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -3236,7 +3229,7 @@
               "type": "string",
               "pattern": "^WF_[A-Z]{2}_[A-Z0-9]{10,40}$"
             },
-            "example": "WF_BG_261110101530123K7M2P9Q4X7R5T8"
+            "example": "WF_EN_261110101530123K7M2P9Q4X7R5T8"
           },
           {
             "name": "candidate_id",
@@ -3642,17 +3635,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall GET \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/candidates/6f1d2c3e-8a4b-4c57-9d10-2b7e5a9c1f33\""
+            "source": "pcall GET \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/candidates/6f1d2c3e-8a4b-4c57-9d10-2b7e5a9c1f33\""
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"GET\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/candidates/6f1d2c3e-8a4b-4c57-9d10-2b7e5a9c1f33\");\nconst { data } = await res.json();"
+            "source": "const res = await call(\"GET\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/candidates/6f1d2c3e-8a4b-4c57-9d10-2b7e5a9c1f33\");\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"GET\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/candidates/6f1d2c3e-8a4b-4c57-9d10-2b7e5a9c1f33\")\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"GET\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/candidates/6f1d2c3e-8a4b-4c57-9d10-2b7e5a9c1f33\")\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -3679,7 +3672,7 @@
               "type": "string",
               "pattern": "^WF_[A-Z]{2}_[A-Z0-9]{10,40}$"
             },
-            "example": "WF_BG_261110101530123K7M2P9Q4X7R5T8"
+            "example": "WF_EN_261110101530123K7M2P9Q4X7R5T8"
           },
           {
             "name": "campaign_id",
@@ -3881,7 +3874,7 @@
                     "items": [
                       {
                         "result_id": "ERS_261110110210123X5T9",
-                        "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+                        "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
                         "candidate_id": "6f1d2c3e-8a4b-4c57-9d10-2b7e5a9c1f33",
                         "external_id": "cand-1001",
                         "name": "Ravi Kumar",
@@ -3957,17 +3950,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall GET \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/results?campaign_id=EC_261110103045123M4P8T2K6Q9R&limit=25\""
+            "source": "pcall GET \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/results?campaign_id=EC_261110103045123M4P8T2K6Q9R&limit=25\""
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"GET\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/results?campaign_id=EC_261110103045123M4P8T2K6Q9R&limit=25\");\nconst { data } = await res.json();"
+            "source": "const res = await call(\"GET\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/results?campaign_id=EC_261110103045123M4P8T2K6Q9R&limit=25\");\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"GET\", \"/api/v1/partner/enrichments/WF_BG_261110101530123K7M2P9Q4X7R5T8/results?campaign_id=EC_261110103045123M4P8T2K6Q9R&limit=25\")\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"GET\", \"/api/v1/partner/enrichments/WF_EN_261110101530123K7M2P9Q4X7R5T8/results?campaign_id=EC_261110103045123M4P8T2K6Q9R&limit=25\")\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -6358,7 +6351,7 @@
                         "acknowledged": false,
                         "data": {
                           "result_id": "ERS_261110110210123X5T9",
-                          "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+                          "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
                           "campaign_id": "EC_261110103045123M4P8T2K6Q9R",
                           "candidate_id": "6f1d2c3e-8a4b-4c57-9d10-2b7e5a9c1f33",
                           "external_id": "cand-1001",
@@ -7086,7 +7079,7 @@
                     "acknowledged": false,
                     "data": {
                       "result_id": "ERS_261110110210123X5T9",
-                      "enrichment_id": "WF_BG_261110101530123K7M2P9Q4X7R5T8",
+                      "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
                       "campaign_id": "EC_261110103045123M4P8T2K6Q9R",
                       "candidate_id": "6f1d2c3e-8a4b-4c57-9d10-2b7e5a9c1f33",
                       "external_id": "cand-1001",
