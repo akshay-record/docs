@@ -6,7 +6,7 @@
       "name": "Display name, 1–120 characters.",
       "external_id": "Your own id (A-Z a-z 0-9 . _ : -, up to 128). Unique per organisation and mode.",
       "description": "Optional note, up to 500 characters.",
-      "schedule": "Required. Send all six: `language` (english, hindi, tamil, kannada, telugu, malayalam), `start_time` and `end_time` (\"HH:MM\", start before end), `days` (mon…sun, each once), `timezone` (IANA), `max_retries` 1 to 20, `retry_after_hours` 1 to 48.",
+      "schedule": "Required. Send these six: `start_time` and `end_time` (\"HH:MM\", start before end), `days` (mon…sun, each once), `timezone` (IANA), `max_retries` 1 to 20 and `retry_after_hours` 1 to 48. `language` is optional and defaults to `english`: english, hindi, tamil, kannada, telugu, malayalam, bengali or marathi.",
       "questions": "Required. 1 to 15 of `{ question_text, type, preferred_answer?, required? }`. `type` is `yes_no` (needs `preferred_answer`) or `voice`. `required` defaults to true."
     },
     "errors": [
