@@ -13,7 +13,7 @@ A campaign is one batch of candidates invited to the assessment of one job manda
 
 - The job mandate is `live` (not closed) and its `questions.status` is `ready` (`409` otherwise — [write the questions](/white-collar-api/guides/job-mandates#questions) first).
 - You created the job mandate through the API. A campaign under a playground mandate answers `403`.
-- The organisation can pay: Record checks credits before anything is created, and answers `402 INSUFFICIENT_CREDITS` with nothing created.
+- The organisation can pay: Record checks credits before anything is created, and answers `402 INSUFFICIENT_CREDITS` with nothing created. See what you have with [`GET /credits`](/white-collar-api/guides/credits#your-available-credits).
 
 ## The campaign object
 

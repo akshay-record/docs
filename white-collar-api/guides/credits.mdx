@@ -1,0 +1,102 @@
+---
+title: "Credits"
+description: "See your available credits and where they were used. Test and live credits are kept apart."
+---
+
+Inviting candidates costs credits. These two calls let you see what you have and see where it went.
+
+Both are read-only: they never change a balance. They need the `wc_credits:read` scope, which Record grants to your key.
+
+## How credits work
+
+- **What costs credits.** Each candidate invited to an assessment is charged once for every kind of question the assessment has: *knowledge* for multiple choice, true / false, short-answer and long-answer questions, and *programming* for coding questions. If the two are priced the same, they count once.
+- **When they are charged.** When an invitation is delivered: creating a campaign with `start: now`, starting a draft, or adding candidates to a campaign that is already running. A campaign you create with `start: manual` costs nothing until you start it. Before anything is sent, Record checks that your credits cover everyone still waiting. An invitation that could not be delivered is not charged, and sending the same candidate again never charges twice.
+- **Test and live are separate balances.** Your organisation has **test credits** and **live credits**, at the same prices. The mode of your API key decides which one every call reads and spends: a `VFN_TEST_` key uses the test credits, a `VFN_LIVE_` key the live credits. A key never sees the other balance.
+- **Test credits are not free.** A test-mode campaign still emails real candidates, so it is paid from the test credits.
+- **Record adds credits.** There is no call to top up. Ask your Record contact to add live or test credits.
+
+## Your available credits
+
+`GET /credits` · scope `wc_credits:read`
+
+```json Response
+{
+  "success": true,
+  "data": {
+    "mode": "live",
+    "currency": "INR",
+    "account_status": "active",
+    "billing_configured": true,
+    "wallet_configured": true,
+    "wallet": { "granted": 1000, "consumed": 340, "balance": 660 },
+    "prices": [
+      { "service": "mcq", "label": "15 AI MCQ Question", "unit_price": 10 },
+      { "service": "endorsement", "label": "People endorsement", "unit_price": 8 },
+      { "service": "knowledge", "label": "Knowledge assessment", "unit_price": 20 },
+      { "service": "programming", "label": "Programming challenge", "unit_price": 35 }
+    ]
+  }
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `mode` | `live` or `test`: the mode of your key. This is the balance you are looking at. |
+| `wallet.balance` | Credits you can spend now. `granted` is everything added, `consumed` everything used. |
+| `prices` | What one candidate costs per kind of question. `unit_price` is `null` when no price is set for your organisation: a send that needs that service is refused. |
+| `billing_configured` | `false` when your organisation has no billing account yet. Nothing can be sent until Record sets it up. |
+| `wallet_configured` | `false` when there is no balance for this mode, for example test credits that were never set up. `wallet` is then `null`, not zero, and a send in this mode is refused until Record adds credits. |
+
+## Where your credits were used
+
+`GET /credits/usage` · scope `wc_credits:read`
+
+The entries that moved your balance, newest first. Sending an invitation to a candidate is one entry per kind of question, so you can tie every credit to a candidate and a campaign. A refund or a correction is its own entry.
+
+| Query | Meaning |
+|---|---|
+| `campaign_id` | Only the entries of this campaign |
+| `candidate_id` | Only the entries of this candidate |
+| `from`, `to` | A time window: `from` is included, `to` is not (ISO 8601) |
+| `limit`, `cursor` | Paging, as everywhere in this API |
+
+```json Response
+{
+  "success": true,
+  "data": {
+    "mode": "live",
+    "items": [
+      {
+        "ledger_id": "LGR_9f1c0a52b7d34e81",
+        "type": "debit",
+        "service": "knowledge",
+        "service_label": "Knowledge assessment",
+        "quantity": 1,
+        "unit_price": 20,
+        "credits": -20,
+        "balance_after": 660,
+        "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+        "candidate_id": "6fb8f7aa-08ae-4b26-8790-ccf83af15046",
+        "created_at": "2026-11-16T10:44:43.000Z"
+      }
+    ],
+    "count": 1,
+    "total": 17,
+    "next_cursor": "eyJvIjoxfQ",
+    "has_more": true,
+    "totals": { "credits_used": 340 }
+  }
+}
+```
+
+- `credits` is **negative** when credits were used and **positive** when they were given back.
+- `totals.credits_used` covers everything that matches your filters, not only this page, net of anything given back.
+- Only your organisation's entries for your key's mode are listed.
+
+## Before a send
+
+A send costs the number of candidates times the price of each kind of question in the assessment (see *How credits work* and `prices` in `GET /credits`). Read your `wallet.balance` first. If it is too small, ask your Record contact to add credits before you send.
+
+<Note>
+  Another send can use credits at any moment, so keep handling `402 INSUFFICIENT_CREDITS` on the send itself. When it happens, nothing is created or sent. Afterwards, `GET /credits/usage?campaign_id=…` shows what a campaign cost, per candidate.
+</Note>

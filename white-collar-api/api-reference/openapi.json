@@ -41,6 +41,10 @@
       "description": "Invited, completed, hired, rejected, average score and rates, per job and per campaign (read-only)"
     },
     {
+      "name": "Credits",
+      "description": "Your available credits and where they were used (read-only)"
+    },
+    {
       "name": "Events",
       "description": "Pull your result events and acknowledge them: the safety net behind the webhook, and a way to receive results without exposing a URL"
     },
@@ -7230,6 +7234,440 @@
             "lang": "python",
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/white-collar/question-types\")\ndata = res.json()[\"data\"]"
+          }
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
+      }
+    },
+    "/credits": {
+      "get": {
+        "operationId": "getWcCredits",
+        "tags": [
+          "Credits"
+        ],
+        "summary": "Your available credits",
+        "description": "The credits your organisation can spend on white-collar assessments, for the mode of your key: a test key reads the test credits, a live key the live credits. The two are separate balances at the same prices. `wallet` is null, with `wallet_configured` false, when there is no balance for this mode (for example test credits that were never set up). `prices` is what one candidate costs per kind of question. Credits are used when an invitation is sent and are added only by Record. Needs `wc_credits:read`.\n\n**Scope:** `wc_credits:read`",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The wallet of your key's mode",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "const": true,
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "live",
+                            "test"
+                          ],
+                          "description": "The mode of your API key: a test key is about your test credits, a live key about your live credits"
+                        },
+                        "currency": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "1 credit is 1 unit of this currency"
+                        },
+                        "account_status": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "The state of your organisation's billing account; null when there is none"
+                        },
+                        "billing_configured": {
+                          "type": "boolean",
+                          "description": "false when your organisation has no billing account: nothing can be sent until Record sets it up"
+                        },
+                        "wallet_configured": {
+                          "type": "boolean",
+                          "description": "false when there is no wallet for this mode, for example test credits that were never set up. A send in this mode is refused until Record adds them"
+                        },
+                        "wallet": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "granted": {
+                                  "type": "number",
+                                  "description": "Credits added to this wallet in all"
+                                },
+                                "consumed": {
+                                  "type": "number",
+                                  "description": "Credits used from it in all"
+                                },
+                                "balance": {
+                                  "type": "number",
+                                  "description": "Credits left: what a send can spend now"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "null when wallet_configured is false"
+                        },
+                        "prices": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "service": {
+                                "type": "string",
+                                "enum": [
+                                  "mcq",
+                                  "endorsement",
+                                  "knowledge",
+                                  "programming"
+                                ]
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "unit_price": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "Credits charged for one candidate. null: no price is set for your organisation, and a send that needs this service is refused"
+                              }
+                            }
+                          },
+                          "description": "What one candidate costs for each kind of question in an assessment"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "SecretKey": []
+          }
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "pcall GET \"/api/v1/partner/white-collar/credits\""
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const res = await call(\"GET\", \"/api/v1/partner/white-collar/credits\");\nconst { data } = await res.json();"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "res = call(\"GET\", \"/api/v1/partner/white-collar/credits\")\ndata = res.json()[\"data\"]"
+          }
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
+      }
+    },
+    "/credits/usage": {
+      "get": {
+        "operationId": "listWcCreditUsage",
+        "tags": [
+          "Credits"
+        ],
+        "summary": "Where your credits were used",
+        "description": "The entries that moved your key's wallet, newest first. Sending an invitation to a candidate is one entry per kind of question, so each credit is tied to a candidate and a campaign; a refund or a correction is its own entry. `credits` is negative when credits were used and positive when they were given back. Filter by `campaign_id`, `candidate_id` and a time window (`from` included, `to` not). `totals.credits_used` covers everything that matches, not just this page. Needs `wc_credits:read`.\n\n**Scope:** `wc_credits:read`",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "query",
+            "required": false,
+            "description": "Only the entries of this campaign",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{4,64}$"
+            }
+          },
+          {
+            "name": "candidate_id",
+            "in": "query",
+            "required": false,
+            "description": "Only the entries of this candidate",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{8,64}$"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "Only entries at or after this time",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "description": "Only entries before this time",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "1 to 200, default 50",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "The next_cursor of the previous page",
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "const": true,
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "ledger_id": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string",
+                                "description": "debit: credits used. refund, reversal or adjustment: credits given back or corrected"
+                              },
+                              "service": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "mcq, endorsement, knowledge or programming; null for an adjustment that is not tied to a service"
+                              },
+                              "service_label": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "quantity": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "Candidates this entry is for"
+                              },
+                              "unit_price": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "credits": {
+                                "type": "number",
+                                "description": "Negative when credits were used, positive when they were given back"
+                              },
+                              "balance_after": {
+                                "type": "number",
+                                "description": "The wallet's balance once this entry was applied"
+                              },
+                              "campaign_id": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "candidate_id": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "The candidate whose invitation this entry is for"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "count": {
+                          "type": "integer",
+                          "description": "How many items this page holds"
+                        },
+                        "total": {
+                          "anyOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "How many items match your filters across all pages. null when that cannot be counted cheaply: a filter worked out per item (status, progress) on a list that is large"
+                        },
+                        "next_cursor": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "Pass as `cursor` for the next page; null on the last page"
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                          "description": "true while there is a next page (with a status or progress filter that page can still come back empty)"
+                        },
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "live",
+                            "test"
+                          ],
+                          "description": "The mode of your API key: a test key is about your test credits, a live key about your live credits"
+                        },
+                        "totals": {
+                          "type": "object",
+                          "properties": {
+                            "credits_used": {
+                              "type": "number",
+                              "description": "Credits used across all entries that match the filters, net of anything given back"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`VALIDATION_FAILED`: `from` is after `to`, or a filter or the cursor is not valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "SecretKey": []
+          }
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "pcall GET \"/api/v1/partner/white-collar/credits/usage\""
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const res = await call(\"GET\", \"/api/v1/partner/white-collar/credits/usage\");\nconst { data } = await res.json();"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "res = call(\"GET\", \"/api/v1/partner/white-collar/credits/usage\")\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {

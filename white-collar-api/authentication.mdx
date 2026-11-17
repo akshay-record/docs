@@ -80,6 +80,7 @@ Record switches the White Collar API on per key by granting scopes. A key withou
 | `wc_recordings:read` | `GET /candidates/{candidate_id}/recording`: a short-lived link to a candidate's screen and camera recording. **Footage of a person**, so it is separate from results. |
 | `wc_events:read` | The event feed: `POST /events/pull` and `GET /events/{event_id}`. |
 | `wc_webhooks:manage` | Webhook endpoints, delivery logs, tests and backfills. |
+| `wc_credits:read` | `GET /credits` and `GET /credits/usage`: your available credits (test or live, by the key's mode), and where they were used. Read-only. |
 
 ## How a request is signed
 

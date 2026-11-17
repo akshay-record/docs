@@ -609,5 +609,21 @@
         "no such object for this key's organisation, project and mode."
       ]
     ]
+  },
+  "getWcCredits": {
+    "title": "Your available credits",
+    "description": "The credits your organisation can spend on white-collar assessments, for the mode of your key: a test key reads the test credits, a live key the live credits. The two are separate balances at the same prices. `wallet` is null, with `wallet_configured` false, when there is no balance for this mode (for example test credits that were never set up). `prices` is what one candidate costs per kind of question. Credits are used when an invitation is sent and are added only by Record. Needs `wc_credits:read`.",
+    "errors": []
+  },
+  "listWcCreditUsage": {
+    "title": "Where your credits were used",
+    "description": "The entries that moved your key's wallet, newest first. Sending an invitation to a candidate is one entry per kind of question, so each credit is tied to a candidate and a campaign; a refund or a correction is its own entry. `credits` is negative when credits were used and positive when they were given back. Filter by `campaign_id`, `candidate_id` and a time window (`from` included, `to` not). `totals.credits_used` covers everything that matches, not just this page. Needs `wc_credits:read`.",
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "`from` is after `to`, or a filter or the cursor is not valid."
+      ]
+    ]
   }
 }

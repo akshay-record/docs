@@ -437,6 +437,7 @@
               "white-collar-api/guides/workflows",
               "white-collar-api/guides/job-mandates",
               "white-collar-api/guides/campaigns",
+              "white-collar-api/guides/credits",
               "white-collar-api/guides/results",
               "white-collar-api/guides/webhooks"
             ]
