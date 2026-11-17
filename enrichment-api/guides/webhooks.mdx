@@ -132,7 +132,7 @@ Do this with a **TEST key** first. Test and live events are separate, so a test 
     [Create an enrichment](/enrichment-api/guides/enrichments), then a [campaign](/enrichment-api/guides/campaigns) with your own phone number, and answer the questions on WhatsApp. A TEST key holds at most 50 candidates per enrichment.
   </Step>
   <Step title="Watch it arrive">
-    The `enrichment.result` usually reaches your URL within a few seconds (up to about 15 seconds for a result from the link). Open [`GET /webhooks/endpoints/{endpoint_id}/deliveries`](/api-reference/enrichment-webhooks/list-deliveries) to see each send and what your server answered.
+    The `enrichment.result` usually reaches your URL within a few seconds. Open [`GET /webhooks/endpoints/{endpoint_id}/deliveries`](/api-reference/enrichment-webhooks/list-deliveries) to see each send and what your server answered.
   </Step>
   <Step title="Replay if you missed it">
     Use [`/backfill`](/api-reference/enrichment-webhooks/backfill-past-results) from a time before your test, or [`/retry`](/api-reference/enrichment-webhooks/retry-a-delivery) on one delivery.
@@ -145,4 +145,4 @@ Do this with a **TEST key** first. Test and live events are separate, so a test 
 
 ## How fast
 
-A result from a call usually reaches your endpoint within a few seconds of the candidate finishing. A result from the link arrives within about 15 seconds. A daily check repairs anything missed. Events are kept for 30 days.
+A result usually reaches your endpoint within a few seconds of the candidate finishing, whether they answered on a call or on the link. A check that runs every few minutes repairs anything missed. Events are not lost if your endpoint is down: they are retried for about 52 hours. Events are kept for 30 days.
