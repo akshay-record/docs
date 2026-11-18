@@ -358,5 +358,27 @@
         "No such event (or older than 30 days)."
       ]
     ]
+  },
+  "getEnrichmentCredits": {
+    "title": "Your available credits",
+    "description": "The credits your organisation can spend on enrichments, in the wallet of the key you signed with: a `VFN_TEST_` key sees the test wallet and a `VFN_LIVE_` key the live one. `unit_price` is what one candidate costs and `candidates_affordable` is how many more the balance covers. A campaign that costs more than the balance is refused with `402 INSUFFICIENT_CREDITS` and nothing is created. This call changes nothing. With no billing account or no test wallet you still get `200`, with `billing_configured` or `wallet_configured` false and `wallet` null."
+  },
+  "listEnrichmentCreditUsage": {
+    "title": "Where your enrichment credits were used",
+    "description": "One row for every candidate added to an enrichment campaign, newest first, in the wallet of the key you signed with. `credits` is negative when credits were spent and positive when they were given back. `summary.net_credits` adds up every row that matches your filters, not only the page you are on. An id from another organisation returns an empty list. This call changes nothing.",
+    "fields": {
+      "enrichment_id": "Only credits spent in this enrichment.",
+      "campaign_id": "Only credits spent in this campaign.",
+      "candidate_id": "Only credits spent on this candidate.",
+      "from": "Only rows from this moment on (included). ISO 8601 date-time.",
+      "to": "Only rows before this moment (not included). ISO 8601 date-time."
+    },
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Bad `from`, `to` or `cursor`."
+      ]
+    ]
   }
 }

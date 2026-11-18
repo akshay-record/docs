@@ -437,7 +437,8 @@
               "enrichment-api/guides/enrichments",
               "enrichment-api/guides/campaigns",
               "enrichment-api/guides/candidates-and-results",
-              "enrichment-api/guides/webhooks"
+              "enrichment-api/guides/webhooks",
+              "enrichment-api/guides/credits"
             ]
           },
           {
@@ -493,6 +494,14 @@
             "openapi": "enrichment-api/api-reference/openapi.json",
             "pages": [
               "GET /enrichments/{enrichment_id}/results"
+            ]
+          },
+          {
+            "group": "Credits",
+            "openapi": "enrichment-api/api-reference/openapi.json",
+            "pages": [
+              "GET /enrichment-credits",
+              "GET /enrichment-credits/usage"
             ]
           },
           {

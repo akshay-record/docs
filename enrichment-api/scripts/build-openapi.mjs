@@ -188,6 +188,8 @@ const GROUP_OF = {
   listEnrichmentCandidates: "Enrichment candidates",
   getEnrichmentCandidate: "Enrichment candidates",
   listEnrichmentResults: "Enrichment results",
+  getEnrichmentCredits: "Enrichment credits",
+  listEnrichmentCreditUsage: "Enrichment credits",
   // The webhook and event calls are shared with the Blue Collar API; the tags keep their page URLs apart from that tab's.
   createWebhookEndpoint: "Enrichment webhooks",
   listWebhookEndpoints: "Enrichment webhooks",

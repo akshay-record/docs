@@ -26,6 +26,7 @@ Record switches the Enrichment API on per key by granting scopes. Any one scope 
 | `enrichment:read` | Read enrichments, campaigns, candidates and results. |
 | `enrichment:write` | Create and archive enrichments. Also includes everything in `enrichment:read`. |
 | `enrichment:campaigns` | Create, pause and resume campaigns. **Contacts real people and spends credits.** Also includes `enrichment:read`. |
+| `enrichment:credits` | Read your available credits and where they were spent. Changes nothing, and includes no other scope. |
 
 <Warning>
   `enrichment:write` alone cannot create a campaign. Starting a campaign needs `enrichment:campaigns`, so a key that only manages questions can never message your candidates.
