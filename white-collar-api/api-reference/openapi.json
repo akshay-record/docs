@@ -18,11 +18,11 @@
     },
     {
       "name": "Workflows",
-      "description": "Your organisation's white-collar workflows (read all; change and archive only the ones you created)"
+      "description": "Your organisation's white-collar workflows (read, change and archive any of them, made in the playground or through the API)"
     },
     {
       "name": "Job mandates",
-      "description": "One role each, with its assessment settings (read all; change only the ones you created)"
+      "description": "One role each, with its assessment settings (read and change any of them, made in the playground or through the API)"
     },
     {
       "name": "Questions",
@@ -267,7 +267,7 @@
           "Workflows"
         ],
         "summary": "Your organisation's white-collar workflows",
-        "description": "Every white-collar workflow your organisation has in this project and mode, made in the Record playground or through this API (`is_external` tells which). You can change only the ones you created through the API.\n\n**Scope:** `wc_workflows:read` or `wc_workflows:write`",
+        "description": "Every white-collar workflow your organisation has in this project and mode, made in the Record playground or through this API (`is_external` tells which). You can change and archive any of them, wherever it was made.\n\n**Scope:** `wc_workflows:read` or `wc_workflows:write`",
         "parameters": [
           {
             "name": "status",
@@ -614,7 +614,7 @@
           "Workflows"
         ],
         "summary": "Change some fields of one of your workflows",
-        "description": "Only the fields sent change. A workflow made in the playground answers 403: the API changes only what it created.\n\n**Scope:** `wc_workflows:write` · **Idempotency-Key:** optional",
+        "description": "Only the fields sent change. Works on a workflow made in the playground too.\n\n**Scope:** `wc_workflows:write` · **Idempotency-Key:** optional",
         "parameters": [
           {
             "name": "workflow_id",
@@ -759,16 +759,6 @@
                       }
                     }
                   }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`FORBIDDEN`: this was made in the Record playground. The API reads it but changes only what it created.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -931,16 +921,6 @@
               }
             }
           },
-          "403": {
-            "description": "`FORBIDDEN`: this was made in the Record playground. The API reads it but changes only what it created.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "404": {
             "description": "`NOT_FOUND`: no such object for this key's organisation, project and mode.",
             "content": {
@@ -1027,7 +1007,7 @@
                   "external_id": {
                     "type": "string",
                     "pattern": "^[A-Za-z0-9._:-]{1,128}$",
-                    "description": "Your own job id. Unique among the mandates you created"
+                    "description": "Your own job id. Unique among your organisation's job mandates"
                   },
                   "job_title": {
                     "type": "string",
@@ -1907,7 +1887,7 @@
           "Job mandates"
         ],
         "summary": "Change some fields of one of your job mandates",
-        "description": "Only the fields sent change; assessment fields merge one by one. Changing what the questions are written from (title, experience, description, skills, difficulty, question types) marks ready questions `outdated`: regenerate or re-save them before creating a campaign. Campaigns that already exist keep the assessment they were created with. Changing question_types recalculates total_marks. A mandate made in the playground answers 403.\n\n**Scope:** `wc_mandates:write` · **Idempotency-Key:** optional",
+        "description": "Only the fields sent change; assessment fields merge one by one. Changing what the questions are written from (title, experience, description, skills, difficulty, question types) marks ready questions `outdated`: regenerate or re-save them before creating a campaign. Campaigns that already exist keep the assessment they were created with. Changing question_types recalculates total_marks. Works on a mandate made in the playground too.\n\n**Scope:** `wc_mandates:write` · **Idempotency-Key:** optional",
         "parameters": [
           {
             "name": "mandate_id",
@@ -2217,16 +2197,6 @@
               }
             }
           },
-          "403": {
-            "description": "`FORBIDDEN`: this was made in the Record playground. The API reads it but changes only what it created.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "404": {
             "description": "`NOT_FOUND`: no such object for this key's organisation, project and mode.",
             "content": {
@@ -2464,16 +2434,6 @@
               }
             }
           },
-          "403": {
-            "description": "`FORBIDDEN`: this was made in the Record playground. The API reads it but changes only what it created.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "404": {
             "description": "`NOT_FOUND`: no such object for this key's organisation, project and mode.",
             "content": {
@@ -2697,16 +2657,6 @@
                       }
                     }
                   }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`FORBIDDEN`: this was made in the Record playground. The API reads it but changes only what it created.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -3245,16 +3195,6 @@
               }
             }
           },
-          "403": {
-            "description": "`FORBIDDEN`: this was made in the Record playground. The API reads it but changes only what it created.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "404": {
             "description": "`NOT_FOUND`: no such object for this key's organisation, project and mode.",
             "content": {
@@ -3449,16 +3389,6 @@
                       }
                     }
                   }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`FORBIDDEN`: this was made in the Record playground. The API reads it but changes only what it created.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -3811,16 +3741,6 @@
           },
           "402": {
             "description": "`INSUFFICIENT_CREDITS`: the organisation cannot pay for the invitations. Nothing was created or sent.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`FORBIDDEN`: this was made in the Record playground. The API reads it but changes only what it created.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4184,7 +4104,7 @@
         "tags": [
           "Campaigns"
         ],
-        "summary": "Add more candidates to a campaign you created",
+        "summary": "Add more candidates to a campaign",
         "description": "On a campaign that has been sent, the newcomers are invited at once; on a draft or a paused campaign they wait until it is started or resumed. A candidate already in the campaign (same email) is left out and listed in `rejected`; nothing else is affected. At most 2000 candidates per campaign.\n\n**Scope:** `wc_campaigns:write` · **Idempotency-Key:** optional\n\n> **This contacts real candidates.** Build against a TEST key first.",
         "parameters": [
           {
@@ -4449,16 +4369,6 @@
           },
           "402": {
             "description": "`INSUFFICIENT_CREDITS`: the organisation cannot pay for the invitations. Nothing was created or sent.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`FORBIDDEN`: this was made in the Record playground. The API reads it but changes only what it created.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4818,7 +4728,7 @@
         "tags": [
           "Campaigns"
         ],
-        "summary": "Start a campaign you created with start: manual",
+        "summary": "Start a campaign that has not been sent yet",
         "description": "Sends the invitations, in the background. Calling it on a campaign that was already sent retries the candidates whose invitation failed or never went out, and does nothing when everyone has been reached. 402 if the organisation cannot pay for the invitations still to go.\n\n**Scope:** `wc_campaigns:write` · **Idempotency-Key:** optional\n\n> **This contacts real candidates.** Build against a TEST key first.",
         "parameters": [
           {
@@ -4985,16 +4895,6 @@
           },
           "402": {
             "description": "`INSUFFICIENT_CREDITS`: the organisation cannot pay for the invitations. Nothing was created or sent.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`FORBIDDEN`: this was made in the Record playground. The API reads it but changes only what it created.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5221,16 +5121,6 @@
                       }
                     }
                   }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`FORBIDDEN`: this was made in the Record playground. The API reads it but changes only what it created.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -5467,16 +5357,6 @@
               }
             }
           },
-          "403": {
-            "description": "`FORBIDDEN`: this was made in the Record playground. The API reads it but changes only what it created.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "404": {
             "description": "`NOT_FOUND`: no such object for this key's organisation, project and mode.",
             "content": {
@@ -5606,16 +5486,6 @@
                       }
                     }
                   }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`FORBIDDEN`: this was made in the Record playground. The API reads it but changes only what it created.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -5759,16 +5629,6 @@
                       }
                     }
                   }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`FORBIDDEN`: this was made in the Record playground. The API reads it but changes only what it created.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
                 }
               }
             }

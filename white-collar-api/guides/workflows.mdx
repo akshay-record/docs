@@ -7,7 +7,7 @@ A workflow fixes that Record invites the candidates (it is *recruiter-led*) and 
 
 ## What you can read and change
 
-Reads cover every white-collar workflow your organisation has in this project and mode, made in the playground or through the API (`is_external` tells which). You can change and archive only the workflows you created through the API; on a playground workflow those calls answer `403 FORBIDDEN`. Another organisation's workflow answers `404`.
+Reads cover every white-collar workflow your organisation has in this project and mode, made in the playground or through the API (`is_external` tells which). You can change and archive any of them, wherever it was made: a workflow created in the playground is changed through the API like your own, and playground users see the change. `is_external` stays as it was, so you can still tell where a workflow came from. Another organisation's workflow answers `404`.
 
 ## The workflow object
 
@@ -70,7 +70,7 @@ Errors: `409 CONFLICT` if `external_id` is taken; `403 FORBIDDEN` if Test Mode a
 
 `PATCH /workflows/{workflow_id}` · scope `wc_workflows:write` · `Idempotency-Key` optional
 
-Send only what changes: `name`, `status`, `external_id`, `delivery.email_notification`. At least one field is required. Errors: `403` on a playground workflow, `409` if it is archived.
+Send only what changes: `name`, `status`, `external_id`, `delivery.email_notification`. At least one field is required. Errors: `409` if it is archived or `external_id` is already used.
 
 ## Archive a workflow
 

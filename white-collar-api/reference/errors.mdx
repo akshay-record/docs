@@ -24,7 +24,7 @@ Quote `request_id` (also the `x-request-id` header) to Record support.
 | 401 | `UNAUTHORIZED` | Key, signature or clock is wrong, or a signed write was replayed. See [Authentication](/white-collar-api/authentication#if-you-get-401-unauthorized). |
 | 402 | `INSUFFICIENT_CREDITS` | The organisation cannot pay for the invitations: not enough credits, no credits set up for this mode (test credits that were never added), or a service with no price. Nothing was created or sent. See what you have with [`GET /credits`](/white-collar-api/guides/credits#your-available-credits). |
 | 403 | `SCOPE_MISSING` | The key lacks the `wc_*` scope the endpoint needs. |
-| 403 | `FORBIDDEN` | The object was made in the playground, or Test Mode's cap was reached. |
+| 403 | `FORBIDDEN` | Test Mode's cap was reached. |
 | 403 | `HTTPS_REQUIRED` | Use `https://`. |
 | 404 | `NOT_FOUND` | No such object for this key's organisation, project and mode. |
 | 409 | `CONFLICT` | The object is in the wrong state: a closed job, questions not `ready`, a paused campaign, an `external_id` already used. Read it and retry. |

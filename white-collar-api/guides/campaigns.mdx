@@ -12,7 +12,7 @@ A campaign is one batch of candidates invited to the assessment of one job manda
 ## Before you create one
 
 - The job mandate is `live` (not closed) and its `questions.status` is `ready` (`409` otherwise — [write the questions](/white-collar-api/guides/job-mandates#questions) first).
-- You created the job mandate through the API. A campaign under a playground mandate answers `403`.
+- The job mandate belongs to your organisation. It can be one made in the playground or through the API.
 - The organisation can pay: Record checks credits before anything is created, and answers `402 INSUFFICIENT_CREDITS` with nothing created. See what you have with [`GET /credits`](/white-collar-api/guides/credits#your-available-credits).
 
 ## The campaign object
@@ -117,5 +117,5 @@ All three need `wc_campaigns:write`; `start` and `resume` can answer `402`. Anot
 
 ## List and get campaigns
 
-- `GET /campaigns` · scope `wc_campaigns:write` or `wc_results:read`. Filters: `mandate_id`, `workflow_id`, `status` (including `sending`), `search` (part of the name), `limit`, `cursor`. Includes campaigns made in the playground (`is_external: false`), which you can read but not change.
+- `GET /campaigns` · scope `wc_campaigns:write` or `wc_results:read`. Filters: `mandate_id`, `workflow_id`, `status` (including `sending`), `search` (part of the name), `limit`, `cursor`. Includes campaigns made in the playground (`is_external: false`), which you can change like your own: start, pause, resume, add candidates, resend and reassign. Starting or resuming one still checks credits and charges them the same way.
 - `GET /campaigns/{campaign_id}`.

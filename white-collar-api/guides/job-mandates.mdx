@@ -22,7 +22,7 @@ A job mandate is one role. It holds the job details, the assessment settings (di
 | `status` | `live` or `closed`. |
 | `is_external` | `true` when made through the API. |
 
-You can read every white-collar job mandate your organisation has, and change only the ones you created through the API (a playground one answers `403 FORBIDDEN`).
+You can read and change every white-collar job mandate your organisation has, whether it was made in the playground or through the API (`is_external` tells which). Playground users see your changes. Another organisation's mandate answers `404`.
 
 ## Question types
 
