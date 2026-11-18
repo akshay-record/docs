@@ -1176,7 +1176,7 @@
           "Enrichments"
         ],
         "summary": "Archive an enrichment",
-        "description": "Archive an enrichment you created. It is not erased: its campaigns, candidates and results stay readable. Campaigns that are already live keep running, so pause them first if they should stop. Archiving again changes nothing.\n\n**Scope:** `enrichment:write` · **Idempotency-Key:** optional",
+        "description": "Archive an enrichment of your organisation, made here or in the playground. It is not erased: its campaigns, candidates and results stay readable. Campaigns that are already live keep running, so pause them first if they should stop. Archiving again changes nothing.\n\n**Scope:** `enrichment:write` · **Idempotency-Key:** optional",
         "parameters": [
           {
             "name": "enrichment_id",
@@ -1432,16 +1432,6 @@
                       }
                     ]
                   }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`FORBIDDEN`: The enrichment was made in the playground. The API changes only what it created.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -1968,7 +1958,7 @@
             }
           },
           "403": {
-            "description": "`FORBIDDEN`: The enrichment was made in the playground, or a TEST key would exceed 50 candidates in this enrichment.",
+            "description": "`FORBIDDEN`: A TEST key would exceed 50 candidates in this enrichment.",
             "content": {
               "application/json": {
                 "schema": {
@@ -2625,16 +2615,6 @@
               }
             }
           },
-          "403": {
-            "description": "`FORBIDDEN`: The enrichment was made in the playground.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "404": {
             "description": "`NOT_FOUND`: No such enrichment or campaign.",
             "content": {
@@ -2835,16 +2815,6 @@
                       "completed": 0
                     }
                   }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`FORBIDDEN`: The enrichment was made in the playground.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
                 }
               }
             }

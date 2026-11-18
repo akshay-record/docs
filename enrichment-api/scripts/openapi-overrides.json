@@ -51,13 +51,8 @@
   },
   "archiveEnrichment": {
     "title": "Archive an enrichment",
-    "description": "Archive an enrichment you created. It is not erased: its campaigns, candidates and results stay readable. Campaigns that are already live keep running, so pause them first if they should stop. Archiving again changes nothing.",
+    "description": "Archive an enrichment of your organisation, made here or in the playground. It is not erased: its campaigns, candidates and results stay readable. Campaigns that are already live keep running, so pause them first if they should stop. Archiving again changes nothing.",
     "errors": [
-      [
-        403,
-        "FORBIDDEN",
-        "The enrichment was made in the playground. The API changes only what it created."
-      ],
       [
         404,
         "NOT_FOUND",
@@ -99,7 +94,7 @@
       [
         403,
         "FORBIDDEN",
-        "The enrichment was made in the playground, or a TEST key would exceed 50 candidates in this enrichment."
+        "A TEST key would exceed 50 candidates in this enrichment."
       ],
       [
         404,
@@ -141,11 +136,6 @@
     "description": "Stop everything still to go out (invites, follow-ups, SMS, calls) until you resume. Only a live campaign can be paused, and one whose candidates have all finished has nothing left to pause.",
     "errors": [
       [
-        403,
-        "FORBIDDEN",
-        "The enrichment was made in the playground."
-      ],
-      [
         404,
         "NOT_FOUND",
         "No such enrichment or campaign."
@@ -161,11 +151,6 @@
     "title": "Resume a campaign",
     "description": "Carry on where the campaign stopped. Only a paused campaign can be resumed.",
     "errors": [
-      [
-        403,
-        "FORBIDDEN",
-        "The enrichment was made in the playground."
-      ],
       [
         404,
         "NOT_FOUND",

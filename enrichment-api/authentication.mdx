@@ -39,7 +39,7 @@ A key with no scopes is not enabled and every call answers `403 SCOPE_MISSING`. 
 ## What you can read and change
 
 - **Read:** every enrichment of your organisation in the key's mode, made through the API or on the Enrichment page of the playground. `is_external` says which.
-- **Change:** only enrichments created through the API. Archiving or adding a campaign to a playground-made enrichment answers `403 FORBIDDEN`.
+- **Change:** all of them, whichever way they were made: archive an enrichment, add a campaign to it, and pause or resume its campaigns. What is created in the playground can be managed through the API too. Enrichments themselves are never edited: different questions mean a new enrichment.
 - **Other organisations:** their data answers `404 NOT_FOUND`, never `403`.
 
 ## Test and live
