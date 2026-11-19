@@ -30,7 +30,7 @@
     },
     {
       "name": "Job mandates",
-      "description": "Your organisation's job mandates, addressed by Record's mandate_id (read all; change only the ones you created)"
+      "description": "Your organisation's job mandates, addressed by Record's mandate_id (read and change all of them)"
     },
     {
       "name": "Campaigns",
@@ -51,6 +51,10 @@
     {
       "name": "Analytics",
       "description": "The workflow Overview analytics of the Record playground: funnel, channels, follow-ups, calls, drop-offs, languages (read-only, scope analytics:read)"
+    },
+    {
+      "name": "Credits",
+      "description": "The credits your organisation can spend and where they were used (read-only, scope credits:read)"
     }
   ],
   "paths": {
@@ -4362,16 +4366,6 @@
               }
             }
           },
-          "403": {
-            "description": "`FORBIDDEN`: Workflow was made in the playground; the API can only read it.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "404": {
             "description": "`NOT_FOUND`: No such workflow.",
             "content": {
@@ -4633,16 +4627,6 @@
               }
             }
           },
-          "403": {
-            "description": "`FORBIDDEN`: Workflow was made in the playground.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "404": {
             "description": "`NOT_FOUND`: No such workflow.",
             "content": {
@@ -4829,7 +4813,7 @@
                                     "type": "null"
                                   }
                                 ],
-                                "description": "Counts the changes made through this API; null for a mandate made in the playground"
+                                "description": "Counts the changes made through this API; null for a playground mandate the API has not changed yet"
                               },
                               "methods": {
                                 "type": "array",
@@ -5776,16 +5760,6 @@
               }
             }
           },
-          "403": {
-            "description": "`FORBIDDEN`: That workflow was made in the playground.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "404": {
             "description": "`NOT_FOUND`: `workflow_id` not found.",
             "content": {
@@ -5921,7 +5895,7 @@
                               "type": "null"
                             }
                           ],
-                          "description": "Counts the changes made through this API; null for a mandate made in the playground"
+                          "description": "Counts the changes made through this API; null for a playground mandate the API has not changed yet"
                         },
                         "methods": {
                           "type": "array",
@@ -6832,16 +6806,6 @@
               }
             }
           },
-          "403": {
-            "description": "`FORBIDDEN`: Mandate was made in the playground.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "404": {
             "description": "`NOT_FOUND`: No such mandate.",
             "content": {
@@ -6985,7 +6949,7 @@
                               "type": "null"
                             }
                           ],
-                          "description": "Counts the changes made through this API; null for a mandate made in the playground"
+                          "description": "Counts the changes made through this API; null for a playground mandate the API has not changed yet"
                         },
                         "methods": {
                           "type": "array",
@@ -7356,16 +7320,6 @@
               }
             }
           },
-          "403": {
-            "description": "`FORBIDDEN`: Mandate was made in the playground.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "404": {
             "description": "`NOT_FOUND`: No such mandate.",
             "content": {
@@ -7564,16 +7518,6 @@
           },
           "400": {
             "description": "`VALIDATION_FAILED`: Empty / repeated methods, or a check without its data.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`FORBIDDEN`: Mandate was made in the playground.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7852,16 +7796,6 @@
               }
             }
           },
-          "403": {
-            "description": "`FORBIDDEN`: Mandate was made in the playground.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "404": {
             "description": "`NOT_FOUND`: No such mandate.",
             "content": {
@@ -8124,16 +8058,6 @@
           },
           "400": {
             "description": "`VALIDATION_FAILED`: A `type` other than `yes_no` / `voice`, an `options` field, or a repeated `key`.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`FORBIDDEN`: Mandate was made in the playground.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8668,16 +8592,6 @@
               }
             }
           },
-          "403": {
-            "description": "`FORBIDDEN`: Mandate was made in the playground.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "404": {
             "description": "`NOT_FOUND`: No such mandate.",
             "content": {
@@ -8823,7 +8737,7 @@
                               "type": "null"
                             }
                           ],
-                          "description": "Counts the changes made through this API; null for a mandate made in the playground"
+                          "description": "Counts the changes made through this API; null for a playground mandate the API has not changed yet"
                         },
                         "methods": {
                           "type": "array",
@@ -9190,16 +9104,6 @@
                     "created_at": "2026-10-09T10:16:12.456Z",
                     "updated_at": "2026-10-09T12:00:00.000Z"
                   }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`FORBIDDEN`: Mandate was made in the playground.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -9634,7 +9538,7 @@
             }
           },
           "403": {
-            "description": "`FORBIDDEN`: The mandate was made in the playground.",
+            "description": "`FORBIDDEN`: TEST key with a number not on its list.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10538,7 +10442,7 @@
             }
           },
           "403": {
-            "description": "`FORBIDDEN`: Campaign was made in the playground.",
+            "description": "`FORBIDDEN`: TEST key number not allowed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10932,7 +10836,7 @@
             }
           },
           "403": {
-            "description": "`FORBIDDEN`: Campaign was made in the playground.",
+            "description": "`FORBIDDEN`: TEST key number not allowed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -11435,16 +11339,6 @@
               }
             }
           },
-          "403": {
-            "description": "`FORBIDDEN`: Campaign was made in the playground.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "404": {
             "description": "`NOT_FOUND`: No such campaign or candidate.",
             "content": {
@@ -11703,16 +11597,6 @@
               }
             }
           },
-          "403": {
-            "description": "`FORBIDDEN`: Campaign was made in the playground.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
           "404": {
             "description": "`NOT_FOUND`: No such campaign.",
             "content": {
@@ -11957,16 +11841,6 @@
                     "sent_at": null,
                     "paused_at": null
                   }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "`FORBIDDEN`: Campaign was made in the playground.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -14394,9 +14268,6 @@
                                   "candidate.result"
                                 ]
                               },
-                              "api_version": {
-                                "type": "string"
-                              },
                               "created_at": {
                                 "type": "string",
                                 "description": "When the change happened"
@@ -14915,7 +14786,6 @@
                       {
                         "event_id": "evt_9c2e4a6b8d0f1234567890abcdef1234",
                         "type": "candidate.result",
-                        "api_version": "2026-10-01",
                         "created_at": "2026-10-05T12:41:11.000Z",
                         "mode": "test",
                         "version": 1,
@@ -15105,9 +14975,6 @@
                           "enum": [
                             "candidate.result"
                           ]
-                        },
-                        "api_version": {
-                          "type": "string"
                         },
                         "created_at": {
                           "type": "string",
@@ -15590,7 +15457,6 @@
                   "data": {
                     "event_id": "evt_9c2e4a6b8d0f1234567890abcdef1234",
                     "type": "candidate.result",
-                    "api_version": "2026-10-01",
                     "created_at": "2026-10-05T12:41:11.000Z",
                     "mode": "test",
                     "version": 1,
@@ -18830,6 +18696,495 @@
             "lang": "python",
             "label": "Python",
             "source": "res = call(\"GET\", \"/api/v1/partner/analytics/campaigns/asmnt_9f2c41d7a8b3e65f\")\ndata = res.json()[\"data\"]"
+          }
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
+      }
+    },
+    "/credits": {
+      "get": {
+        "operationId": "getCredits",
+        "tags": [
+          "Credits"
+        ],
+        "summary": "Get your credits",
+        "description": "The credits your organisation can spend on blue-collar campaigns, for the mode of your key (a test key reads the test wallet, a live key the live wallet), and what one candidate costs per verification method.\n\n**Scope:** `credits:read`",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The wallet of your key's mode",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "const": true,
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "live",
+                            "test"
+                          ],
+                          "description": "The mode of your API key: a test key is about your test credits, a live key about your live credits"
+                        },
+                        "currency": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "1 credit is 1 unit of this currency"
+                        },
+                        "account_status": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "The state of your organisation's billing account; null when there is none"
+                        },
+                        "billing_configured": {
+                          "type": "boolean",
+                          "description": "false when your organisation has no billing account: nothing can be sent until Record sets it up"
+                        },
+                        "wallet_configured": {
+                          "type": "boolean",
+                          "description": "false when there is no wallet for this mode, for example test credits that were never set up. A campaign in this mode is refused until Record adds them"
+                        },
+                        "wallet": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "granted": {
+                                  "type": "number",
+                                  "description": "Credits added to this wallet in all"
+                                },
+                                "consumed": {
+                                  "type": "number",
+                                  "description": "Credits used from it in all"
+                                },
+                                "balance": {
+                                  "type": "number",
+                                  "description": "Credits left: what a campaign can spend now"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "null when wallet_configured is false"
+                        },
+                        "prices": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "service": {
+                                "type": "string",
+                                "enum": [
+                                  "skill_verification",
+                                  "data_enrichment"
+                                ]
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "unit_price": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "Credits charged for one candidate. null: no price is set for your organisation, and a campaign that needs this method is refused"
+                              }
+                            }
+                          },
+                          "description": "What one candidate costs for each verification method"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "mode": "live",
+                    "currency": "INR",
+                    "account_status": "active",
+                    "billing_configured": true,
+                    "wallet_configured": true,
+                    "wallet": {
+                      "granted": 50000,
+                      "consumed": 18250,
+                      "balance": 31750
+                    },
+                    "prices": [
+                      {
+                        "service": "skill_verification",
+                        "label": "Scenario questions",
+                        "unit_price": 25
+                      },
+                      {
+                        "service": "data_enrichment",
+                        "label": "Enrichment",
+                        "unit_price": 5
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "SecretKey": []
+          }
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "pcall GET \"/api/v1/partner/credits\""
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const res = await call(\"GET\", \"/api/v1/partner/credits\");\nconst { data } = await res.json();"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "res = call(\"GET\", \"/api/v1/partner/credits\")\ndata = res.json()[\"data\"]"
+          }
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
+      }
+    },
+    "/credits/usage": {
+      "get": {
+        "operationId": "listCreditUsage",
+        "tags": [
+          "Credits"
+        ],
+        "summary": "List credit usage",
+        "description": "Where credits were used, newest first: one entry per verification method of each candidate added to a campaign, and refunds or corrections as their own entries. Filter by campaign, candidate or time.\n\n**Scope:** `credits:read`",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "query",
+            "required": false,
+            "description": "Only the entries of this campaign",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{4,64}$"
+            },
+            "example": "asmnt_9f2c41d7a8b3e65f"
+          },
+          {
+            "name": "candidate_id",
+            "in": "query",
+            "required": false,
+            "description": "Only the entries of this candidate",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{4,64}$"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "description": "Only entries at or after this time",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "description": "Only entries before this time",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "1 to 200, default 50",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "example": 50
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "The next_cursor of the previous page",
+            "schema": {
+              "type": "string",
+              "maxLength": 512
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "const": true,
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "ledger_id": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string",
+                                "description": "debit: credits used. refund, reversal or adjustment: credits given back or corrected"
+                              },
+                              "service": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "skill_verification or data_enrichment; null for an entry that is not tied to a method"
+                              },
+                              "service_label": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "quantity": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "Candidates this entry is for"
+                              },
+                              "unit_price": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "credits": {
+                                "type": "number",
+                                "description": "Negative when credits were used, positive when they were given back"
+                              },
+                              "balance_after": {
+                                "type": "number",
+                                "description": "The wallet's balance once this entry was applied"
+                              },
+                              "campaign_id": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "candidate_id": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ],
+                                "description": "The candidate this entry is for"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "count": {
+                          "type": "integer",
+                          "description": "How many items this page holds"
+                        },
+                        "total": {
+                          "anyOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "How many items match your filters across all pages. null when that cannot be counted cheaply: a filter worked out per item (status, progress) on a list that is large"
+                        },
+                        "next_cursor": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "Pass as `cursor` for the next page; null on the last page"
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                          "description": "true while there is a next page (with a status or progress filter that page can still come back empty)"
+                        },
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "live",
+                            "test"
+                          ],
+                          "description": "The mode of your API key: a test key is about your test credits, a live key about your live credits"
+                        },
+                        "totals": {
+                          "type": "object",
+                          "properties": {
+                            "credits_used": {
+                              "type": "number",
+                              "description": "Credits used across all entries that match the filters, net of anything given back"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "items": [
+                      {
+                        "ledger_id": "LGR_5f2c1a9b7d3e4f60",
+                        "type": "debit",
+                        "service": "skill_verification",
+                        "service_label": "Scenario questions",
+                        "quantity": 1,
+                        "unit_price": 25,
+                        "credits": -25,
+                        "balance_after": 31750,
+                        "campaign_id": "asmnt_9f2c41d7a8b3e65f",
+                        "candidate_id": "cand_8f3a1c2e",
+                        "created_at": "2026-10-05T12:41:11.000Z"
+                      }
+                    ],
+                    "count": 1,
+                    "total": 1,
+                    "has_more": false,
+                    "next_cursor": null,
+                    "mode": "live",
+                    "totals": {
+                      "credits_used": 25
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`VALIDATION_FAILED`: Malformed `campaign_id`, `candidate_id`, `from`, `to` or `cursor`, or `from` is after `to`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "SecretKey": []
+          }
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "pcall GET \"/api/v1/partner/credits/usage?campaign_id=asmnt_9f2c41d7a8b3e65f&limit=50\""
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const res = await call(\"GET\", \"/api/v1/partner/credits/usage?campaign_id=asmnt_9f2c41d7a8b3e65f&limit=50\");\nconst { data } = await res.json();"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "res = call(\"GET\", \"/api/v1/partner/credits/usage?campaign_id=asmnt_9f2c41d7a8b3e65f&limit=50\")\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {

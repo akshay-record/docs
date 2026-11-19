@@ -16,7 +16,7 @@ A workflow is a reusable template: how candidates are reached and when. Create i
 - **Verification methods.** Every workflow answers with `verification_methods`. Record switches both on for every workflow; you cannot set or change them.
 - **Changing.** `PATCH` changes only the fields you send. Send `start_time` and `end_time` together; other `schedule` keys merge, and `days` is replaced as a whole list.
 - **Archiving.** `DELETE` archives the workflow; nothing is erased. It answers `409 WORKFLOW_IN_USE` while the workflow still has open mandates.
-- **Playground workflows.** `GET /workflows` lists every workflow in your organisation, including ones made in the Record playground. `is_external` is `true` for the ones made through the API. You can read all of them, but only change the ones you created through the API; the others answer `403 FORBIDDEN`.
+- **Playground workflows.** `GET /workflows` lists every workflow in your organisation, including ones made in the Record playground. `is_external` is `true` for the ones made through the API. You can read and change all of them, whether they were made in the playground or through the API.
 
 ## Endpoints
 
@@ -364,7 +364,6 @@ pcall PATCH "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8" '{
 |---|---|
 | 400 `VALIDATION_FAILED` | Empty body, `verification_methods` or another unknown field, a time not HH:MM, only one of start_time / end_time, or a bad value. |
 | 404 `NOT_FOUND` | No such workflow. |
-| 403 `FORBIDDEN` | Workflow was made in the playground; the API can only read it. |
 | 409 `CONFLICT` | Workflow is archived, or `external_id` is taken. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/workflows/update-a-workflow)
@@ -430,7 +429,6 @@ pcall DELETE "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8"
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such workflow. |
-| 403 `FORBIDDEN` | Workflow was made in the playground. |
 | 409 `WORKFLOW_IN_USE` | It still has open mandates. Archive them first. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/workflows/archive-a-workflow)

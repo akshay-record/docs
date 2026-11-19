@@ -282,7 +282,8 @@
               "blue-collar-api/guides/campaigns",
               "blue-collar-api/guides/results",
               "blue-collar-api/guides/webhooks",
-              "blue-collar-api/guides/analytics"
+              "blue-collar-api/guides/analytics",
+              "blue-collar-api/guides/credits"
             ]
           },
           {
@@ -416,6 +417,14 @@
               "GET /analytics/workflows/{workflow_id}",
               "GET /analytics/mandates/{mandate_id}",
               "GET /analytics/campaigns/{campaign_id}"
+            ]
+          },
+          {
+            "group": "Credits",
+            "openapi": "blue-collar-api/api-reference/openapi.json",
+            "pages": [
+              "GET /credits",
+              "GET /credits/usage"
             ]
           }
         ]

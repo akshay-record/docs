@@ -69,11 +69,6 @@
         "No such workflow."
       ],
       [
-        403,
-        "FORBIDDEN",
-        "Workflow was made in the playground; the API can only read it."
-      ],
-      [
         409,
         "CONFLICT",
         "Workflow is archived, or `external_id` is taken."
@@ -88,11 +83,6 @@
         404,
         "NOT_FOUND",
         "No such workflow."
-      ],
-      [
-        403,
-        "FORBIDDEN",
-        "Workflow was made in the playground."
       ],
       [
         409,
@@ -286,11 +276,6 @@
         "`workflow_id` not found."
       ],
       [
-        403,
-        "FORBIDDEN",
-        "That workflow was made in the playground."
-      ],
-      [
         409,
         "CONFLICT",
         "Workflow is archived, or `job_id` is already used."
@@ -360,11 +345,6 @@
         "No such mandate."
       ],
       [
-        403,
-        "FORBIDDEN",
-        "Mandate was made in the playground."
-      ],
-      [
         409,
         "CONFLICT",
         "Archived, still `preparing` (wait Retry-After), or over 10 changes this hour."
@@ -379,11 +359,6 @@
         404,
         "NOT_FOUND",
         "No such mandate."
-      ],
-      [
-        403,
-        "FORBIDDEN",
-        "Mandate was made in the playground."
       ],
       [
         409,
@@ -412,11 +387,6 @@
         "No such mandate."
       ],
       [
-        403,
-        "FORBIDDEN",
-        "Mandate was made in the playground."
-      ],
-      [
         409,
         "CONFLICT",
         "Archived, still `preparing`, or too many changes this hour."
@@ -436,11 +406,6 @@
         404,
         "NOT_FOUND",
         "No such mandate."
-      ],
-      [
-        403,
-        "FORBIDDEN",
-        "Mandate was made in the playground."
       ],
       [
         409,
@@ -469,11 +434,6 @@
         "No such mandate."
       ],
       [
-        403,
-        "FORBIDDEN",
-        "Mandate was made in the playground."
-      ],
-      [
         409,
         "CONFLICT",
         "Archived, still `preparing`, or too many changes this hour."
@@ -498,11 +458,6 @@
         404,
         "NOT_FOUND",
         "No such mandate."
-      ],
-      [
-        403,
-        "FORBIDDEN",
-        "Mandate was made in the playground."
       ]
     ]
   },
@@ -514,11 +469,6 @@
         404,
         "NOT_FOUND",
         "No such mandate."
-      ],
-      [
-        403,
-        "FORBIDDEN",
-        "Mandate was made in the playground."
       ]
     ]
   },
@@ -546,7 +496,7 @@
       [
         403,
         "FORBIDDEN",
-        "The mandate was made in the playground."
+        "TEST key with a number not on its list."
       ],
       [
         404,
@@ -600,7 +550,7 @@
       [
         403,
         "FORBIDDEN",
-        "Campaign was made in the playground."
+        "TEST key number not allowed."
       ],
       [
         409,
@@ -622,7 +572,7 @@
       [
         403,
         "FORBIDDEN",
-        "Campaign was made in the playground."
+        "TEST key number not allowed."
       ],
       [
         409,
@@ -662,11 +612,6 @@
         "No such campaign or candidate."
       ],
       [
-        403,
-        "FORBIDDEN",
-        "Campaign was made in the playground."
-      ],
-      [
         409,
         "CONFLICT",
         "Campaign not started, paused, completed or cancelled; or the candidate has completed, declined or is not contacted yet."
@@ -688,11 +633,6 @@
         "No such campaign."
       ],
       [
-        403,
-        "FORBIDDEN",
-        "Campaign was made in the playground."
-      ],
-      [
         409,
         "CONFLICT",
         "Not started yet, or not in a state that can be paused."
@@ -708,11 +648,6 @@
         404,
         "NOT_FOUND",
         "No such campaign."
-      ],
-      [
-        403,
-        "FORBIDDEN",
-        "Campaign was made in the playground."
       ],
       [
         409,
@@ -980,6 +915,21 @@
         404,
         "NOT_FOUND",
         "No such campaign."
+      ]
+    ]
+  },
+  "getCredits": {
+    "title": "Get your credits",
+    "description": "The credits your organisation can spend on blue-collar campaigns, for the mode of your key (a test key reads the test wallet, a live key the live wallet), and what one candidate costs per verification method."
+  },
+  "listCreditUsage": {
+    "title": "List credit usage",
+    "description": "Where credits were used, newest first: one entry per verification method of each candidate added to a campaign, and refunds or corrections as their own entries. Filter by campaign, candidate or time.",
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Malformed `campaign_id`, `candidate_id`, `from`, `to` or `cursor`, or `from` is after `to`."
       ]
     ]
   }

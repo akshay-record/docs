@@ -19,7 +19,7 @@ Do not poll for results. When a candidate finishes, Record sends you an **event*
 | An event is confirmed when | Your server answers **2xx**. | You send its id in `ack` on your next pull. |
 | Scope | `webhooks:manage` | `events:read` |
 
-**Use the webhook as the main path and the feed as the safety net.** An event is confirmed once, by whichever way gets there first, and then stops coming from the other: a 2xx removes it from the feed, and a pull that confirms it cancels the webhook that was waiting. If you run both, let your pull wait about a minute before confirming new events, so the webhook gets its turn.
+**Use the webhook as the main path and the feed as the safety net.** An event is confirmed once, by whichever way gets there first, and then stops coming from the other: a 2xx removes it from the feed, and a pull that confirms it cancels the webhook that was waiting. If you run both, let your pull wait a few seconds before confirming new events, so the webhook gets its turn.
 
 **Which one delivered it?** The delivery log shows `delivered_via`: `webhook` or `feed`.
 
@@ -38,7 +38,11 @@ Confirm only what you really saved: that is what makes a lost response or a cras
 
 ## When an event is sent
 
-Once, when a candidate reaches `completed`, `declined` or `failed` and their result has stayed the same for about 45 seconds (the last questions are answered after the skill result exists, so Record waits instead of sending one event per answer). If a finished result later changes (a re-grade), you get a new event with a higher `version` for the same candidate.
+Once, when a candidate's result is final. A candidate who is `declined` or `failed` is final straight away. A `completed` candidate is final when every part of the verification that was switched on for the campaign is in: the skill result, the other-work answers and the enrichment answers (the last questions are answered after the skill result exists, so Record waits instead of sending one event per answer). If a part never arrives, the result is sent anyway 10 minutes after the candidate completed, so nothing waits forever.
+
+If a finished result later changes (a re-grade, or a part that arrived after the 10 minutes), you get a new event with a higher `version` for the same candidate.
+
+Events are sent as soon as they are final, normally within seconds of the candidate finishing, and they appear in the event feed at the same moment.
 
 ```http
 POST /hooks/record HTTP/1.1
@@ -52,7 +56,6 @@ Record-Signature: t=1791204071,v1=5f2b…
 {
   "event_id": "evt_9c2e4a6b8d0f1234567890abcdef1234",
   "type": "candidate.result",
-  "api_version": "2026-10-01",
   "created_at": "2026-10-05T12:41:11Z",
   "mode": "live",
   "version": 1,
@@ -690,7 +693,6 @@ pcall POST "/api/v1/partner/events/pull" '{ "ack": [], "limit": 100 }'
       {
         "event_id": "evt_9c2e4a6b8d0f1234567890abcdef1234",
         "type": "candidate.result",
-        "api_version": "2026-10-01",
         "created_at": "2026-10-05T12:41:11.000Z",
         "mode": "test",
         "version": 1,
@@ -826,7 +828,6 @@ pcall GET "/api/v1/partner/events/evt_9c2e4a6b8d0f1234567890abcdef1234"
   "data": {
     "event_id": "evt_9c2e4a6b8d0f1234567890abcdef1234",
     "type": "candidate.result",
-    "api_version": "2026-10-01",
     "created_at": "2026-10-05T12:41:11.000Z",
     "mode": "test",
     "version": 1,

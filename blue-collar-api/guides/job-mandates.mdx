@@ -42,7 +42,7 @@ Repeat `GET /mandates/{mandate_id}` until `status` is `ready`. A campaign create
 | Skill questions (the 3 Record writes) | Regenerate only | `PUT …/questions` with `skill_questions.regenerate`: all 3 or chosen slots. Record writes the new text; you cannot supply or edit it. Changing which skills have `verify: true` also regenerates them. Read them with `GET …/questions`. |
 | Interest questions | No | A fixed prompt per language ("Apart from the job, what other work have you done?"). You can only switch it on or off by adding or removing `interest_collection` in `methods`. |
 
-Any change is refused with `409 CONFLICT` while the mandate is `preparing` (wait for `Retry-After`), and a mandate takes at most 10 changes an hour. Only mandates created through the API can be changed; playground mandates answer `403 FORBIDDEN`.
+Any change is refused with `409 CONFLICT` while the mandate is `preparing` (wait for `Retry-After`), and a mandate takes at most 10 changes an hour. Mandates made in the playground can be changed the same way as ones made through the API. A full replace overwrites the questions and settings with what you send; a partial change (methods, skills, questions) starts from what the playground stored.
 
 ## Close the job
 
@@ -234,7 +234,6 @@ Save `data.mandate_id` for the next step.
 | 400 `VALIDATION_FAILED` | Unknown skill, `verify` on a skill that cannot be verified, repeated skill / question key, a check without its data, `abroad` without `countries` (or with `location`), `countries` on an India job, an unknown or non-selectable country code, or experience above 50 years. |
 | 422 `LIMIT_EXCEEDED` | More than 10 skills, 3 verified skills or 5 questions. |
 | 404 `NOT_FOUND` | `workflow_id` not found. |
-| 403 `FORBIDDEN` | That workflow was made in the playground. |
 | 409 `CONFLICT` | Workflow is archived, or `job_id` is already used. |
 
 Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/create-a-job-mandate)
@@ -652,7 +651,6 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/questions" 
 | 400 `VALIDATION_FAILED` | Both parts or neither, repeated or out-of-range slots, extra fields (such as your own question text), or `skill_verification` is not on this mandate. |
 | 422 `LIMIT_EXCEEDED` | More than 5 screening questions (10 when `data_enrichment` is the only method). |
 | 404 `NOT_FOUND` | No such mandate. |
-| 403 `FORBIDDEN` | Mandate was made in the playground. |
 | 409 `CONFLICT` | Archived, still `preparing` (wait Retry-After), or over 10 changes this hour. |
 
 Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/update-mandate-questions)
@@ -845,7 +843,6 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4" '{
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such mandate. |
-| 403 `FORBIDDEN` | Mandate was made in the playground. |
 | 409 `CONFLICT` | Archived; `workflow_id` differs; still `preparing` (wait Retry-After); or over 10 changes this hour. |
 | 422 `LIMIT_EXCEEDED` | More than 10 skills, 3 verified skills or 5 questions. |
 | 400 `VALIDATION_FAILED` | Same field rules as create. |
@@ -908,7 +905,6 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/methods" '{
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such mandate. |
-| 403 `FORBIDDEN` | Mandate was made in the playground. |
 | 409 `CONFLICT` | Archived, still `preparing`, or too many changes this hour. |
 | 400 `VALIDATION_FAILED` | Empty / repeated methods, or a check without its data. |
 
@@ -991,7 +987,6 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/skills" '{
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such mandate. |
-| 403 `FORBIDDEN` | Mandate was made in the playground. |
 | 409 `CONFLICT` | Archived, still `preparing`, or too many changes this hour. |
 | 422 `LIMIT_EXCEEDED` | More than 10 skills or 3 verified. |
 | 400 `VALIDATION_FAILED` | Unknown or repeated skill. |
@@ -1096,7 +1091,6 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/enrichment-
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such mandate. |
-| 403 `FORBIDDEN` | Mandate was made in the playground. |
 | 409 `CONFLICT` | Archived, still `preparing`, or too many changes this hour. |
 | 422 `LIMIT_EXCEEDED` | More than 5 questions. |
 | 400 `VALIDATION_FAILED` | A `type` other than `yes_no` / `voice`, an `options` field, or a repeated `key`. |
@@ -1222,7 +1216,6 @@ pcall POST "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/archive"
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such mandate. |
-| 403 `FORBIDDEN` | Mandate was made in the playground. |
 
 Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/archive-a-job-mandate)
 
@@ -1345,6 +1338,5 @@ pcall DELETE "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4"
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such mandate. |
-| 403 `FORBIDDEN` | Mandate was made in the playground. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/delete-a-job-mandate)
