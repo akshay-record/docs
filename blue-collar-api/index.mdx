@@ -20,7 +20,7 @@ Do the steps in this order. Each one returns an id that the next one needs.
     The people: name and phone number of each candidate. Record contacts and verifies them. Needs `mandate_id`, you get `campaign_id`.
   </Step>
   <Step title="Results">
-    Verdict and score for each candidate, sent to your webhook as soon as they finish. Needs `campaign_id`, you get `candidate_id`.
+    Verdict and score for each candidate, read when you need them. Needs `campaign_id`, you get `candidate_id`.
   </Step>
 </Steps>
 
@@ -31,8 +31,7 @@ Do the steps in this order. Each one returns an id that the next one needs.
 3. [`GET /mandates/{mandate_id}`](/blue-collar-api/guides/job-mandates#get-a-job-mandate) → repeat until `status` is `ready`
 4. [`POST /campaigns`](/blue-collar-api/guides/campaigns#create-a-campaign) → save `campaign_id`
 5. [`GET /campaigns/{campaign_id}`](/blue-collar-api/guides/campaigns#get-a-campaign) → watch it go out
-6. [`POST /webhooks/endpoints`](/blue-collar-api/guides/webhooks#create-an-endpoint) → results are sent to you, signed; answer 2xx to confirm. No public URL? Pull them with [`POST /events/pull`](/blue-collar-api/guides/webhooks#pull-and-confirm-events)
-7. [`GET /campaigns/{campaign_id}/results`](/blue-collar-api/guides/results#list-campaign-results) → catch up or check: status and collected `output`
+6. [`GET /campaigns/{campaign_id}/results`](/blue-collar-api/guides/results#list-campaign-results) → poll with `updated_since`; read `status`, `is_final` and the collected `output`
 
 ## 4 rules to remember
 
@@ -63,9 +62,6 @@ A job mandate runs one or more checks, named in its `methods`.
   </Card>
   <Card title="Authentication" icon="key" href="/blue-collar-api/authentication">
     API keys, scopes and request signing.
-  </Card>
-  <Card title="Webhooks" icon="bell" href="/blue-collar-api/guides/webhooks">
-    Receive results as soon as candidates finish.
   </Card>
   <Card title="API reference" icon="code" href="/blue-collar-api/api-reference/introduction">
     Every endpoint with its request and response schema.

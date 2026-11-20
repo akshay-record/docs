@@ -1,0 +1,67 @@
+---
+title: "Quickstart"
+description: "Create an enrichment, start a campaign and read the results."
+---
+
+You need a **TEST key id and secret** with the `enrichment:write` and `enrichment:campaigns` scopes, and the `call()` helper from [Authentication](/blue-collar-api/authentication#signing-helper).
+
+<Warning>
+  A campaign contacts the phone numbers you send. The numbers below are placeholders: use your own test numbers.
+</Warning>
+
+<Steps>
+  <Step title="Create an enrichment">
+    ```javascript JavaScript
+    const res = await call("POST", "/api/v1/partner/enrichments", {
+      external_id: "enr-chennai-warehouse",
+      name: "Warehouse talent pool - Chennai",
+      schedule: {
+        language: "english",
+        start_time: "10:00",
+        end_time: "18:00",
+        days: ["mon", "tue", "wed", "thu", "fri", "sat"],
+        timezone: "Asia/Kolkata",
+        max_retries: 3,
+        retry_after_hours: 4,
+      },
+      questions: [
+        { question_text: "Are you open to a new job right now?", type: "yes_no", preferred_answer: "yes" },
+        { question_text: "Tell us about the work you do and where you want to work.", type: "voice" },
+      ],
+    });
+    const { enrichment_id } = (await res.json()).data;
+    ```
+    Save `enrichment_id`. `questions_status` starts as `pending`.
+  </Step>
+  <Step title="Wait for the questions">
+    ```javascript JavaScript
+    const res = await call("GET", `/api/v1/partner/enrichments/${enrichment_id}`);
+    const { questions_status } = (await res.json()).data; // repeat until "ready"
+    ```
+    Record translates and voices the questions in every language. This takes a short while. You may create a campaign now: it waits and goes out by itself.
+  </Step>
+  <Step title="Start a campaign">
+    ```javascript JavaScript
+    const res = await call("POST", `/api/v1/partner/enrichments/${enrichment_id}/campaigns`, {
+      name: "November talent pool",
+      candidates: [
+        { name: "Ravi Kumar", phone_number: "98765 43210", external_id: "cand-1001" },
+        { name: "Meena S", phone_number: "91234 56780", external_id: "cand-1002" },
+      ],
+    });
+    const { campaign, skipped } = (await res.json()).data;
+    ```
+    Contacting starts at once. `skipped` lists any row that could not be contacted and why.
+  </Step>
+  <Step title="Read the results">
+    ```javascript JavaScript
+    const res = await call("GET", `/api/v1/partner/enrichments/${enrichment_id}/results`);
+    const { items } = (await res.json()).data;
+    ```
+    Each result carries your `external_id`, the full phone number and every answer.
+
+    Rather be told when a result exists? Register a webhook with `event_types: ["enrichment.result"]` instead: see [Webhooks](/enrichment-api/guides/webhooks).
+  </Step>
+</Steps>
+
+Next: [Enrichments](/enrichment-api/guides/enrichments), [Campaigns](/enrichment-api/guides/campaigns), [Candidates and results](/enrichment-api/guides/candidates-and-results).

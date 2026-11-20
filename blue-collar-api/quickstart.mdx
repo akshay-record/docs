@@ -116,28 +116,6 @@ description: "From an API key to your first candidate result in six calls."
     The answer is `202 Accepted` with `status: "preparing"` while Record writes the skill questions. `GET /api/v1/partner/mandates/{mandate_id}` shows `ready` when they are done. You do not have to wait: a campaign created now goes out by itself once the mandate is ready.
   </Step>
 
-  <Step title="Register a webhook">
-    Give Record an HTTPS URL. Each finished candidate's result is posted there, signed with your secret. See [Webhooks](/blue-collar-api/guides/webhooks) to verify the signature.
-
-    <CodeGroup>
-
-    ```javascript JavaScript
-    await call("POST", "/api/v1/partner/webhooks/endpoints", {
-      url: "https://ats.example.com/hooks/record",
-      event_types: ["candidate.result"],
-    });
-    ```
-
-    ```python Python
-    call("POST", "/api/v1/partner/webhooks/endpoints", {
-        "url": "https://ats.example.com/hooks/record",
-        "event_types": ["candidate.result"],
-    })
-    ```
-
-    </CodeGroup>
-  </Step>
-
   <Step title="Create a campaign">
     Send the candidates. A TEST key contacts the numbers you send, just like a live key, so use your own number.
 
@@ -174,17 +152,17 @@ description: "From an API key to your first candidate result in six calls."
   </Step>
 
   <Step title="Receive results">
-    When a candidate finishes, your webhook receives a `candidate.result` event with their [result record](/blue-collar-api/guides/results). No public URL? [Pull the events](/blue-collar-api/guides/webhooks#pull-and-confirm-events) instead. To catch up or check, read the results directly:
+    Read the results of the campaign. A result has a `status` and, once the candidate has finished, an `output` with what Record collected. Poll for changes with `updated_since` (the time of your last poll) and read `is_final`: `false` means the result can still gain parts, so read it again later. See the [result record](/blue-collar-api/guides/results).
 
     <CodeGroup>
 
     ```javascript JavaScript
-    const res = await call("GET", `/api/v1/partner/campaigns/${campaign.campaign_id}/results`);
+    const res = await call("GET", `/api/v1/partner/campaigns/${campaign.campaign_id}/results?updated_since=2026-11-20T00:00:00Z`);
     const { items } = (await res.json()).data;
     ```
 
     ```python Python
-    res = call("GET", f"/api/v1/partner/campaigns/{campaign_id}/results")
+    res = call("GET", f"/api/v1/partner/campaigns/{campaign_id}/results?updated_since=2026-11-20T00:00:00Z")
     items = res.json()["data"]["items"]
     ```
 
