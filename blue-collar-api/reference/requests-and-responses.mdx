@@ -11,6 +11,7 @@ description: "Base URL, response format, paging, idempotency and data access."
 | Transport | HTTPS only. Plain HTTP answers `403 HTTPS_REQUIRED`. |
 | Body | JSON (`application/json`, UTF-8), at most 256 KB. |
 | Naming | `snake_case` fields. |
+| Your own ids | `external_id` and `job_id` are optional everywhere. Without them, use Record's ids: `workflow_id`, `mandate_id`, `campaign_id` and `candidate_id`. |
 | Times | ISO 8601 in UTC, for example `2026-10-05T12:41:10.000Z`. |
 
 ## Response format
@@ -62,7 +63,7 @@ Send `limit` for the page size and, for the next page, `cursor` set to the previ
 
 Send an `Idempotency-Key` header (a new UUID) on writes. A retry with the same key returns the first answer instead of doing the work twice, so a timeout never creates a duplicate.
 
-- **Required** on `POST /workflows`, `POST /mandates`, `PUT /mandates/{mandate_id}/questions`, `POST /mandates/{mandate_id}/archive`, `POST /campaigns`, `POST /campaigns/{campaign_id}/candidates` and `POST /skill-requests`. Optional on other writes.
+- **Required** on `POST /workflows`, `POST /mandates`, `PUT /mandates/{mandate_id}/questions`, `POST /campaigns`, `POST /campaigns/{campaign_id}/candidates` and `POST /skill-requests`. Optional on other writes.
 - Keys are kept for 24 hours per API key. A replayed answer has the header `Idempotent-Replayed: true`.
 - Only successful answers are kept. After an error, a retry with the same key runs again.
 
@@ -79,9 +80,9 @@ Send an `Idempotency-Key` header (a new UUID) on writes. A retry with the same k
 ## What you can read and change
 
 - **Reads** cover everything in your organisation, project and mode: objects made through the API and in the Record playground. `is_external: true` marks the ones made through the API.
-- **Changes** apply only to what you created through the API. Anything made in the playground answers `403 FORBIDDEN`.
+- **Changes** apply to everything in your organisation, project and mode, whether it was made in the playground or through the API. `is_external` keeps saying where an object came from.
 - **Test and live** data are separate. A TEST key never sees live objects, and the reverse.
-- **Deletes** archive. Nothing is erased, and results stay readable.
+- **No deletes.** Nothing is deleted or archived through the API, and results stay readable.
 - Another organisation's objects answer `404 NOT_FOUND`.
 
 ## Retrying

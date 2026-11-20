@@ -14,13 +14,10 @@ description: "Business limits and rate limits."
 | Screening questions per mandate | 1–5, or 1–10 when `data_enrichment` is the only method (`yes_no` or `voice`) |
 | Mandate changes | 10 per mandate per hour |
 | Candidates | 1,000 per call · 20,000 per campaign · 2,000 different people per key per day |
-| Webhook endpoints | 5 |
-| Events and backfill | Kept and replayable for 30 days |
 | `Idempotency-Key` | Kept 24 hours |
 | Rate limits | Per key and endpoint type; see headers `RateLimit-Remaining`, `Retry-After` (below) |
 | TEST key | Sees only test data; limits are one tenth of live |
 | Changing things | Only objects created through this API (others answer `403`); you can read all your organisation's |
-| Deleting | Always an archive; nothing is erased |
 
 ## Rate limits
 
@@ -29,7 +26,7 @@ Every key has a bucket for the whole key and one per endpoint class. With `x-on-
 | Endpoint class | Endpoints | Per second (burst) | Per minute | Per day |
 |---|---|---|---|---|
 | Whole key | All | 150 (300) | 6,000 | |
-| `reads` | Reads, events and webhooks | 20 (40) | 1,200 | |
+| `reads` | Reads | 20 (40) | 1,200 | |
 | `skillsSearch` | Skill search and browse | 100 (200) | 4,000 | |
 | `skillsLookup` | `GET /skills/{skill_id}`, `POST /skills/lookup` | 20 (40) | 600 | |
 | `skillsMatch` | `POST /skills/match`, `POST /skills/extract` | 10 (20) | 300 | 50,000 |

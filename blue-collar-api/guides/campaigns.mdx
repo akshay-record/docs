@@ -16,8 +16,8 @@ A campaign sends your candidates (name + mobile number) to a mandate. Record con
 ## Candidates
 
 - `phone` is a mobile number with 10 digits (`98765 43210`) or with a country code (`+91 98765 43210`). It is never returned by the API.
-- `external_id` is your id for the candidate. It comes back on every result.
-- `metadata` holds up to 10 fields of your own, such as an application id. It needs `external_id` and comes back unchanged on every result and event.
+- `external_id` is **optional**: your id for the candidate. It comes back on every result.
+- `metadata` holds up to 10 fields of your own, such as an application id. It needs `external_id` and comes back unchanged on every result.
 - A number that cannot be used does not fail the batch. It comes back in `rejected` with a reason: `invalid_phone`, `duplicate_in_request` or `already_in_campaign`.
 - Up to 1,000 candidates per call, 20,000 per campaign, and 2,000 different people per key per day (TEST keys: 200), reset at midnight IST.
 
@@ -49,9 +49,9 @@ Send your candidates (name + phone) for a mandate. Record contacts and verifies 
 |---|---|---|
 | `mandate_id` | `string` | **Required.** From step 2 (or send your own `job_id` instead, never both). |
 | `start` | `string` | **Required.** `now` sends at once; `manual` only creates a draft (start it later). |
-| `candidates` | `array<object>` | **Required.** 1–1,000 of `{ name, phone, external_id? }`. Phone: 10 digits or with country code. Bad numbers come back in `rejected`. Each candidate can also carry `metadata`: up to 10 fields of your own (needs `external_id`), returned unchanged on every result and event. |
-| `name`, `external_id`, `language` | `string` | Campaign name, your unique id for it, language `en` `hi` `ta` `te` `kn` `ml` `bn` `mr` (default `en`). |
-| `job_id` | `string` | Your own job id, if the mandate was created with one. Send this or mandate_id, not both. |
+| `candidates` | `array<object>` | **Required.** 1–1,000 of `{ name, phone, external_id? }` (`external_id` is optional). Phone: 10 digits or with country code. Bad numbers come back in `rejected`. Each candidate can also carry `metadata`: up to 10 fields of your own (needs `external_id`), returned unchanged on every result. |
+| `name`, `external_id`, `language` | `string` | **Optional.** Campaign name, your unique id for it, language `en` `hi` `ta` `te` `kn` `ml` `bn` `mr` (default `en`). |
+| `job_id` | `string` | **Optional.** Your own job id, if the mandate was created with one. Send this or mandate_id, not both. |
 
 <CodeGroup>
 
@@ -172,7 +172,7 @@ Save `data.campaign.campaign_id` for the next step.
 |---|---|
 | 400 `VALIDATION_FAILED` | Both or neither of `mandate_id` / `job_id`, or no usable phone number. |
 | 402 `INSUFFICIENT_CREDITS` | Not enough credits (1 per candidate when skill verification is on). |
-| 403 `FORBIDDEN` | The mandate was made in the playground. |
+| 403 `FORBIDDEN` | TEST key with a number not on its list. |
 | 404 `NOT_FOUND` | No such mandate. |
 | 409 `CONFLICT` | Mandate is archived, or campaign `external_id` is taken. |
 | 429 `DAILY_CAP` | 2,000 different candidates already added today. |
@@ -376,7 +376,6 @@ pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/start"
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such campaign. |
-| 403 `FORBIDDEN` | Campaign was made in the playground. |
 | 409 `CONFLICT` | Already started, or the job is archived. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/campaigns/start-a-campaign)
@@ -467,7 +466,6 @@ pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates" '{
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such campaign. |
-| 403 `FORBIDDEN` | Campaign was made in the playground. |
 | 409 `CONFLICT` | Campaign is completed / cancelled, or the job is archived. |
 | 422 `LIMIT_EXCEEDED` | More than 20,000 candidates in the campaign. |
 | 402 `INSUFFICIENT_CREDITS` | Not enough credits. |
@@ -521,7 +519,6 @@ pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates/a3f1c9d2
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such campaign or candidate. |
-| 403 `FORBIDDEN` | Campaign was made in the playground. |
 | 409 `CONFLICT` | Campaign not started, paused, completed or cancelled; or the candidate has completed, declined or is not contacted yet. |
 | 429 `RATE_LIMITED` | A link was sent to this candidate less than a minute ago. Wait Retry-After seconds. |
 
@@ -579,7 +576,6 @@ pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/pause"
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such campaign. |
-| 403 `FORBIDDEN` | Campaign was made in the playground. |
 | 409 `CONFLICT` | Not started yet, or not in a state that can be paused. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/campaigns/pause-a-campaign)
@@ -638,7 +634,6 @@ pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/resume"
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such campaign. |
-| 403 `FORBIDDEN` | Campaign was made in the playground. |
 | 409 `CONFLICT` | Not paused, or the job is archived. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/campaigns/resume-a-campaign)
