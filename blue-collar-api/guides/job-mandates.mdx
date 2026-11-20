@@ -13,11 +13,11 @@ Before you create one, pick its [skills](/blue-collar-api/guides/skills) and, if
 
 ## Rules the server checks
 
-- 1 to 3 skills. The playground keeps at most three.
-- A skill with `verify: true` must be `verifiable`; candidates are verified on those.
+- Exactly 3 skills. The playground keeps three.
+- `verify: true` means candidates are tested on that skill. In the skill verification step, Raya asks a spoken question on each verified skill and scores the answer into the candidate's result. A skill with `verify: false` is listed on the job but not tested. Only skills marked `verifiable` can be verified.
 - At most 5 screening questions (10 when `data_enrichment` is the only method, as in the playground), each a `yes_no` (Yes / No) or `voice` (the candidate answers in their own words) question. Any other `type`, or an `options` field, answers `400 VALIDATION_FAILED`.
 - If `skill_verification` is on, you need at least 1 verified skill.
-- If `data_enrichment` is on, you need at least 1 question.
+- `enrichment_questions` is required: send 1 to 5 questions (10 when `data_enrichment` is the only method).
 - The job is in India (`location`) **or** abroad (`location_type: "abroad"` + 1–10 `countries`), never both.
 - Experience is whole years, 0–50.
 
@@ -58,16 +58,16 @@ Create the job Record verifies candidates against. Returns `mandate_id`; questio
 |---|---|---|
 | `workflow_id` | `string` | **Required.** From step 1. |
 | `title`, `company_name` | `string` | **Required.** Plain text, up to 200 characters. |
-| `skills` | `array<object>` | **Required.** `{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). 1 to 3 skills. |
+| `skills` | `array<object>` | **Required.** Exactly 3 skills: `{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). At least 1 needs `verify: true` when `skill_verification` is on. |
 | `methods` | `array<string>` | Which checks run. Leave out to use the workflow’s `default_methods`. |
-| `enrichment_questions` | `array<object>` | 1–5 items (up to 10 when `data_enrichment` is the only method) `{ key, type: yes_no \| voice, text, knockout: yes \| no, required }`. Needed when `data_enrichment` is on. |
+| `enrichment_questions` | `array<object>` | **Required.** 1–5 items (up to 10 when `data_enrichment` is the only method) `{ key, type: yes_no \| voice, text, knockout: yes \| no, required }`. |
 | `job_id` | `string` | **Optional.** Your own job id. If you send it, it must not be in use. Without it, use `mandate_id`. |
 | `location_type` | `string` | `india` (default) or `abroad`. Same as the playground’s Abroad option. |
 | `location` | `object` | A place in India: `{ city, state?, pincode? }` (find it with `GET /locations`). Not allowed when `location_type` is `abroad`. |
 | `countries` | `array<string>` | **With `abroad`.** Needed when `location_type` is `abroad`: 1–10 different ISO 3166-1 alpha-2 codes such as `SG` (list them with `GET /countries`; lower case is accepted and stored upper case). India (`IN`) cannot be picked. Not allowed for an India job. |
 | `experience` | `object` | `{ min_years, max_years }`, whole years 0–50, `max_years` at least `min_years`. Send both. Leave it out to clear it on a replace. |
 | `employment_type`, `shift` | `string` | Pick from `GET /employment-types` (Full-time, Part-time, Contract, …) and `GET /shifts` (Day shift, Night shift, Rotational, General). Other text up to 100 characters is kept as sent. |
-| `openings`, `salary`, `description`, `owner` | `integer`, `object`, `string` | Job details. `description` up to 1,500 characters. |
+| `openings`, `salary`, `description` | `integer`, `object`, `string` | Job details. `description` up to 1,500 characters. |
 
 <CodeGroup>
 
@@ -84,7 +84,6 @@ const res = await call("POST", "/api/v1/partner/mandates", {
   "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
   "shift": "Day shift",
   "employment_type": "Full-time",
-  "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
   "methods": ["data_enrichment", "skill_verification", "interest_collection"],
   "skills": [
     { "skill_id": "sk_36440", "verify": true },
@@ -123,7 +122,6 @@ res = call("POST", "/api/v1/partner/mandates", {
     "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
     "shift": "Day shift",
     "employment_type": "Full-time",
-    "owner": {"external_user_id": "recruiter_1042", "name": "Priya Nair"},
     "methods": ["data_enrichment", "skill_verification", "interest_collection"],
     "skills": [
         {"skill_id": "sk_36440", "verify": True},
@@ -162,7 +160,6 @@ pcall POST "/api/v1/partner/mandates" '{
   "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
   "shift": "Day shift",
   "employment_type": "Full-time",
-  "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
   "methods": ["data_enrichment", "skill_verification", "interest_collection"],
   "skills": [
     { "skill_id": "sk_36440", "verify": true },
@@ -263,7 +260,6 @@ pcall GET "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4"
     "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
     "shift": "Day shift",
     "employment_type": "Full-time",
-    "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
     "skills": [
       {
         "skill_id": "sk_36440",
@@ -340,7 +336,6 @@ List your organisation’s job mandates (made here or in the playground).
 | Query | Type | Description |
 |---|---|---|
 | `status` | `string` | One of `preparing`, `ready`, `failed`, `archived`. |
-| `owner` | `string` | owner.external_user_id. |
 | `workflow_id` | `string` | At most 64 characters. |
 | `updated_since` | `string` | ISO 8601 date-time. |
 | `limit` | `integer` | 1 to 100, default 50. |
@@ -386,7 +381,6 @@ pcall GET "/api/v1/partner/mandates?limit=50"
         "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
         "shift": "Day shift",
         "employment_type": "Full-time",
-        "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
         "skills": [
           {
             "skill_id": "sk_36440",
@@ -612,10 +606,9 @@ Replace the whole mandate (send the full body again). An identical resend change
 | `description` | `string` | Up to 1,500 characters (the question generator's limit). |
 | `shift` | `string` | Use a value from GET /shifts so the playground shows it as a choice; any other text is kept as sent. |
 | `employment_type` | `string` | Use a value from GET /employment-types so the playground shows it as a choice; any other text is kept as sent. |
-| `owner` | `object` | The recruiter in your ATS; defaults to x-on-behalf-of. Fields: `external_user_id`, `name`. |
 | `methods` | `array<string>` | Any non-empty mix; candidates always go enrichment → skills → interest. Omit to use the workflow's default. Each one of `data_enrichment`, `skill_verification`, `interest_collection`. |
-| `skills` | `array<object>` | **Required.** 1 to 3 skills. Fields: `skill_id`, `verify`, `name`, `pending`. |
-| `enrichment_questions` | `array<object>` | 0 to 5 enrichment questions (10 when `data_enrichment` is the only method). Fields: `key`, `type`, `text`, `knockout`, `required`. |
+| `skills` | `array<object>` | **Required.** Exactly 3 skills. Fields: `skill_id`, `verify`, `name`, `pending`. |
+| `enrichment_questions` | `array<object>` | **Required.** 1 to 5 enrichment questions (10 when `data_enrichment` is the only method). Fields: `key`, `type`, `text`, `knockout`, `required`. |
 
 <CodeGroup>
 
@@ -632,7 +625,6 @@ const res = await call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2
   "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
   "shift": "Day shift",
   "employment_type": "Full-time",
-  "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
   "methods": ["data_enrichment", "skill_verification", "interest_collection"],
   "skills": [
     { "skill_id": "sk_36440", "verify": true },
@@ -671,7 +663,6 @@ res = call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4", {
     "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
     "shift": "Day shift",
     "employment_type": "Full-time",
-    "owner": {"external_user_id": "recruiter_1042", "name": "Priya Nair"},
     "methods": ["data_enrichment", "skill_verification", "interest_collection"],
     "skills": [
         {"skill_id": "sk_36440", "verify": True},
@@ -710,7 +701,6 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4" '{
   "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
   "shift": "Day shift",
   "employment_type": "Full-time",
-  "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
   "methods": ["data_enrichment", "skill_verification", "interest_collection"],
   "skills": [
     { "skill_id": "sk_36440", "verify": true },
@@ -834,7 +824,7 @@ Replace only the skill list. Changing the verified skills regenerates the skill 
 
 | Field | Type | Description |
 |---|---|---|
-| `skills` | `array<object>` | **Required.** 1 to 3 skills. Fields: `skill_id`, `verify`, `name`, `pending`. |
+| `skills` | `array<object>` | **Required.** Exactly 3 skills. Fields: `skill_id`, `verify`, `name`, `pending`. |
 
 <CodeGroup>
 
@@ -908,7 +898,7 @@ Replace only the screening questions (1 to 5, or 10 with enrichment only).
 
 | Field | Type | Description |
 |---|---|---|
-| `enrichment_questions` | `array<object>` | **Required.** 0 to 5 enrichment questions (10 when `data_enrichment` is the only method). Fields: `key`, `type`, `text`, `knockout`, `required`. |
+| `enrichment_questions` | `array<object>` | **Required.** 1 to 5 enrichment questions (10 when `data_enrichment` is the only method). Fields: `key`, `type`, `text`, `knockout`, `required`. |
 
 <CodeGroup>
 

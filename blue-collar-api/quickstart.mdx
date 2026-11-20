@@ -67,7 +67,7 @@ description: "From an API key to your first candidate result in six calls."
   </Step>
 
   <Step title="Create a job mandate">
-    The mandate is the job: 1 to 3 skills and up to 5 screening questions (10 with enrichment only). Find skill ids with [`GET /skills/search`](/blue-collar-api/guides/skills#search-skills).
+    The mandate is the job: exactly 3 skills and 1 to 5 screening questions (10 with enrichment only). Find skill ids with [`GET /skills/search`](/blue-collar-api/guides/skills#search-skills).
 
     <CodeGroup>
 
@@ -126,7 +126,7 @@ description: "From an API key to your first candidate result in six calls."
       mandate_id,
       name: "Warehouse Associate - October batch",
       start: "now",
-      candidates: [{ external_id: "cand-88231", name: "Ravi Kumar", phone: "+91 98765 43210" }],
+      candidates: [{ external_id: "cand-88231", name: "Ravi Kumar", phone: "9876543210" }],
     });
     const { campaign, accepted, rejected } = (await res.json()).data;
     ```
@@ -136,7 +136,7 @@ description: "From an API key to your first candidate result in six calls."
         "mandate_id": mandate_id,
         "name": "Warehouse Associate - October batch",
         "start": "now",
-        "candidates": [{"external_id": "cand-88231", "name": "Ravi Kumar", "phone": "+91 98765 43210"}],
+        "candidates": [{"external_id": "cand-88231", "name": "Ravi Kumar", "phone": "9876543210"}],
     })
     data = res.json()["data"]
     campaign_id = data["campaign"]["campaign_id"]
