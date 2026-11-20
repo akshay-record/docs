@@ -231,7 +231,7 @@
     "fields": {
       "workflow_id": "From step 1.",
       "title, company_name": "Plain text, up to 200 characters.",
-      "skills": "`{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). 5–10 recommended, max 10; max 3 with `verify: true`.",
+      "skills": "`{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). 1 to 3 skills.",
       "methods": "Which checks run. Leave out to use the workflow’s `default_methods`.",
       "enrichment_questions": "1–5 items (up to 10 when `data_enrichment` is the only method) `{ key, type: yes_no | voice, text, knockout: yes | no, required }`. Needed when `data_enrichment` is on.",
       "job_id": "Optional. Your own job id. If you send it, it must not be in use. Without it, use `mandate_id`.",
@@ -251,7 +251,7 @@
       [
         422,
         "LIMIT_EXCEEDED",
-        "More than 10 skills, 3 verified skills or 5 questions."
+        "More than 3 skills or 5 questions."
       ],
       [
         404,
@@ -351,7 +351,7 @@
       [
         422,
         "LIMIT_EXCEEDED",
-        "More than 10 skills, 3 verified skills or 5 questions."
+        "More than 3 skills or 5 questions."
       ],
       [
         400,
@@ -398,7 +398,7 @@
       [
         422,
         "LIMIT_EXCEEDED",
-        "More than 10 skills or 3 verified."
+        "More than 3 skills."
       ],
       [
         400,

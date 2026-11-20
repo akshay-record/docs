@@ -13,8 +13,8 @@ Before you create one, pick its [skills](/blue-collar-api/guides/skills) and, if
 
 ## Rules the server checks
 
-- 5–10 skills (max 10). Fewer than 5 is accepted with a warning.
-- At most 3 skills with `verify: true`, and only skills that are `verifiable`.
+- 1 to 3 skills. The playground keeps at most three.
+- A skill with `verify: true` must be `verifiable`; candidates are verified on those.
 - At most 5 screening questions (10 when `data_enrichment` is the only method, as in the playground), each a `yes_no` (Yes / No) or `voice` (the candidate answers in their own words) question. Any other `type`, or an `options` field, answers `400 VALIDATION_FAILED`.
 - If `skill_verification` is on, you need at least 1 verified skill.
 - If `data_enrichment` is on, you need at least 1 question.
@@ -58,7 +58,7 @@ Create the job Record verifies candidates against. Returns `mandate_id`; questio
 |---|---|---|
 | `workflow_id` | `string` | **Required.** From step 1. |
 | `title`, `company_name` | `string` | **Required.** Plain text, up to 200 characters. |
-| `skills` | `array<object>` | **Required.** `{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). 5–10 recommended, max 10; max 3 with `verify: true`. |
+| `skills` | `array<object>` | **Required.** `{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). 1 to 3 skills. |
 | `methods` | `array<string>` | Which checks run. Leave out to use the workflow’s `default_methods`. |
 | `enrichment_questions` | `array<object>` | 1–5 items (up to 10 when `data_enrichment` is the only method) `{ key, type: yes_no \| voice, text, knockout: yes \| no, required }`. Needed when `data_enrichment` is on. |
 | `job_id` | `string` | **Optional.** Your own job id. If you send it, it must not be in use. Without it, use `mandate_id`. |
@@ -89,10 +89,7 @@ const res = await call("POST", "/api/v1/partner/mandates", {
   "skills": [
     { "skill_id": "sk_36440", "verify": true },
     { "skill_id": "sk_38973", "verify": true },
-    { "skill_id": "sk_38824", "verify": true },
-    { "skill_id": "sk_2338" },
-    { "skill_id": "sk_2452" },
-    { "name": "Reach Truck Operation", "pending": true }
+    { "skill_id": "sk_38824", "verify": true }
   ],
   "enrichment_questions": [
     {
@@ -131,10 +128,7 @@ res = call("POST", "/api/v1/partner/mandates", {
     "skills": [
         {"skill_id": "sk_36440", "verify": True},
         {"skill_id": "sk_38973", "verify": True},
-        {"skill_id": "sk_38824", "verify": True},
-        {"skill_id": "sk_2338"},
-        {"skill_id": "sk_2452"},
-        {"name": "Reach Truck Operation", "pending": True}
+        {"skill_id": "sk_38824", "verify": True}
     ],
     "enrichment_questions": [
         {
@@ -173,10 +167,7 @@ pcall POST "/api/v1/partner/mandates" '{
   "skills": [
     { "skill_id": "sk_36440", "verify": true },
     { "skill_id": "sk_38973", "verify": true },
-    { "skill_id": "sk_38824", "verify": true },
-    { "skill_id": "sk_2338" },
-    { "skill_id": "sk_2452" },
-    { "name": "Reach Truck Operation", "pending": true }
+    { "skill_id": "sk_38824", "verify": true }
   ],
   "enrichment_questions": [
     {
@@ -218,7 +209,7 @@ Save `data.mandate_id` for the next step.
 | Error | When |
 |---|---|
 | 400 `VALIDATION_FAILED` | Unknown skill, `verify` on a skill that cannot be verified, repeated skill / question key, a check without its data, `abroad` without `countries` (or with `location`), `countries` on an India job, an unknown or non-selectable country code, or experience above 50 years. |
-| 422 `LIMIT_EXCEEDED` | More than 10 skills, 3 verified skills or 5 questions. |
+| 422 `LIMIT_EXCEEDED` | More than 3 skills or 5 questions. |
 | 404 `NOT_FOUND` | `workflow_id` not found. |
 | 409 `CONFLICT` | Workflow is archived, or `job_id` is already used. |
 
@@ -291,24 +282,6 @@ pcall GET "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4"
         "name": "Packing Station Setup",
         "verify": true,
         "status": "active"
-      },
-      {
-        "skill_id": "sk_2338",
-        "name": "Order Picking",
-        "verify": false,
-        "status": "active"
-      },
-      {
-        "skill_id": "sk_2452",
-        "name": "Loading And Unloading",
-        "verify": false,
-        "status": "active"
-      },
-      {
-        "skill_id": null,
-        "name": "Reach Truck Operation",
-        "verify": false,
-        "status": "pending"
       }
     ],
     "enrichment_questions": [
@@ -327,9 +300,7 @@ pcall GET "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4"
         "required": false
       }
     ],
-    "warnings": [
-      "Pending skills are kept on the mandate but cannot be verified until resolved"
-    ],
+    "warnings": [],
     "is_external": true,
     "created_at": "2026-10-09T10:16:12.456Z",
     "updated_at": "2026-10-09T10:16:12.456Z"
@@ -434,24 +405,6 @@ pcall GET "/api/v1/partner/mandates?limit=50"
             "name": "Packing Station Setup",
             "verify": true,
             "status": "active"
-          },
-          {
-            "skill_id": "sk_2338",
-            "name": "Order Picking",
-            "verify": false,
-            "status": "active"
-          },
-          {
-            "skill_id": "sk_2452",
-            "name": "Loading And Unloading",
-            "verify": false,
-            "status": "active"
-          },
-          {
-            "skill_id": null,
-            "name": "Reach Truck Operation",
-            "verify": false,
-            "status": "pending"
           }
         ],
         "enrichment_questions": [
@@ -661,7 +614,7 @@ Replace the whole mandate (send the full body again). An identical resend change
 | `employment_type` | `string` | Use a value from GET /employment-types so the playground shows it as a choice; any other text is kept as sent. |
 | `owner` | `object` | The recruiter in your ATS; defaults to x-on-behalf-of. Fields: `external_user_id`, `name`. |
 | `methods` | `array<string>` | Any non-empty mix; candidates always go enrichment → skills → interest. Omit to use the workflow's default. Each one of `data_enrichment`, `skill_verification`, `interest_collection`. |
-| `skills` | `array<object>` | **Required.** 5 to 10 recommended; fewer than 5 is a warning. Fields: `skill_id`, `verify`, `name`, `pending`. |
+| `skills` | `array<object>` | **Required.** 1 to 3 skills. Fields: `skill_id`, `verify`, `name`, `pending`. |
 | `enrichment_questions` | `array<object>` | 0 to 5 enrichment questions (10 when `data_enrichment` is the only method). Fields: `key`, `type`, `text`, `knockout`, `required`. |
 
 <CodeGroup>
@@ -684,10 +637,7 @@ const res = await call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2
   "skills": [
     { "skill_id": "sk_36440", "verify": true },
     { "skill_id": "sk_38973", "verify": true },
-    { "skill_id": "sk_38824", "verify": true },
-    { "skill_id": "sk_2338" },
-    { "skill_id": "sk_2452" },
-    { "name": "Reach Truck Operation", "pending": true }
+    { "skill_id": "sk_38824", "verify": true }
   ],
   "enrichment_questions": [
     {
@@ -726,10 +676,7 @@ res = call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4", {
     "skills": [
         {"skill_id": "sk_36440", "verify": True},
         {"skill_id": "sk_38973", "verify": True},
-        {"skill_id": "sk_38824", "verify": True},
-        {"skill_id": "sk_2338"},
-        {"skill_id": "sk_2452"},
-        {"name": "Reach Truck Operation", "pending": True}
+        {"skill_id": "sk_38824", "verify": True}
     ],
     "enrichment_questions": [
         {
@@ -768,10 +715,7 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4" '{
   "skills": [
     { "skill_id": "sk_36440", "verify": true },
     { "skill_id": "sk_38973", "verify": true },
-    { "skill_id": "sk_38824", "verify": true },
-    { "skill_id": "sk_2338" },
-    { "skill_id": "sk_2452" },
-    { "name": "Reach Truck Operation", "pending": true }
+    { "skill_id": "sk_38824", "verify": true }
   ],
   "enrichment_questions": [
     {
@@ -801,9 +745,7 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4" '{
     "flow_version": 1,
     "methods": ["data_enrichment", "skill_verification", "interest_collection"],
     "changed": true,
-    "warnings": [
-      "Pending skills are kept on the mandate but cannot be verified until resolved"
-    ]
+    "warnings": []
   }
 }
 ```
@@ -814,7 +756,7 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4" '{
 |---|---|
 | 404 `NOT_FOUND` | No such mandate. |
 | 409 `CONFLICT` | Archived; `workflow_id` differs; still `preparing` (wait Retry-After); or over 10 changes this hour. |
-| 422 `LIMIT_EXCEEDED` | More than 10 skills, 3 verified skills or 5 questions. |
+| 422 `LIMIT_EXCEEDED` | More than 3 skills or 5 questions. |
 | 400 `VALIDATION_FAILED` | Same field rules as create. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/replace-a-job-mandate)
@@ -892,7 +834,7 @@ Replace only the skill list. Changing the verified skills regenerates the skill 
 
 | Field | Type | Description |
 |---|---|---|
-| `skills` | `array<object>` | **Required.** 5 to 10 recommended; fewer than 5 is a warning. Fields: `skill_id`, `verify`, `name`, `pending`. |
+| `skills` | `array<object>` | **Required.** 1 to 3 skills. Fields: `skill_id`, `verify`, `name`, `pending`. |
 
 <CodeGroup>
 
@@ -901,10 +843,7 @@ const res = await call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2
   "skills": [
     { "skill_id": "sk_36440", "verify": true },
     { "skill_id": "sk_38973", "verify": true },
-    { "skill_id": "sk_38824", "verify": true },
-    { "skill_id": "sk_2338" },
-    { "skill_id": "sk_2452" },
-    { "name": "Reach Truck Operation", "pending": true }
+    { "skill_id": "sk_38824", "verify": true }
   ]
 });
 const { data } = await res.json();
@@ -915,10 +854,7 @@ res = call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/ski
     "skills": [
         {"skill_id": "sk_36440", "verify": True},
         {"skill_id": "sk_38973", "verify": True},
-        {"skill_id": "sk_38824", "verify": True},
-        {"skill_id": "sk_2338"},
-        {"skill_id": "sk_2452"},
-        {"name": "Reach Truck Operation", "pending": True}
+        {"skill_id": "sk_38824", "verify": True}
     ]
 })
 data = res.json()["data"]
@@ -929,10 +865,7 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/skills" '{
   "skills": [
     { "skill_id": "sk_36440", "verify": true },
     { "skill_id": "sk_38973", "verify": true },
-    { "skill_id": "sk_38824", "verify": true },
-    { "skill_id": "sk_2338" },
-    { "skill_id": "sk_2452" },
-    { "name": "Reach Truck Operation", "pending": true }
+    { "skill_id": "sk_38824", "verify": true }
   ]
 }'
 ```
@@ -958,7 +891,7 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/skills" '{
 |---|---|
 | 404 `NOT_FOUND` | No such mandate. |
 | 409 `CONFLICT` | Archived, still `preparing`, or too many changes this hour. |
-| 422 `LIMIT_EXCEEDED` | More than 10 skills or 3 verified. |
+| 422 `LIMIT_EXCEEDED` | More than 3 skills. |
 | 400 `VALIDATION_FAILED` | Unknown or repeated skill. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/replace-mandate-skills)
