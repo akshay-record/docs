@@ -10650,6 +10650,67 @@
                                       }
                                     }
                                   }
+                                },
+                                "answers": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "skill": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "question": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "answer": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ],
+                                        "description": "What they said, in English"
+                                      },
+                                      "answer_native": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ],
+                                        "description": "What they said, in their own language"
+                                      },
+                                      "summary": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  },
+                                  "description": "Only with ?include=answers (scope results:answers)"
                                 }
                               }
                             },
@@ -10722,6 +10783,10 @@
                                             },
                                             "text": {
                                               "type": "string"
+                                            },
+                                            "transcript": {
+                                              "type": "string",
+                                              "description": "What they said, in their own words; left out when empty"
                                             }
                                           }
                                         }
