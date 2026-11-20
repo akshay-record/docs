@@ -231,16 +231,16 @@
     "fields": {
       "workflow_id": "From step 1.",
       "title, company_name": "Plain text, up to 200 characters.",
-      "skills": "`{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). 1 to 3 skills.",
+      "skills": "`{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). Exactly 3 skills.",
       "methods": "Which checks run. Leave out to use the workflow’s `default_methods`.",
-      "enrichment_questions": "1–5 items (up to 10 when `data_enrichment` is the only method) `{ key, type: yes_no | voice, text, knockout: yes | no, required }`. Needed when `data_enrichment` is on.",
+      "enrichment_questions": "Required. 1–5 items (up to 10 when `data_enrichment` is the only method) `{ key, type: yes_no | voice, text, knockout: yes | no, required }`.",
       "job_id": "Optional. Your own job id. If you send it, it must not be in use. Without it, use `mandate_id`.",
       "location_type": "`india` (default) or `abroad`. Same as the playground’s Abroad option.",
       "location": "A place in India: `{ city, state?, pincode? }` (find it with `GET /locations`). Not allowed when `location_type` is `abroad`.",
       "countries": "Needed when `location_type` is `abroad`: 1–10 different ISO 3166-1 alpha-2 codes such as `SG` (list them with `GET /countries`; lower case is accepted and stored upper case). India (`IN`) cannot be picked. Not allowed for an India job.",
       "experience": "`{ min_years, max_years }`, whole years 0–50, `max_years` at least `min_years`. Send both. Leave it out to clear it on a replace.",
       "employment_type, shift": "Pick from `GET /employment-types` (Full-time, Part-time, Contract, …) and `GET /shifts` (Day shift, Night shift, Rotational, General). Other text up to 100 characters is kept as sent.",
-      "openings, salary, description, owner": "Job details. `description` up to 1,500 characters."
+      "openings, salary, description": "Job details. `description` up to 1,500 characters."
     },
     "errors": [
       [
@@ -440,7 +440,7 @@
     "fields": {
       "mandate_id": "From step 2 (or send your own `job_id` instead, never both).",
       "start": "`now` sends at once; `manual` only creates a draft (start it later).",
-      "candidates": "1–1,000 of `{ name, phone, external_id? }`. Phone: 10 digits or with country code. Bad numbers come back in `rejected`.",
+      "candidates": "1–1,000 of `{ name, phone, external_id? }`. Phone: exactly 10 digits (`9876543210`), no `+91`, spaces or dashes. Bad numbers come back in `rejected`.",
       "name, external_id, language": "Campaign name, your unique id for it, language `en` `hi` `ta` `te` `kn` `ml` `bn` `mr` (default `en`)."
     },
     "errors": [

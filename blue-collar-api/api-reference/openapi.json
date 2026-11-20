@@ -4437,16 +4437,6 @@
             "example": "ready"
           },
           {
-            "name": "owner",
-            "in": "query",
-            "required": false,
-            "description": "owner.external_user_id",
-            "schema": {
-              "type": "string",
-              "maxLength": 128
-            }
-          },
-          {
             "name": "workflow_id",
             "in": "query",
             "required": false,
@@ -4694,24 +4684,6 @@
                                   }
                                 ]
                               },
-                              "owner": {
-                                "anyOf": [
-                                  {
-                                    "type": "object",
-                                    "properties": {
-                                      "external_user_id": {
-                                        "type": "string"
-                                      },
-                                      "name": {
-                                        "type": "string"
-                                      }
-                                    }
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              },
                               "skills": {
                                 "type": "array",
                                 "items": {
@@ -4869,10 +4841,6 @@
                         "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
                         "shift": "Day shift",
                         "employment_type": "Full-time",
-                        "owner": {
-                          "external_user_id": "recruiter_1042",
-                          "name": "Priya Nair"
-                        },
                         "skills": [
                           {
                             "skill_id": "sk_36440",
@@ -5120,25 +5088,6 @@
                     "maxLength": 100,
                     "description": "Use a value from GET /employment-types so the playground shows it as a choice; any other text is kept as sent"
                   },
-                  "owner": {
-                    "type": "object",
-                    "properties": {
-                      "external_user_id": {
-                        "type": "string",
-                        "minLength": 1,
-                        "maxLength": 128
-                      },
-                      "name": {
-                        "type": "string",
-                        "maxLength": 200
-                      }
-                    },
-                    "required": [
-                      "external_user_id"
-                    ],
-                    "additionalProperties": false,
-                    "description": "The recruiter in your ATS; defaults to x-on-behalf-of"
-                  },
                   "methods": {
                     "type": "array",
                     "items": {
@@ -5200,7 +5149,7 @@
                     },
                     "minItems": 1,
                     "maxItems": 50,
-                    "description": "1 to 3 skills: the playground keeps at most three"
+                    "description": "Exactly 3 skills: the playground keeps three"
                   },
                   "enrichment_questions": {
                     "type": "array",
@@ -5246,8 +5195,9 @@
                       ],
                       "additionalProperties": false
                     },
+                    "minItems": 1,
                     "maxItems": 50,
-                    "description": "0 to 5 enrichment questions (up to 10 when data_enrichment is the only method)"
+                    "description": "1 to 5 enrichment questions (up to 10 when data_enrichment is the only method)"
                   },
                   "job_id": {
                     "type": "string",
@@ -5259,7 +5209,8 @@
                   "workflow_id",
                   "title",
                   "company_name",
-                  "skills"
+                  "skills",
+                  "enrichment_questions"
                 ],
                 "additionalProperties": false
               },
@@ -5287,10 +5238,6 @@
                 "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
                 "shift": "Day shift",
                 "employment_type": "Full-time",
-                "owner": {
-                  "external_user_id": "recruiter_1042",
-                  "name": "Priya Nair"
-                },
                 "methods": [
                   "data_enrichment",
                   "skill_verification",
@@ -5468,17 +5415,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall POST \"/api/v1/partner/mandates\" '{\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"owner\": {\n    \"external_user_id\": \"recruiter_1042\",\n    \"name\": \"Priya Nair\"\n  },\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n}'"
+            "source": "pcall POST \"/api/v1/partner/mandates\" '{\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n}'"
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"POST\", \"/api/v1/partner/mandates\", {\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"owner\": {\n    \"external_user_id\": \"recruiter_1042\",\n    \"name\": \"Priya Nair\"\n  },\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n});\nconst { data } = await res.json();"
+            "source": "const res = await call(\"POST\", \"/api/v1/partner/mandates\", {\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n});\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"POST\", \"/api/v1/partner/mandates\", {\n    \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n    \"title\": \"Warehouse Associate (Forklift)\",\n    \"company_name\": \"Acme Logistics Pvt Ltd\",\n    \"location_type\": \"india\",\n    \"location\": {\n        \"city\": \"Chennai\",\n        \"state\": \"Tamil Nadu\",\n        \"pincode\": \"600001\"\n    },\n    \"experience\": {\n        \"min_years\": 1,\n        \"max_years\": 5\n    },\n    \"openings\": 12,\n    \"salary\": {\n        \"min\": 18000,\n        \"max\": 24000,\n        \"currency\": \"INR\",\n        \"period\": \"month\"\n    },\n    \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n    \"shift\": \"Day shift\",\n    \"employment_type\": \"Full-time\",\n    \"owner\": {\n        \"external_user_id\": \"recruiter_1042\",\n        \"name\": \"Priya Nair\"\n    },\n    \"methods\": [\n        \"data_enrichment\",\n        \"skill_verification\",\n        \"interest_collection\"\n    ],\n    \"skills\": [\n        {\n            \"skill_id\": \"sk_36440\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38973\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38824\",\n            \"verify\": True\n        }\n    ],\n    \"enrichment_questions\": [\n        {\n            \"key\": \"has_licence\",\n            \"type\": \"yes_no\",\n            \"text\": \"Do you hold a valid forklift licence?\",\n            \"knockout\": \"no\",\n            \"required\": True\n        },\n        {\n            \"key\": \"why_this_job\",\n            \"type\": \"voice\",\n            \"text\": \"Tell us in your own words why you want this job.\",\n            \"required\": False\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"POST\", \"/api/v1/partner/mandates\", {\n    \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n    \"title\": \"Warehouse Associate (Forklift)\",\n    \"company_name\": \"Acme Logistics Pvt Ltd\",\n    \"location_type\": \"india\",\n    \"location\": {\n        \"city\": \"Chennai\",\n        \"state\": \"Tamil Nadu\",\n        \"pincode\": \"600001\"\n    },\n    \"experience\": {\n        \"min_years\": 1,\n        \"max_years\": 5\n    },\n    \"openings\": 12,\n    \"salary\": {\n        \"min\": 18000,\n        \"max\": 24000,\n        \"currency\": \"INR\",\n        \"period\": \"month\"\n    },\n    \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n    \"shift\": \"Day shift\",\n    \"employment_type\": \"Full-time\",\n    \"methods\": [\n        \"data_enrichment\",\n        \"skill_verification\",\n        \"interest_collection\"\n    ],\n    \"skills\": [\n        {\n            \"skill_id\": \"sk_36440\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38973\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38824\",\n            \"verify\": True\n        }\n    ],\n    \"enrichment_questions\": [\n        {\n            \"key\": \"has_licence\",\n            \"type\": \"yes_no\",\n            \"text\": \"Do you hold a valid forklift licence?\",\n            \"knockout\": \"no\",\n            \"required\": True\n        },\n        {\n            \"key\": \"why_this_job\",\n            \"type\": \"voice\",\n            \"text\": \"Tell us in your own words why you want this job.\",\n            \"required\": False\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -5709,24 +5656,6 @@
                             }
                           ]
                         },
-                        "owner": {
-                          "anyOf": [
-                            {
-                              "type": "object",
-                              "properties": {
-                                "external_user_id": {
-                                  "type": "string"
-                                },
-                                "name": {
-                                  "type": "string"
-                                }
-                              }
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
                         "skills": {
                           "type": "array",
                           "items": {
@@ -5849,10 +5778,6 @@
                     "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
                     "shift": "Day shift",
                     "employment_type": "Full-time",
-                    "owner": {
-                      "external_user_id": "recruiter_1042",
-                      "name": "Priya Nair"
-                    },
                     "skills": [
                       {
                         "skill_id": "sk_36440",
@@ -6101,25 +6026,6 @@
                     "maxLength": 100,
                     "description": "Use a value from GET /employment-types so the playground shows it as a choice; any other text is kept as sent"
                   },
-                  "owner": {
-                    "type": "object",
-                    "properties": {
-                      "external_user_id": {
-                        "type": "string",
-                        "minLength": 1,
-                        "maxLength": 128
-                      },
-                      "name": {
-                        "type": "string",
-                        "maxLength": 200
-                      }
-                    },
-                    "required": [
-                      "external_user_id"
-                    ],
-                    "additionalProperties": false,
-                    "description": "The recruiter in your ATS; defaults to x-on-behalf-of"
-                  },
                   "methods": {
                     "type": "array",
                     "items": {
@@ -6181,7 +6087,7 @@
                     },
                     "minItems": 1,
                     "maxItems": 50,
-                    "description": "1 to 3 skills: the playground keeps at most three"
+                    "description": "Exactly 3 skills: the playground keeps three"
                   },
                   "enrichment_questions": {
                     "type": "array",
@@ -6227,15 +6133,17 @@
                       ],
                       "additionalProperties": false
                     },
+                    "minItems": 1,
                     "maxItems": 50,
-                    "description": "0 to 5 enrichment questions (up to 10 when data_enrichment is the only method)"
+                    "description": "1 to 5 enrichment questions (up to 10 when data_enrichment is the only method)"
                   }
                 },
                 "required": [
                   "workflow_id",
                   "title",
                   "company_name",
-                  "skills"
+                  "skills",
+                  "enrichment_questions"
                 ],
                 "additionalProperties": false
               },
@@ -6263,10 +6171,6 @@
                 "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
                 "shift": "Day shift",
                 "employment_type": "Full-time",
-                "owner": {
-                  "external_user_id": "recruiter_1042",
-                  "name": "Priya Nair"
-                },
                 "methods": [
                   "data_enrichment",
                   "skill_verification",
@@ -6444,17 +6348,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall PUT \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4\" '{\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"owner\": {\n    \"external_user_id\": \"recruiter_1042\",\n    \"name\": \"Priya Nair\"\n  },\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n}'"
+            "source": "pcall PUT \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4\" '{\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n}'"
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4\", {\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"owner\": {\n    \"external_user_id\": \"recruiter_1042\",\n    \"name\": \"Priya Nair\"\n  },\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n});\nconst { data } = await res.json();"
+            "source": "const res = await call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4\", {\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n});\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4\", {\n    \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n    \"title\": \"Warehouse Associate (Forklift)\",\n    \"company_name\": \"Acme Logistics Pvt Ltd\",\n    \"location_type\": \"india\",\n    \"location\": {\n        \"city\": \"Chennai\",\n        \"state\": \"Tamil Nadu\",\n        \"pincode\": \"600001\"\n    },\n    \"experience\": {\n        \"min_years\": 1,\n        \"max_years\": 5\n    },\n    \"openings\": 12,\n    \"salary\": {\n        \"min\": 18000,\n        \"max\": 24000,\n        \"currency\": \"INR\",\n        \"period\": \"month\"\n    },\n    \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n    \"shift\": \"Day shift\",\n    \"employment_type\": \"Full-time\",\n    \"owner\": {\n        \"external_user_id\": \"recruiter_1042\",\n        \"name\": \"Priya Nair\"\n    },\n    \"methods\": [\n        \"data_enrichment\",\n        \"skill_verification\",\n        \"interest_collection\"\n    ],\n    \"skills\": [\n        {\n            \"skill_id\": \"sk_36440\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38973\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38824\",\n            \"verify\": True\n        }\n    ],\n    \"enrichment_questions\": [\n        {\n            \"key\": \"has_licence\",\n            \"type\": \"yes_no\",\n            \"text\": \"Do you hold a valid forklift licence?\",\n            \"knockout\": \"no\",\n            \"required\": True\n        },\n        {\n            \"key\": \"why_this_job\",\n            \"type\": \"voice\",\n            \"text\": \"Tell us in your own words why you want this job.\",\n            \"required\": False\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4\", {\n    \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n    \"title\": \"Warehouse Associate (Forklift)\",\n    \"company_name\": \"Acme Logistics Pvt Ltd\",\n    \"location_type\": \"india\",\n    \"location\": {\n        \"city\": \"Chennai\",\n        \"state\": \"Tamil Nadu\",\n        \"pincode\": \"600001\"\n    },\n    \"experience\": {\n        \"min_years\": 1,\n        \"max_years\": 5\n    },\n    \"openings\": 12,\n    \"salary\": {\n        \"min\": 18000,\n        \"max\": 24000,\n        \"currency\": \"INR\",\n        \"period\": \"month\"\n    },\n    \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n    \"shift\": \"Day shift\",\n    \"employment_type\": \"Full-time\",\n    \"methods\": [\n        \"data_enrichment\",\n        \"skill_verification\",\n        \"interest_collection\"\n    ],\n    \"skills\": [\n        {\n            \"skill_id\": \"sk_36440\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38973\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38824\",\n            \"verify\": True\n        }\n    ],\n    \"enrichment_questions\": [\n        {\n            \"key\": \"has_licence\",\n            \"type\": \"yes_no\",\n            \"text\": \"Do you hold a valid forklift licence?\",\n            \"knockout\": \"no\",\n            \"required\": True\n        },\n        {\n            \"key\": \"why_this_job\",\n            \"type\": \"voice\",\n            \"text\": \"Tell us in your own words why you want this job.\",\n            \"required\": False\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -6766,7 +6670,7 @@
                     },
                     "minItems": 1,
                     "maxItems": 50,
-                    "description": "1 to 3 skills: the playground keeps at most three"
+                    "description": "Exactly 3 skills: the playground keeps three"
                   }
                 },
                 "required": [
@@ -7034,8 +6938,9 @@
                       ],
                       "additionalProperties": false
                     },
+                    "minItems": 1,
                     "maxItems": 50,
-                    "description": "0 to 5 enrichment questions (up to 10 when data_enrichment is the only method)"
+                    "description": "1 to 5 enrichment questions (up to 10 when data_enrichment is the only method)"
                   }
                 },
                 "required": [
@@ -7546,6 +7451,7 @@
                       ],
                       "additionalProperties": false
                     },
+                    "minItems": 1,
                     "maxItems": 50,
                     "description": "Replaces the screening questions (1 to 5, or 10 when data_enrichment is the only method), exactly like PUT .../enrichment-questions"
                   },
@@ -7837,7 +7743,7 @@
                           "type": "string",
                           "minLength": 1,
                           "maxLength": 30,
-                          "description": "A mobile number: 10 digits (98765 43210), or with the country code (+91 98765 43210). Never returned by this API"
+                          "description": "A 10-digit Indian mobile number, digits only (9876543210). Record adds +91. Never returned by this API"
                         },
                         "metadata": {
                           "type": "object",
@@ -7866,7 +7772,7 @@
                     },
                     "minItems": 1,
                     "maxItems": 1000,
-                    "description": "1–1,000 of `{ name, phone, external_id? }`. Phone: 10 digits or with country code. Bad numbers come back in `rejected`."
+                    "description": "1–1,000 of `{ name, phone, external_id? }`. Phone: exactly 10 digits (`9876543210`), no `+91`, spaces or dashes. Bad numbers come back in `rejected`."
                   }
                 },
                 "required": [
@@ -7885,17 +7791,17 @@
                   {
                     "external_id": "cand-88231",
                     "name": "Ravi Kumar",
-                    "phone": "98765 43210"
+                    "phone": "9876543210"
                   },
                   {
                     "external_id": "cand-88232",
                     "name": "Meena Devi",
-                    "phone": "+91 98123 45678"
+                    "phone": "9812345678"
                   },
                   {
                     "external_id": "cand-88233",
                     "name": "Karthik Raj",
-                    "phone": "99000 11122"
+                    "phone": "9900011122"
                   }
                 ]
               }
@@ -8187,17 +8093,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall POST \"/api/v1/partner/campaigns\" '{\n  \"mandate_id\": \"JM_261009101612456H3N8W2L5C9V1Z4\",\n  \"name\": \"Warehouse Associate - October batch\",\n  \"external_id\": \"ats-campaign-5521\",\n  \"start\": \"now\",\n  \"language\": \"en\",\n  \"candidates\": [\n    {\n      \"external_id\": \"cand-88231\",\n      \"name\": \"Ravi Kumar\",\n      \"phone\": \"98765 43210\"\n    },\n    {\n      \"external_id\": \"cand-88232\",\n      \"name\": \"Meena Devi\",\n      \"phone\": \"+91 98123 45678\"\n    },\n    {\n      \"external_id\": \"cand-88233\",\n      \"name\": \"Karthik Raj\",\n      \"phone\": \"99000 11122\"\n    }\n  ]\n}'"
+            "source": "pcall POST \"/api/v1/partner/campaigns\" '{\n  \"mandate_id\": \"JM_261009101612456H3N8W2L5C9V1Z4\",\n  \"name\": \"Warehouse Associate - October batch\",\n  \"external_id\": \"ats-campaign-5521\",\n  \"start\": \"now\",\n  \"language\": \"en\",\n  \"candidates\": [\n    {\n      \"external_id\": \"cand-88231\",\n      \"name\": \"Ravi Kumar\",\n      \"phone\": \"9876543210\"\n    },\n    {\n      \"external_id\": \"cand-88232\",\n      \"name\": \"Meena Devi\",\n      \"phone\": \"9812345678\"\n    },\n    {\n      \"external_id\": \"cand-88233\",\n      \"name\": \"Karthik Raj\",\n      \"phone\": \"9900011122\"\n    }\n  ]\n}'"
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"POST\", \"/api/v1/partner/campaigns\", {\n  \"mandate_id\": \"JM_261009101612456H3N8W2L5C9V1Z4\",\n  \"name\": \"Warehouse Associate - October batch\",\n  \"external_id\": \"ats-campaign-5521\",\n  \"start\": \"now\",\n  \"language\": \"en\",\n  \"candidates\": [\n    {\n      \"external_id\": \"cand-88231\",\n      \"name\": \"Ravi Kumar\",\n      \"phone\": \"98765 43210\"\n    },\n    {\n      \"external_id\": \"cand-88232\",\n      \"name\": \"Meena Devi\",\n      \"phone\": \"+91 98123 45678\"\n    },\n    {\n      \"external_id\": \"cand-88233\",\n      \"name\": \"Karthik Raj\",\n      \"phone\": \"99000 11122\"\n    }\n  ]\n});\nconst { data } = await res.json();"
+            "source": "const res = await call(\"POST\", \"/api/v1/partner/campaigns\", {\n  \"mandate_id\": \"JM_261009101612456H3N8W2L5C9V1Z4\",\n  \"name\": \"Warehouse Associate - October batch\",\n  \"external_id\": \"ats-campaign-5521\",\n  \"start\": \"now\",\n  \"language\": \"en\",\n  \"candidates\": [\n    {\n      \"external_id\": \"cand-88231\",\n      \"name\": \"Ravi Kumar\",\n      \"phone\": \"9876543210\"\n    },\n    {\n      \"external_id\": \"cand-88232\",\n      \"name\": \"Meena Devi\",\n      \"phone\": \"9812345678\"\n    },\n    {\n      \"external_id\": \"cand-88233\",\n      \"name\": \"Karthik Raj\",\n      \"phone\": \"9900011122\"\n    }\n  ]\n});\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"POST\", \"/api/v1/partner/campaigns\", {\n    \"mandate_id\": \"JM_261009101612456H3N8W2L5C9V1Z4\",\n    \"name\": \"Warehouse Associate - October batch\",\n    \"external_id\": \"ats-campaign-5521\",\n    \"start\": \"now\",\n    \"language\": \"en\",\n    \"candidates\": [\n        {\n            \"external_id\": \"cand-88231\",\n            \"name\": \"Ravi Kumar\",\n            \"phone\": \"98765 43210\"\n        },\n        {\n            \"external_id\": \"cand-88232\",\n            \"name\": \"Meena Devi\",\n            \"phone\": \"+91 98123 45678\"\n        },\n        {\n            \"external_id\": \"cand-88233\",\n            \"name\": \"Karthik Raj\",\n            \"phone\": \"99000 11122\"\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"POST\", \"/api/v1/partner/campaigns\", {\n    \"mandate_id\": \"JM_261009101612456H3N8W2L5C9V1Z4\",\n    \"name\": \"Warehouse Associate - October batch\",\n    \"external_id\": \"ats-campaign-5521\",\n    \"start\": \"now\",\n    \"language\": \"en\",\n    \"candidates\": [\n        {\n            \"external_id\": \"cand-88231\",\n            \"name\": \"Ravi Kumar\",\n            \"phone\": \"9876543210\"\n        },\n        {\n            \"external_id\": \"cand-88232\",\n            \"name\": \"Meena Devi\",\n            \"phone\": \"9812345678\"\n        },\n        {\n            \"external_id\": \"cand-88233\",\n            \"name\": \"Karthik Raj\",\n            \"phone\": \"9900011122\"\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -9157,7 +9063,7 @@
                           "type": "string",
                           "minLength": 1,
                           "maxLength": 30,
-                          "description": "A mobile number: 10 digits (98765 43210), or with the country code (+91 98765 43210). Never returned by this API"
+                          "description": "A 10-digit Indian mobile number, digits only (9876543210). Record adds +91. Never returned by this API"
                         },
                         "metadata": {
                           "type": "object",
@@ -9198,7 +9104,7 @@
                   {
                     "external_id": "cand-88240",
                     "name": "Anitha Selvam",
-                    "phone": "97000 22211"
+                    "phone": "9700022211"
                   }
                 ]
               }
@@ -9495,17 +9401,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall POST \"/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates\" '{\n  \"candidates\": [\n    {\n      \"external_id\": \"cand-88240\",\n      \"name\": \"Anitha Selvam\",\n      \"phone\": \"97000 22211\"\n    }\n  ]\n}'"
+            "source": "pcall POST \"/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates\" '{\n  \"candidates\": [\n    {\n      \"external_id\": \"cand-88240\",\n      \"name\": \"Anitha Selvam\",\n      \"phone\": \"9700022211\"\n    }\n  ]\n}'"
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"POST\", \"/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates\", {\n  \"candidates\": [\n    {\n      \"external_id\": \"cand-88240\",\n      \"name\": \"Anitha Selvam\",\n      \"phone\": \"97000 22211\"\n    }\n  ]\n});\nconst { data } = await res.json();"
+            "source": "const res = await call(\"POST\", \"/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates\", {\n  \"candidates\": [\n    {\n      \"external_id\": \"cand-88240\",\n      \"name\": \"Anitha Selvam\",\n      \"phone\": \"9700022211\"\n    }\n  ]\n});\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"POST\", \"/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates\", {\n    \"candidates\": [\n        {\n            \"external_id\": \"cand-88240\",\n            \"name\": \"Anitha Selvam\",\n            \"phone\": \"97000 22211\"\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"POST\", \"/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates\", {\n    \"candidates\": [\n        {\n            \"external_id\": \"cand-88240\",\n            \"name\": \"Anitha Selvam\",\n            \"phone\": \"9700022211\"\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
