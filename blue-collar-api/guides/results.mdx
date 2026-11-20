@@ -583,7 +583,7 @@ Verdict, score, a rating per skill and a report link. Add `include=answers` to a
 
 | Query | Type | Description |
 |---|---|---|
-| `include` | `string` | `answers` adds what the candidate said. Needs the `results:answers` scope. |
+| `include` | `string` | `answers` adds what the candidate said: enrichment `answers[]`, skill verification `answers[]` (`answer` in English, `answer_native` in their own language) and interest `transcripts[]` (`text` in English, `transcript` in their own words). Needs the `results:answers` scope. |
 
 <CodeGroup>
 
