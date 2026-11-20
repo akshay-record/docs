@@ -4891,24 +4891,6 @@
                             "name": "Packing Station Setup",
                             "verify": true,
                             "status": "active"
-                          },
-                          {
-                            "skill_id": "sk_2338",
-                            "name": "Order Picking",
-                            "verify": false,
-                            "status": "active"
-                          },
-                          {
-                            "skill_id": "sk_2452",
-                            "name": "Loading And Unloading",
-                            "verify": false,
-                            "status": "active"
-                          },
-                          {
-                            "skill_id": null,
-                            "name": "Reach Truck Operation",
-                            "verify": false,
-                            "status": "pending"
                           }
                         ],
                         "enrichment_questions": [
@@ -5186,7 +5168,7 @@
                             "verify": {
                               "type": "boolean",
                               "default": false,
-                              "description": "At most 3 per mandate, and only verifiable skills"
+                              "description": "Verify candidates on this skill with a question. Only verifiable skills; at most 3 per mandate"
                             }
                           },
                           "required": [
@@ -5218,7 +5200,7 @@
                     },
                     "minItems": 1,
                     "maxItems": 50,
-                    "description": "5 to 10 recommended; fewer than 5 is a warning"
+                    "description": "1 to 3 skills: the playground keeps at most three"
                   },
                   "enrichment_questions": {
                     "type": "array",
@@ -5326,16 +5308,6 @@
                   {
                     "skill_id": "sk_38824",
                     "verify": true
-                  },
-                  {
-                    "skill_id": "sk_2338"
-                  },
-                  {
-                    "skill_id": "sk_2452"
-                  },
-                  {
-                    "name": "Reach Truck Operation",
-                    "pending": true
                   }
                 ],
                 "enrichment_questions": [
@@ -5476,7 +5448,7 @@
             }
           },
           "422": {
-            "description": "`LIMIT_EXCEEDED`: More than 10 skills, 3 verified skills or 5 questions.",
+            "description": "`LIMIT_EXCEEDED`: More than 3 skills or 5 questions.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5496,17 +5468,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall POST \"/api/v1/partner/mandates\" '{\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"owner\": {\n    \"external_user_id\": \"recruiter_1042\",\n    \"name\": \"Priya Nair\"\n  },\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_2338\"\n    },\n    {\n      \"skill_id\": \"sk_2452\"\n    },\n    {\n      \"name\": \"Reach Truck Operation\",\n      \"pending\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n}'"
+            "source": "pcall POST \"/api/v1/partner/mandates\" '{\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"owner\": {\n    \"external_user_id\": \"recruiter_1042\",\n    \"name\": \"Priya Nair\"\n  },\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n}'"
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"POST\", \"/api/v1/partner/mandates\", {\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"owner\": {\n    \"external_user_id\": \"recruiter_1042\",\n    \"name\": \"Priya Nair\"\n  },\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_2338\"\n    },\n    {\n      \"skill_id\": \"sk_2452\"\n    },\n    {\n      \"name\": \"Reach Truck Operation\",\n      \"pending\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n});\nconst { data } = await res.json();"
+            "source": "const res = await call(\"POST\", \"/api/v1/partner/mandates\", {\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"owner\": {\n    \"external_user_id\": \"recruiter_1042\",\n    \"name\": \"Priya Nair\"\n  },\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n});\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"POST\", \"/api/v1/partner/mandates\", {\n    \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n    \"title\": \"Warehouse Associate (Forklift)\",\n    \"company_name\": \"Acme Logistics Pvt Ltd\",\n    \"location_type\": \"india\",\n    \"location\": {\n        \"city\": \"Chennai\",\n        \"state\": \"Tamil Nadu\",\n        \"pincode\": \"600001\"\n    },\n    \"experience\": {\n        \"min_years\": 1,\n        \"max_years\": 5\n    },\n    \"openings\": 12,\n    \"salary\": {\n        \"min\": 18000,\n        \"max\": 24000,\n        \"currency\": \"INR\",\n        \"period\": \"month\"\n    },\n    \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n    \"shift\": \"Day shift\",\n    \"employment_type\": \"Full-time\",\n    \"owner\": {\n        \"external_user_id\": \"recruiter_1042\",\n        \"name\": \"Priya Nair\"\n    },\n    \"methods\": [\n        \"data_enrichment\",\n        \"skill_verification\",\n        \"interest_collection\"\n    ],\n    \"skills\": [\n        {\n            \"skill_id\": \"sk_36440\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38973\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38824\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_2338\"\n        },\n        {\n            \"skill_id\": \"sk_2452\"\n        },\n        {\n            \"name\": \"Reach Truck Operation\",\n            \"pending\": True\n        }\n    ],\n    \"enrichment_questions\": [\n        {\n            \"key\": \"has_licence\",\n            \"type\": \"yes_no\",\n            \"text\": \"Do you hold a valid forklift licence?\",\n            \"knockout\": \"no\",\n            \"required\": True\n        },\n        {\n            \"key\": \"why_this_job\",\n            \"type\": \"voice\",\n            \"text\": \"Tell us in your own words why you want this job.\",\n            \"required\": False\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"POST\", \"/api/v1/partner/mandates\", {\n    \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n    \"title\": \"Warehouse Associate (Forklift)\",\n    \"company_name\": \"Acme Logistics Pvt Ltd\",\n    \"location_type\": \"india\",\n    \"location\": {\n        \"city\": \"Chennai\",\n        \"state\": \"Tamil Nadu\",\n        \"pincode\": \"600001\"\n    },\n    \"experience\": {\n        \"min_years\": 1,\n        \"max_years\": 5\n    },\n    \"openings\": 12,\n    \"salary\": {\n        \"min\": 18000,\n        \"max\": 24000,\n        \"currency\": \"INR\",\n        \"period\": \"month\"\n    },\n    \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n    \"shift\": \"Day shift\",\n    \"employment_type\": \"Full-time\",\n    \"owner\": {\n        \"external_user_id\": \"recruiter_1042\",\n        \"name\": \"Priya Nair\"\n    },\n    \"methods\": [\n        \"data_enrichment\",\n        \"skill_verification\",\n        \"interest_collection\"\n    ],\n    \"skills\": [\n        {\n            \"skill_id\": \"sk_36440\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38973\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38824\",\n            \"verify\": True\n        }\n    ],\n    \"enrichment_questions\": [\n        {\n            \"key\": \"has_licence\",\n            \"type\": \"yes_no\",\n            \"text\": \"Do you hold a valid forklift licence?\",\n            \"knockout\": \"no\",\n            \"required\": True\n        },\n        {\n            \"key\": \"why_this_job\",\n            \"type\": \"voice\",\n            \"text\": \"Tell us in your own words why you want this job.\",\n            \"required\": False\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -5899,24 +5871,6 @@
                         "name": "Packing Station Setup",
                         "verify": true,
                         "status": "active"
-                      },
-                      {
-                        "skill_id": "sk_2338",
-                        "name": "Order Picking",
-                        "verify": false,
-                        "status": "active"
-                      },
-                      {
-                        "skill_id": "sk_2452",
-                        "name": "Loading And Unloading",
-                        "verify": false,
-                        "status": "active"
-                      },
-                      {
-                        "skill_id": null,
-                        "name": "Reach Truck Operation",
-                        "verify": false,
-                        "status": "pending"
                       }
                     ],
                     "enrichment_questions": [
@@ -5935,9 +5889,7 @@
                         "required": false
                       }
                     ],
-                    "warnings": [
-                      "Pending skills are kept on the mandate but cannot be verified until resolved"
-                    ],
+                    "warnings": [],
                     "is_external": true,
                     "created_at": "2026-10-09T10:16:12.456Z",
                     "updated_at": "2026-10-09T10:16:12.456Z"
@@ -6197,7 +6149,7 @@
                             "verify": {
                               "type": "boolean",
                               "default": false,
-                              "description": "At most 3 per mandate, and only verifiable skills"
+                              "description": "Verify candidates on this skill with a question. Only verifiable skills; at most 3 per mandate"
                             }
                           },
                           "required": [
@@ -6229,7 +6181,7 @@
                     },
                     "minItems": 1,
                     "maxItems": 50,
-                    "description": "5 to 10 recommended; fewer than 5 is a warning"
+                    "description": "1 to 3 skills: the playground keeps at most three"
                   },
                   "enrichment_questions": {
                     "type": "array",
@@ -6332,16 +6284,6 @@
                   {
                     "skill_id": "sk_38824",
                     "verify": true
-                  },
-                  {
-                    "skill_id": "sk_2338"
-                  },
-                  {
-                    "skill_id": "sk_2452"
-                  },
-                  {
-                    "name": "Reach Truck Operation",
-                    "pending": true
                   }
                 ],
                 "enrichment_questions": [
@@ -6445,9 +6387,7 @@
                       "interest_collection"
                     ],
                     "changed": true,
-                    "warnings": [
-                      "Pending skills are kept on the mandate but cannot be verified until resolved"
-                    ]
+                    "warnings": []
                   }
                 }
               }
@@ -6484,7 +6424,7 @@
             }
           },
           "422": {
-            "description": "`LIMIT_EXCEEDED`: More than 10 skills, 3 verified skills or 5 questions.",
+            "description": "`LIMIT_EXCEEDED`: More than 3 skills or 5 questions.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6504,17 +6444,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall PUT \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4\" '{\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"owner\": {\n    \"external_user_id\": \"recruiter_1042\",\n    \"name\": \"Priya Nair\"\n  },\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_2338\"\n    },\n    {\n      \"skill_id\": \"sk_2452\"\n    },\n    {\n      \"name\": \"Reach Truck Operation\",\n      \"pending\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n}'"
+            "source": "pcall PUT \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4\" '{\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"owner\": {\n    \"external_user_id\": \"recruiter_1042\",\n    \"name\": \"Priya Nair\"\n  },\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n}'"
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4\", {\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"owner\": {\n    \"external_user_id\": \"recruiter_1042\",\n    \"name\": \"Priya Nair\"\n  },\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_2338\"\n    },\n    {\n      \"skill_id\": \"sk_2452\"\n    },\n    {\n      \"name\": \"Reach Truck Operation\",\n      \"pending\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n});\nconst { data } = await res.json();"
+            "source": "const res = await call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4\", {\n  \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n  \"title\": \"Warehouse Associate (Forklift)\",\n  \"company_name\": \"Acme Logistics Pvt Ltd\",\n  \"location_type\": \"india\",\n  \"location\": {\n    \"city\": \"Chennai\",\n    \"state\": \"Tamil Nadu\",\n    \"pincode\": \"600001\"\n  },\n  \"experience\": {\n    \"min_years\": 1,\n    \"max_years\": 5\n  },\n  \"openings\": 12,\n  \"salary\": {\n    \"min\": 18000,\n    \"max\": 24000,\n    \"currency\": \"INR\",\n    \"period\": \"month\"\n  },\n  \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n  \"shift\": \"Day shift\",\n  \"employment_type\": \"Full-time\",\n  \"owner\": {\n    \"external_user_id\": \"recruiter_1042\",\n    \"name\": \"Priya Nair\"\n  },\n  \"methods\": [\n    \"data_enrichment\",\n    \"skill_verification\",\n    \"interest_collection\"\n  ],\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    }\n  ],\n  \"enrichment_questions\": [\n    {\n      \"key\": \"has_licence\",\n      \"type\": \"yes_no\",\n      \"text\": \"Do you hold a valid forklift licence?\",\n      \"knockout\": \"no\",\n      \"required\": true\n    },\n    {\n      \"key\": \"why_this_job\",\n      \"type\": \"voice\",\n      \"text\": \"Tell us in your own words why you want this job.\",\n      \"required\": false\n    }\n  ]\n});\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4\", {\n    \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n    \"title\": \"Warehouse Associate (Forklift)\",\n    \"company_name\": \"Acme Logistics Pvt Ltd\",\n    \"location_type\": \"india\",\n    \"location\": {\n        \"city\": \"Chennai\",\n        \"state\": \"Tamil Nadu\",\n        \"pincode\": \"600001\"\n    },\n    \"experience\": {\n        \"min_years\": 1,\n        \"max_years\": 5\n    },\n    \"openings\": 12,\n    \"salary\": {\n        \"min\": 18000,\n        \"max\": 24000,\n        \"currency\": \"INR\",\n        \"period\": \"month\"\n    },\n    \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n    \"shift\": \"Day shift\",\n    \"employment_type\": \"Full-time\",\n    \"owner\": {\n        \"external_user_id\": \"recruiter_1042\",\n        \"name\": \"Priya Nair\"\n    },\n    \"methods\": [\n        \"data_enrichment\",\n        \"skill_verification\",\n        \"interest_collection\"\n    ],\n    \"skills\": [\n        {\n            \"skill_id\": \"sk_36440\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38973\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38824\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_2338\"\n        },\n        {\n            \"skill_id\": \"sk_2452\"\n        },\n        {\n            \"name\": \"Reach Truck Operation\",\n            \"pending\": True\n        }\n    ],\n    \"enrichment_questions\": [\n        {\n            \"key\": \"has_licence\",\n            \"type\": \"yes_no\",\n            \"text\": \"Do you hold a valid forklift licence?\",\n            \"knockout\": \"no\",\n            \"required\": True\n        },\n        {\n            \"key\": \"why_this_job\",\n            \"type\": \"voice\",\n            \"text\": \"Tell us in your own words why you want this job.\",\n            \"required\": False\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4\", {\n    \"workflow_id\": \"WF_BG_261009101530123K7M2P9Q4X7R5T8\",\n    \"title\": \"Warehouse Associate (Forklift)\",\n    \"company_name\": \"Acme Logistics Pvt Ltd\",\n    \"location_type\": \"india\",\n    \"location\": {\n        \"city\": \"Chennai\",\n        \"state\": \"Tamil Nadu\",\n        \"pincode\": \"600001\"\n    },\n    \"experience\": {\n        \"min_years\": 1,\n        \"max_years\": 5\n    },\n    \"openings\": 12,\n    \"salary\": {\n        \"min\": 18000,\n        \"max\": 24000,\n        \"currency\": \"INR\",\n        \"period\": \"month\"\n    },\n    \"description\": \"Pick, pack and load orders in a busy warehouse. Forklift licence preferred.\",\n    \"shift\": \"Day shift\",\n    \"employment_type\": \"Full-time\",\n    \"owner\": {\n        \"external_user_id\": \"recruiter_1042\",\n        \"name\": \"Priya Nair\"\n    },\n    \"methods\": [\n        \"data_enrichment\",\n        \"skill_verification\",\n        \"interest_collection\"\n    ],\n    \"skills\": [\n        {\n            \"skill_id\": \"sk_36440\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38973\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38824\",\n            \"verify\": True\n        }\n    ],\n    \"enrichment_questions\": [\n        {\n            \"key\": \"has_licence\",\n            \"type\": \"yes_no\",\n            \"text\": \"Do you hold a valid forklift licence?\",\n            \"knockout\": \"no\",\n            \"required\": True\n        },\n        {\n            \"key\": \"why_this_job\",\n            \"type\": \"voice\",\n            \"text\": \"Tell us in your own words why you want this job.\",\n            \"required\": False\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -6794,7 +6734,7 @@
                             "verify": {
                               "type": "boolean",
                               "default": false,
-                              "description": "At most 3 per mandate, and only verifiable skills"
+                              "description": "Verify candidates on this skill with a question. Only verifiable skills; at most 3 per mandate"
                             }
                           },
                           "required": [
@@ -6826,7 +6766,7 @@
                     },
                     "minItems": 1,
                     "maxItems": 50,
-                    "description": "5 to 10 recommended; fewer than 5 is a warning"
+                    "description": "1 to 3 skills: the playground keeps at most three"
                   }
                 },
                 "required": [
@@ -6847,16 +6787,6 @@
                   {
                     "skill_id": "sk_38824",
                     "verify": true
-                  },
-                  {
-                    "skill_id": "sk_2338"
-                  },
-                  {
-                    "skill_id": "sk_2452"
-                  },
-                  {
-                    "name": "Reach Truck Operation",
-                    "pending": true
                   }
                 ]
               }
@@ -6982,7 +6912,7 @@
             }
           },
           "422": {
-            "description": "`LIMIT_EXCEEDED`: More than 10 skills or 3 verified.",
+            "description": "`LIMIT_EXCEEDED`: More than 3 skills.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7002,17 +6932,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall PUT \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/skills\" '{\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_2338\"\n    },\n    {\n      \"skill_id\": \"sk_2452\"\n    },\n    {\n      \"name\": \"Reach Truck Operation\",\n      \"pending\": true\n    }\n  ]\n}'"
+            "source": "pcall PUT \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/skills\" '{\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    }\n  ]\n}'"
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/skills\", {\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_2338\"\n    },\n    {\n      \"skill_id\": \"sk_2452\"\n    },\n    {\n      \"name\": \"Reach Truck Operation\",\n      \"pending\": true\n    }\n  ]\n});\nconst { data } = await res.json();"
+            "source": "const res = await call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/skills\", {\n  \"skills\": [\n    {\n      \"skill_id\": \"sk_36440\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38973\",\n      \"verify\": true\n    },\n    {\n      \"skill_id\": \"sk_38824\",\n      \"verify\": true\n    }\n  ]\n});\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/skills\", {\n    \"skills\": [\n        {\n            \"skill_id\": \"sk_36440\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38973\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38824\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_2338\"\n        },\n        {\n            \"skill_id\": \"sk_2452\"\n        },\n        {\n            \"name\": \"Reach Truck Operation\",\n            \"pending\": True\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/skills\", {\n    \"skills\": [\n        {\n            \"skill_id\": \"sk_36440\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38973\",\n            \"verify\": True\n        },\n        {\n            \"skill_id\": \"sk_38824\",\n            \"verify\": True\n        }\n    ]\n})\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
