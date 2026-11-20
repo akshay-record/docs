@@ -701,7 +701,7 @@
   },
   "listCampaignResults": {
     "title": "List campaign results",
-    "description": "One record per candidate: `status` (pending, completed, declined, failed) and `output` with what Record collected. Prefer the webhook; use this to catch up or check.",
+    "description": "One record per candidate: `status` (pending, completed, declined, failed), `is_final` and `output` with what Record collected. Poll it with `updated_since` (the time of your last poll) and read `is_final`: `false` means the result can still gain parts.",
     "errors": [
       [
         404,
@@ -717,7 +717,7 @@
   },
   "getResult": {
     "title": "Get a result",
-    "description": "The same record the webhook delivers for this candidate.",
+    "description": "One candidate's result record. Read `is_final` to know whether it can still change.",
     "errors": [
       [
         404,
@@ -734,144 +734,6 @@
         404,
         "NOT_FOUND",
         "No such `candidate_id` for this key."
-      ]
-    ]
-  },
-  "createWebhookEndpoint": {
-    "title": "Create an endpoint",
-    "description": "Register the HTTPS URL that receives result events. Deliveries are signed with your API secret key.",
-    "fields": {
-      "url": "HTTPS, port 443, a public host. Any 2xx answer counts as the acknowledgement.",
-      "description": "Up to 200 characters.",
-      "event_types": "Default `candidate.result`.",
-      "backfill_from": "ISO date-time: also send results from then on (at most 30 days back)."
-    },
-    "errors": [
-      [
-        400,
-        "VALIDATION_FAILED",
-        "URL not https, a private address, a port other than 443, or an unknown event type."
-      ],
-      [
-        422,
-        "LIMIT_EXCEEDED",
-        "Already 5 endpoints."
-      ]
-    ]
-  },
-  "listWebhookEndpoints": {
-    "title": "List endpoints",
-    "description": "Each endpoint with its status (`active`, `paused`, `auto_paused`), consecutive failures and last success."
-  },
-  "getWebhookEndpoint": {
-    "title": "Get an endpoint",
-    "description": "One endpoint with its current status.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ]
-    ]
-  },
-  "updateWebhookEndpoint": {
-    "title": "Update an endpoint",
-    "description": "Send only what changes. `status: paused` holds deliveries (nothing is lost); `status: active` resumes them, oldest first. Use it to bring back an `auto_paused` endpoint.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ],
-      [
-        400,
-        "VALIDATION_FAILED",
-        "No field sent, or a bad URL."
-      ]
-    ]
-  },
-  "deleteWebhookEndpoint": {
-    "title": "Delete an endpoint",
-    "description": "Deliveries still waiting for it stop. The events stay in the feed for 30 days.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ]
-    ]
-  },
-  "testWebhookEndpoint": {
-    "title": "Send a test event",
-    "description": "Sends a signed `webhook.test` right now and shows what your server answered. Not stored, not retried.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ]
-    ]
-  },
-  "backfillWebhookEndpoint": {
-    "title": "Backfill past results",
-    "description": "Queues the results since `from` (at most 30 days back) as normal deliveries. Safe to repeat.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ]
-    ]
-  },
-  "listWebhookDeliveries": {
-    "title": "List deliveries",
-    "description": "Every send to this endpoint, newest first: attempts, last HTTP status or error, when the next retry is due.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ]
-    ]
-  },
-  "retryWebhookDelivery": {
-    "title": "Retry a delivery",
-    "description": "For a dead one after you fixed your endpoint. Its attempts count from zero again.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such delivery."
-      ]
-    ]
-  },
-  "pullEvents": {
-    "title": "Pull and confirm events",
-    "description": "One call does both jobs. Send the `ack` ids of the events you already processed, and get the next events back. An event keeps coming back until you put its id in `ack`. Use it when you cannot expose a URL, and as a safety net next to the webhook.",
-    "fields": {
-      "ack": "Ids of the events you processed. Leave it empty on your first call.",
-      "status": "`unacked` (default) gives only events you have not confirmed. `all` replays history (use it with `from`).",
-      "type": "Only this event type.",
-      "from": "Only events created at or after this time (replay).",
-      "after": "Only events with a higher `sequence` than this. A paging shortcut: rely on `unacked`.",
-      "limit": "1 to 100, default 100."
-    },
-    "errors": [
-      [
-        400,
-        "VALIDATION_FAILED",
-        "An `ack` id that is not an event id, more than 100 ids, a bad date, or `limit` above 100."
-      ]
-    ]
-  },
-  "getEvent": {
-    "title": "Get an event",
-    "description": "Fetch one event by its id.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such event (or older than 30 days)."
       ]
     ]
   },

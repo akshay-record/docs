@@ -17,7 +17,7 @@ A campaign sends your candidates (name + mobile number) to a mandate. Record con
 
 - `phone` is a mobile number with 10 digits (`98765 43210`) or with a country code (`+91 98765 43210`). It is never returned by the API.
 - `external_id` is your id for the candidate. It comes back on every result.
-- `metadata` holds up to 10 fields of your own, such as an application id. It needs `external_id` and comes back unchanged on every result and event.
+- `metadata` holds up to 10 fields of your own, such as an application id. It needs `external_id` and comes back unchanged on every result.
 - A number that cannot be used does not fail the batch. It comes back in `rejected` with a reason: `invalid_phone`, `duplicate_in_request` or `already_in_campaign`.
 - Up to 1,000 candidates per call, 20,000 per campaign, and 2,000 different people per key per day (TEST keys: 200), reset at midnight IST.
 

@@ -281,7 +281,6 @@
               "blue-collar-api/guides/lookups",
               "blue-collar-api/guides/campaigns",
               "blue-collar-api/guides/results",
-              "blue-collar-api/guides/webhooks",
               "blue-collar-api/guides/analytics",
               "blue-collar-api/guides/credits"
             ]
@@ -385,29 +384,6 @@
               "GET /campaigns/{campaign_id}/candidates",
               "GET /candidates/{candidate_id}/result",
               "GET /candidates/{candidate_id}/journey"
-            ]
-          },
-          {
-            "group": "Webhooks",
-            "openapi": "blue-collar-api/api-reference/openapi.json",
-            "pages": [
-              "POST /webhooks/endpoints",
-              "GET /webhooks/endpoints",
-              "GET /webhooks/endpoints/{endpoint_id}",
-              "PATCH /webhooks/endpoints/{endpoint_id}",
-              "DELETE /webhooks/endpoints/{endpoint_id}",
-              "POST /webhooks/endpoints/{endpoint_id}/test",
-              "POST /webhooks/endpoints/{endpoint_id}/backfill",
-              "GET /webhooks/endpoints/{endpoint_id}/deliveries",
-              "POST /webhooks/deliveries/{delivery_id}/retry"
-            ]
-          },
-          {
-            "group": "Events",
-            "openapi": "blue-collar-api/api-reference/openapi.json",
-            "pages": [
-              "POST /events/pull",
-              "GET /events/{event_id}"
             ]
           },
           {
