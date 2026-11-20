@@ -16,7 +16,7 @@ A campaign sends your candidates (name + mobile number) to a mandate. Record con
 ## Candidates
 
 - `phone` is a mobile number with 10 digits (`98765 43210`) or with a country code (`+91 98765 43210`). It is never returned by the API.
-- `external_id` is your id for the candidate. It comes back on every result.
+- `external_id` is **optional**: your id for the candidate. It comes back on every result.
 - `metadata` holds up to 10 fields of your own, such as an application id. It needs `external_id` and comes back unchanged on every result.
 - A number that cannot be used does not fail the batch. It comes back in `rejected` with a reason: `invalid_phone`, `duplicate_in_request` or `already_in_campaign`.
 - Up to 1,000 candidates per call, 20,000 per campaign, and 2,000 different people per key per day (TEST keys: 200), reset at midnight IST.
@@ -49,9 +49,9 @@ Send your candidates (name + phone) for a mandate. Record contacts and verifies 
 |---|---|---|
 | `mandate_id` | `string` | **Required.** From step 2 (or send your own `job_id` instead, never both). |
 | `start` | `string` | **Required.** `now` sends at once; `manual` only creates a draft (start it later). |
-| `candidates` | `array<object>` | **Required.** 1–1,000 of `{ name, phone, external_id? }`. Phone: 10 digits or with country code. Bad numbers come back in `rejected`. Each candidate can also carry `metadata`: up to 10 fields of your own (needs `external_id`), returned unchanged on every result and event. |
-| `name`, `external_id`, `language` | `string` | Campaign name, your unique id for it, language `en` `hi` `ta` `te` `kn` `ml` `bn` `mr` (default `en`). |
-| `job_id` | `string` | Your own job id, if the mandate was created with one. Send this or mandate_id, not both. |
+| `candidates` | `array<object>` | **Required.** 1–1,000 of `{ name, phone, external_id? }` (`external_id` is optional). Phone: 10 digits or with country code. Bad numbers come back in `rejected`. Each candidate can also carry `metadata`: up to 10 fields of your own (needs `external_id`), returned unchanged on every result. |
+| `name`, `external_id`, `language` | `string` | **Optional.** Campaign name, your unique id for it, language `en` `hi` `ta` `te` `kn` `ml` `bn` `mr` (default `en`). |
+| `job_id` | `string` | **Optional.** Your own job id, if the mandate was created with one. Send this or mandate_id, not both. |
 
 <CodeGroup>
 

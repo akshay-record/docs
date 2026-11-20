@@ -44,10 +44,6 @@ Repeat `GET /mandates/{mandate_id}` until `status` is `ready`. A campaign create
 
 Any change is refused with `409 CONFLICT` while the mandate is `preparing` (wait for `Retry-After`), and a mandate takes at most 10 changes an hour. Mandates made in the playground can be changed the same way as ones made through the API. A full replace overwrites the questions and settings with what you send; a partial change (methods, skills, questions) starts from what the playground stored.
 
-## Close the job
-
-Archive the mandate when the job is filled: no new campaigns start, running ones finish, and results stay readable. `DELETE` does the same. Nothing is erased.
-
 ## Endpoints
 
 ### Create a job mandate
@@ -65,14 +61,13 @@ Create the job Record verifies candidates against. Returns `mandate_id`; questio
 | `skills` | `array<object>` | **Required.** `{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). 5–10 recommended, max 10; max 3 with `verify: true`. |
 | `methods` | `array<string>` | Which checks run. Leave out to use the workflow’s `default_methods`. |
 | `enrichment_questions` | `array<object>` | 1–5 items (up to 10 when `data_enrichment` is the only method) `{ key, type: yes_no \| voice, text, knockout: yes \| no, required }`. Needed when `data_enrichment` is on. |
-| `job_id` | `string` | Your own job id. If you send it, it must not be in use. |
+| `job_id` | `string` | **Optional.** Your own job id. If you send it, it must not be in use. Without it, use `mandate_id`. |
 | `location_type` | `string` | `india` (default) or `abroad`. Same as the playground’s Abroad option. |
 | `location` | `object` | A place in India: `{ city, state?, pincode? }` (find it with `GET /locations`). Not allowed when `location_type` is `abroad`. |
 | `countries` | `array<string>` | **With `abroad`.** Needed when `location_type` is `abroad`: 1–10 different ISO 3166-1 alpha-2 codes such as `SG` (list them with `GET /countries`; lower case is accepted and stored upper case). India (`IN`) cannot be picked. Not allowed for an India job. |
 | `experience` | `object` | `{ min_years, max_years }`, whole years 0–50, `max_years` at least `min_years`. Send both. Leave it out to clear it on a replace. |
 | `employment_type`, `shift` | `string` | Pick from `GET /employment-types` (Full-time, Part-time, Contract, …) and `GET /shifts` (Day shift, Night shift, Rotational, General). Other text up to 100 characters is kept as sent. |
 | `openings`, `salary`, `description`, `owner` | `integer`, `object`, `string` | Job details. `description` up to 1,500 characters. |
-| `interest_collection` | `object` | `other_roles` is only saved and returned. It does not change what candidates are asked: the interest prompt is fixed, and `methods` switches it on or off. |
 
 <CodeGroup>
 
@@ -113,10 +108,7 @@ const res = await call("POST", "/api/v1/partner/mandates", {
       "text": "Tell us in your own words why you want this job.",
       "required": false
     }
-  ],
-  "interest_collection": {
-    "other_roles": ["Forklift Operator", "Store Keeper"]
-  }
+  ]
 });
 const { data } = await res.json();
 ```
@@ -158,10 +150,7 @@ res = call("POST", "/api/v1/partner/mandates", {
             "text": "Tell us in your own words why you want this job.",
             "required": False
         }
-    ],
-    "interest_collection": {
-        "other_roles": ["Forklift Operator", "Store Keeper"]
-    }
+    ]
 })
 data = res.json()["data"]
 ```
@@ -203,10 +192,7 @@ pcall POST "/api/v1/partner/mandates" '{
       "text": "Tell us in your own words why you want this job.",
       "required": false
     }
-  ],
-  "interest_collection": {
-    "other_roles": ["Forklift Operator", "Store Keeper"]
-  }
+  ]
 }'
 ```
 
@@ -341,9 +327,6 @@ pcall GET "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4"
         "required": false
       }
     ],
-    "interest_collection": {
-      "other_roles": ["Forklift Operator", "Store Keeper"]
-    },
     "warnings": [
       "Pending skills are kept on the mandate but cannot be verified until resolved"
     ],
@@ -487,9 +470,6 @@ pcall GET "/api/v1/partner/mandates?limit=50"
             "required": false
           }
         ],
-        "interest_collection": {
-          "other_roles": ["Forklift Operator", "Store Keeper"]
-        },
         "warnings": [],
         "is_external": true,
         "created_at": "2026-10-09T10:16:12.456Z",
@@ -683,7 +663,6 @@ Replace the whole mandate (send the full body again). An identical resend change
 | `methods` | `array<string>` | Any non-empty mix; candidates always go enrichment → skills → interest. Omit to use the workflow's default. Each one of `data_enrichment`, `skill_verification`, `interest_collection`. |
 | `skills` | `array<object>` | **Required.** 5 to 10 recommended; fewer than 5 is a warning. Fields: `skill_id`, `verify`, `name`, `pending`. |
 | `enrichment_questions` | `array<object>` | 0 to 5 enrichment questions (10 when `data_enrichment` is the only method). Fields: `key`, `type`, `text`, `knockout`, `required`. |
-| `interest_collection` | `object` | Fields: `other_roles`. |
 
 <CodeGroup>
 
@@ -724,10 +703,7 @@ const res = await call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2
       "text": "Tell us in your own words why you want this job.",
       "required": false
     }
-  ],
-  "interest_collection": {
-    "other_roles": ["Forklift Operator", "Store Keeper"]
-  }
+  ]
 });
 const { data } = await res.json();
 ```
@@ -769,10 +745,7 @@ res = call("PUT", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4", {
             "text": "Tell us in your own words why you want this job.",
             "required": False
         }
-    ],
-    "interest_collection": {
-        "other_roles": ["Forklift Operator", "Store Keeper"]
-    }
+    ]
 })
 data = res.json()["data"]
 ```
@@ -814,10 +787,7 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4" '{
       "text": "Tell us in your own words why you want this job.",
       "required": false
     }
-  ],
-  "interest_collection": {
-    "other_roles": ["Forklift Operator", "Store Keeper"]
-  }
+  ]
 }'
 ```
 
@@ -1096,247 +1066,3 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/enrichment-
 | 400 `VALIDATION_FAILED` | A `type` other than `yes_no` / `voice`, an `options` field, or a repeated `key`. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/replace-screening-questions)
-
----
-
-### Archive a job mandate
-
-`POST /mandates/{mandate_id}/archive`
-
-Close the job when it is filled: no new campaigns start, running ones finish, results stay readable.
-
-**Scope:** `mandates:write` · **Idempotency-Key:** required
-
-<CodeGroup>
-
-```javascript JavaScript
-const res = await call("POST", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/archive");
-const { data } = await res.json();
-```
-
-```python Python
-res = call("POST", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/archive")
-data = res.json()["data"]
-```
-
-```bash cURL
-pcall POST "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/archive"
-```
-
-```json 200 Response
-{
-  "success": true,
-  "data": {
-    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
-    "job_id": "job-10452",
-    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
-    "status": "archived",
-    "flow_version": 1,
-    "methods": ["data_enrichment", "skill_verification", "interest_collection"],
-    "title": "Warehouse Associate (Forklift)",
-    "company_name": "Acme Logistics Pvt Ltd",
-    "location_type": "india",
-    "location": { "city": "Chennai", "state": "Tamil Nadu", "pincode": "600001" },
-    "countries": [],
-    "location_names": ["Chennai, Tamil Nadu"],
-    "experience": { "min_years": 1, "max_years": 5 },
-    "openings": 12,
-    "salary": { "min": 18000, "max": 24000, "currency": "INR", "period": "month" },
-    "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
-    "shift": "Day shift",
-    "employment_type": "Full-time",
-    "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
-    "skills": [
-      {
-        "skill_id": "sk_36440",
-        "name": "Forklift Basic Operation",
-        "verify": true,
-        "status": "active"
-      },
-      {
-        "skill_id": "sk_38973",
-        "name": "Pallet Jack Safety Check",
-        "verify": true,
-        "status": "active"
-      },
-      {
-        "skill_id": "sk_38824",
-        "name": "Packing Station Setup",
-        "verify": true,
-        "status": "active"
-      },
-      {
-        "skill_id": "sk_2338",
-        "name": "Order Picking",
-        "verify": false,
-        "status": "active"
-      },
-      {
-        "skill_id": "sk_2452",
-        "name": "Loading And Unloading",
-        "verify": false,
-        "status": "active"
-      },
-      {
-        "skill_id": null,
-        "name": "Reach Truck Operation",
-        "verify": false,
-        "status": "pending"
-      }
-    ],
-    "enrichment_questions": [
-      {
-        "key": "has_licence",
-        "type": "yes_no",
-        "text": "Do you hold a valid forklift licence?",
-        "knockout": "no",
-        "required": true
-      },
-      {
-        "key": "why_this_job",
-        "type": "voice",
-        "text": "Tell us in your own words why you want this job.",
-        "knockout": null,
-        "required": false
-      }
-    ],
-    "interest_collection": {
-      "other_roles": ["Forklift Operator", "Store Keeper"]
-    },
-    "warnings": [],
-    "is_external": true,
-    "created_at": "2026-10-09T10:16:12.456Z",
-    "updated_at": "2026-10-09T12:00:00.000Z"
-  }
-}
-```
-
-</CodeGroup>
-
-| Error | When |
-|---|---|
-| 404 `NOT_FOUND` | No such mandate. |
-
-Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/archive-a-job-mandate)
-
----
-
-### Delete a job mandate
-
-`DELETE /mandates/{mandate_id}`
-
-Same as archive. Nothing is erased; collected results stay readable.
-
-**Scope:** `mandates:write` · **Idempotency-Key:** optional
-
-<CodeGroup>
-
-```javascript JavaScript
-const res = await call("DELETE", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4");
-const { data } = await res.json();
-```
-
-```python Python
-res = call("DELETE", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4")
-data = res.json()["data"]
-```
-
-```bash cURL
-pcall DELETE "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4"
-```
-
-```json 200 Response
-{
-  "success": true,
-  "data": {
-    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
-    "job_id": "job-10452",
-    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
-    "status": "archived",
-    "flow_version": 1,
-    "methods": ["data_enrichment", "skill_verification", "interest_collection"],
-    "title": "Warehouse Associate (Forklift)",
-    "company_name": "Acme Logistics Pvt Ltd",
-    "location_type": "india",
-    "location": { "city": "Chennai", "state": "Tamil Nadu", "pincode": "600001" },
-    "countries": [],
-    "location_names": ["Chennai, Tamil Nadu"],
-    "experience": { "min_years": 1, "max_years": 5 },
-    "openings": 12,
-    "salary": { "min": 18000, "max": 24000, "currency": "INR", "period": "month" },
-    "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
-    "shift": "Day shift",
-    "employment_type": "Full-time",
-    "owner": { "external_user_id": "recruiter_1042", "name": "Priya Nair" },
-    "skills": [
-      {
-        "skill_id": "sk_36440",
-        "name": "Forklift Basic Operation",
-        "verify": true,
-        "status": "active"
-      },
-      {
-        "skill_id": "sk_38973",
-        "name": "Pallet Jack Safety Check",
-        "verify": true,
-        "status": "active"
-      },
-      {
-        "skill_id": "sk_38824",
-        "name": "Packing Station Setup",
-        "verify": true,
-        "status": "active"
-      },
-      {
-        "skill_id": "sk_2338",
-        "name": "Order Picking",
-        "verify": false,
-        "status": "active"
-      },
-      {
-        "skill_id": "sk_2452",
-        "name": "Loading And Unloading",
-        "verify": false,
-        "status": "active"
-      },
-      {
-        "skill_id": null,
-        "name": "Reach Truck Operation",
-        "verify": false,
-        "status": "pending"
-      }
-    ],
-    "enrichment_questions": [
-      {
-        "key": "has_licence",
-        "type": "yes_no",
-        "text": "Do you hold a valid forklift licence?",
-        "knockout": "no",
-        "required": true
-      },
-      {
-        "key": "why_this_job",
-        "type": "voice",
-        "text": "Tell us in your own words why you want this job.",
-        "knockout": null,
-        "required": false
-      }
-    ],
-    "interest_collection": {
-      "other_roles": ["Forklift Operator", "Store Keeper"]
-    },
-    "warnings": [],
-    "is_external": true,
-    "created_at": "2026-10-09T10:16:12.456Z",
-    "updated_at": "2026-10-09T12:00:00.000Z"
-  }
-}
-```
-
-</CodeGroup>
-
-| Error | When |
-|---|---|
-| 404 `NOT_FOUND` | No such mandate. |
-
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/delete-a-job-mandate)

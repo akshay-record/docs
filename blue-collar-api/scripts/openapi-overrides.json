@@ -4,7 +4,7 @@
     "description": "Create the template your jobs run under: how candidates are reached, when, and which checks run by default. Only `name` and `schedule` are required. Returns `workflow_id`.",
     "fields": {
       "name": "Display name, 1–200 characters.",
-      "external_id": "Your own id (A-Z a-z 0-9 . _ : -, up to 128). Must be unique.",
+      "external_id": "Optional. Your own id (A-Z a-z 0-9 . _ : -, up to 128). Must be unique. Without it, use `workflow_id`.",
       "status": "`active` (default), `inactive` or `draft`.",
       "default_methods": "Optional. Checks a mandate uses when it sends none: `data_enrichment`, `skill_verification`, `interest_collection`. Leave out for all three.",
       "delivery": "Optional. Channels: `whatsapp`, `voice_call`, `sms_backup` (true / false). Leave out for all three on.",
@@ -72,22 +72,6 @@
         409,
         "CONFLICT",
         "Workflow is archived, or `external_id` is taken."
-      ]
-    ]
-  },
-  "deleteWorkflow": {
-    "title": "Archive a workflow",
-    "description": "Retire a workflow you no longer use. It is archived, not erased.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such workflow."
-      ],
-      [
-        409,
-        "WORKFLOW_IN_USE",
-        "It still has open mandates. Archive them first."
       ]
     ]
   },
@@ -250,14 +234,13 @@
       "skills": "`{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). 5–10 recommended, max 10; max 3 with `verify: true`.",
       "methods": "Which checks run. Leave out to use the workflow’s `default_methods`.",
       "enrichment_questions": "1–5 items (up to 10 when `data_enrichment` is the only method) `{ key, type: yes_no | voice, text, knockout: yes | no, required }`. Needed when `data_enrichment` is on.",
-      "job_id": "Your own job id. If you send it, it must not be in use.",
+      "job_id": "Optional. Your own job id. If you send it, it must not be in use. Without it, use `mandate_id`.",
       "location_type": "`india` (default) or `abroad`. Same as the playground’s Abroad option.",
       "location": "A place in India: `{ city, state?, pincode? }` (find it with `GET /locations`). Not allowed when `location_type` is `abroad`.",
       "countries": "Needed when `location_type` is `abroad`: 1–10 different ISO 3166-1 alpha-2 codes such as `SG` (list them with `GET /countries`; lower case is accepted and stored upper case). India (`IN`) cannot be picked. Not allowed for an India job.",
       "experience": "`{ min_years, max_years }`, whole years 0–50, `max_years` at least `min_years`. Send both. Leave it out to clear it on a replace.",
       "employment_type, shift": "Pick from `GET /employment-types` (Full-time, Part-time, Contract, …) and `GET /shifts` (Day shift, Night shift, Rotational, General). Other text up to 100 characters is kept as sent.",
-      "openings, salary, description, owner": "Job details. `description` up to 1,500 characters.",
-      "interest_collection": "`other_roles` is only saved and returned. It does not change what candidates are asked: the interest prompt is fixed, and `methods` switches it on or off."
+      "openings, salary, description, owner": "Job details. `description` up to 1,500 characters."
     },
     "errors": [
       [
@@ -447,28 +430,6 @@
         400,
         "VALIDATION_FAILED",
         "A `type` other than `yes_no` / `voice`, an `options` field, or a repeated `key`."
-      ]
-    ]
-  },
-  "archiveMandateById": {
-    "title": "Archive a job mandate",
-    "description": "Close the job when it is filled: no new campaigns start, running ones finish, results stay readable.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such mandate."
-      ]
-    ]
-  },
-  "deleteMandateById": {
-    "title": "Delete a job mandate",
-    "description": "Same as archive. Nothing is erased; collected results stay readable.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such mandate."
       ]
     ]
   },
