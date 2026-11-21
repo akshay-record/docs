@@ -4,7 +4,7 @@
     "description": "Create the template your jobs run under: how candidates are reached, when, and which checks run by default. Only `name` and `schedule` are required. Returns `workflow_id`.",
     "fields": {
       "name": "Display name, 1–200 characters.",
-      "external_id": "Your own id (A-Z a-z 0-9 . _ : -, up to 128). Must be unique.",
+      "external_id": "Optional. Your own id (A-Z a-z 0-9 . _ : -, up to 128). Must be unique. Without it, use `workflow_id`.",
       "status": "`active` (default), `inactive` or `draft`.",
       "default_methods": "Optional. Checks a mandate uses when it sends none: `data_enrichment`, `skill_verification`, `interest_collection`. Leave out for all three.",
       "delivery": "Optional. Channels: `whatsapp`, `voice_call`, `sms_backup` (true / false). Leave out for all three on.",
@@ -69,35 +69,9 @@
         "No such workflow."
       ],
       [
-        403,
-        "FORBIDDEN",
-        "Workflow was made in the playground; the API can only read it."
-      ],
-      [
         409,
         "CONFLICT",
         "Workflow is archived, or `external_id` is taken."
-      ]
-    ]
-  },
-  "deleteWorkflow": {
-    "title": "Archive a workflow",
-    "description": "Retire a workflow you no longer use. It is archived, not erased.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such workflow."
-      ],
-      [
-        403,
-        "FORBIDDEN",
-        "Workflow was made in the playground."
-      ],
-      [
-        409,
-        "WORKFLOW_IN_USE",
-        "It still has open mandates. Archive them first."
       ]
     ]
   },
@@ -257,17 +231,16 @@
     "fields": {
       "workflow_id": "From step 1.",
       "title, company_name": "Plain text, up to 200 characters.",
-      "skills": "`{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). 5–10 recommended, max 10; max 3 with `verify: true`.",
+      "skills": "`{ skill_id, verify }` or `{ name, pending: true }` (a skill you requested). Exactly 3 skills.",
       "methods": "Which checks run. Leave out to use the workflow’s `default_methods`.",
-      "enrichment_questions": "1–5 items (up to 10 when `data_enrichment` is the only method) `{ key, type: yes_no | voice, text, knockout: yes | no, required }`. Needed when `data_enrichment` is on.",
-      "job_id": "Your own job id. If you send it, it must not be in use.",
+      "enrichment_questions": "Required. 1–5 items (up to 10 when `data_enrichment` is the only method) `{ key, type: yes_no | voice, text, knockout: yes | no, required }`.",
+      "job_id": "Optional. Your own job id. If you send it, it must not be in use. Without it, use `mandate_id`.",
       "location_type": "`india` (default) or `abroad`. Same as the playground’s Abroad option.",
       "location": "A place in India: `{ city, state?, pincode? }` (find it with `GET /locations`). Not allowed when `location_type` is `abroad`.",
       "countries": "Needed when `location_type` is `abroad`: 1–10 different ISO 3166-1 alpha-2 codes such as `SG` (list them with `GET /countries`; lower case is accepted and stored upper case). India (`IN`) cannot be picked. Not allowed for an India job.",
       "experience": "`{ min_years, max_years }`, whole years 0–50, `max_years` at least `min_years`. Send both. Leave it out to clear it on a replace.",
       "employment_type, shift": "Pick from `GET /employment-types` (Full-time, Part-time, Contract, …) and `GET /shifts` (Day shift, Night shift, Rotational, General). Other text up to 100 characters is kept as sent.",
-      "openings, salary, description, owner": "Job details. `description` up to 1,500 characters.",
-      "interest_collection": "`other_roles` is only saved and returned. It does not change what candidates are asked: the interest prompt is fixed, and `methods` switches it on or off."
+      "openings, salary, description": "Job details. `description` up to 1,500 characters."
     },
     "errors": [
       [
@@ -278,17 +251,12 @@
       [
         422,
         "LIMIT_EXCEEDED",
-        "More than 10 skills, 3 verified skills or 5 questions."
+        "More than 3 skills or 5 questions."
       ],
       [
         404,
         "NOT_FOUND",
         "`workflow_id` not found."
-      ],
-      [
-        403,
-        "FORBIDDEN",
-        "That workflow was made in the playground."
       ],
       [
         409,
@@ -321,7 +289,7 @@
   },
   "getMandateQuestionsById": {
     "title": "Get mandate questions",
-    "description": "See what a candidate will be asked, in `en` `ta` `hi` `kn` `te` or `ml` (English where a translation is not ready). Read-only: change them with `PUT …/questions`.",
+    "description": "See what a candidate will be asked, in `en` `ta` `hi` `kn` `te` `ml` `bn` or `mr` (English where a translation is not ready). Read-only: change them with `PUT …/questions`.",
     "errors": [
       [
         404,
@@ -360,11 +328,6 @@
         "No such mandate."
       ],
       [
-        403,
-        "FORBIDDEN",
-        "Mandate was made in the playground."
-      ],
-      [
         409,
         "CONFLICT",
         "Archived, still `preparing` (wait Retry-After), or over 10 changes this hour."
@@ -381,11 +344,6 @@
         "No such mandate."
       ],
       [
-        403,
-        "FORBIDDEN",
-        "Mandate was made in the playground."
-      ],
-      [
         409,
         "CONFLICT",
         "Archived; `workflow_id` differs; still `preparing` (wait Retry-After); or over 10 changes this hour."
@@ -393,7 +351,7 @@
       [
         422,
         "LIMIT_EXCEEDED",
-        "More than 10 skills, 3 verified skills or 5 questions."
+        "More than 3 skills or 5 questions."
       ],
       [
         400,
@@ -410,11 +368,6 @@
         404,
         "NOT_FOUND",
         "No such mandate."
-      ],
-      [
-        403,
-        "FORBIDDEN",
-        "Mandate was made in the playground."
       ],
       [
         409,
@@ -438,11 +391,6 @@
         "No such mandate."
       ],
       [
-        403,
-        "FORBIDDEN",
-        "Mandate was made in the playground."
-      ],
-      [
         409,
         "CONFLICT",
         "Archived, still `preparing`, or too many changes this hour."
@@ -450,7 +398,7 @@
       [
         422,
         "LIMIT_EXCEEDED",
-        "More than 10 skills or 3 verified."
+        "More than 3 skills."
       ],
       [
         400,
@@ -469,11 +417,6 @@
         "No such mandate."
       ],
       [
-        403,
-        "FORBIDDEN",
-        "Mandate was made in the playground."
-      ],
-      [
         409,
         "CONFLICT",
         "Archived, still `preparing`, or too many changes this hour."
@@ -490,38 +433,6 @@
       ]
     ]
   },
-  "archiveMandateById": {
-    "title": "Archive a job mandate",
-    "description": "Close the job when it is filled: no new campaigns start, running ones finish, results stay readable.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such mandate."
-      ],
-      [
-        403,
-        "FORBIDDEN",
-        "Mandate was made in the playground."
-      ]
-    ]
-  },
-  "deleteMandateById": {
-    "title": "Delete a job mandate",
-    "description": "Same as archive. Nothing is erased; collected results stay readable.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such mandate."
-      ],
-      [
-        403,
-        "FORBIDDEN",
-        "Mandate was made in the playground."
-      ]
-    ]
-  },
   "createCampaign": {
     "title": "Create a campaign",
     "description": "Send your candidates (name + phone) for a mandate. Record contacts and verifies them. Returns `campaign_id`.",
@@ -529,8 +440,8 @@
     "fields": {
       "mandate_id": "From step 2 (or send your own `job_id` instead, never both).",
       "start": "`now` sends at once; `manual` only creates a draft (start it later).",
-      "candidates": "1–1,000 of `{ name, phone, external_id? }`. Phone: 10 digits or with country code. Bad numbers come back in `rejected`.",
-      "name, external_id, language": "Campaign name, your unique id for it, language `en` `hi` `ta` `te` `kn` `ml` (default `en`)."
+      "candidates": "1–1,000 of `{ name, phone, external_id? }`. Phone: exactly 10 digits (`9876543210`), no `+91`, spaces or dashes. Bad numbers come back in `rejected`.",
+      "name, external_id, language": "Campaign name, your unique id for it, language `en` `hi` `ta` `te` `kn` `ml` `bn` `mr` (default `en`)."
     },
     "errors": [
       [
@@ -546,7 +457,7 @@
       [
         403,
         "FORBIDDEN",
-        "TEST key with a number not on its list, or the mandate was made in the playground."
+        "TEST key with a number not on its list."
       ],
       [
         404,
@@ -600,7 +511,7 @@
       [
         403,
         "FORBIDDEN",
-        "Campaign was made in the playground, or TEST key number not allowed."
+        "TEST key number not allowed."
       ],
       [
         409,
@@ -622,7 +533,7 @@
       [
         403,
         "FORBIDDEN",
-        "Campaign was made in the playground, or TEST key number not allowed."
+        "TEST key number not allowed."
       ],
       [
         409,
@@ -662,11 +573,6 @@
         "No such campaign or candidate."
       ],
       [
-        403,
-        "FORBIDDEN",
-        "Campaign was made in the playground."
-      ],
-      [
         409,
         "CONFLICT",
         "Campaign not started, paused, completed or cancelled; or the candidate has completed, declined or is not contacted yet."
@@ -688,11 +594,6 @@
         "No such campaign."
       ],
       [
-        403,
-        "FORBIDDEN",
-        "Campaign was made in the playground."
-      ],
-      [
         409,
         "CONFLICT",
         "Not started yet, or not in a state that can be paused."
@@ -708,11 +609,6 @@
         404,
         "NOT_FOUND",
         "No such campaign."
-      ],
-      [
-        403,
-        "FORBIDDEN",
-        "Campaign was made in the playground."
       ],
       [
         409,
@@ -766,7 +662,7 @@
   },
   "listCampaignResults": {
     "title": "List campaign results",
-    "description": "One record per candidate: `status` (pending, completed, declined, failed) and `output` with what Record collected. Prefer the webhook; use this to catch up or check.",
+    "description": "One record per candidate: `status` (pending, completed, declined, failed), `is_final` and `output` with what Record collected. Poll it with `updated_since` (the time of your last poll) and read `is_final`: `false` means the result can still gain parts.",
     "errors": [
       [
         404,
@@ -782,7 +678,7 @@
   },
   "getResult": {
     "title": "Get a result",
-    "description": "The same record the webhook delivers for this candidate.",
+    "description": "One candidate's result record. Read `is_final` to know whether it can still change.",
     "errors": [
       [
         404,
@@ -799,144 +695,6 @@
         404,
         "NOT_FOUND",
         "No such `candidate_id` for this key."
-      ]
-    ]
-  },
-  "createWebhookEndpoint": {
-    "title": "Create an endpoint",
-    "description": "Register the HTTPS URL that receives result events. Deliveries are signed with your API secret key.",
-    "fields": {
-      "url": "HTTPS, port 443, a public host. Any 2xx answer counts as the acknowledgement.",
-      "description": "Up to 200 characters.",
-      "event_types": "Default `candidate.result`.",
-      "backfill_from": "ISO date-time: also send results from then on (at most 30 days back)."
-    },
-    "errors": [
-      [
-        400,
-        "VALIDATION_FAILED",
-        "URL not https, a private address, a port other than 443, or an unknown event type."
-      ],
-      [
-        422,
-        "LIMIT_EXCEEDED",
-        "Already 5 endpoints."
-      ]
-    ]
-  },
-  "listWebhookEndpoints": {
-    "title": "List endpoints",
-    "description": "Each endpoint with its status (`active`, `paused`, `auto_paused`), consecutive failures and last success."
-  },
-  "getWebhookEndpoint": {
-    "title": "Get an endpoint",
-    "description": "One endpoint with its current status.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ]
-    ]
-  },
-  "updateWebhookEndpoint": {
-    "title": "Update an endpoint",
-    "description": "Send only what changes. `status: paused` holds deliveries (nothing is lost); `status: active` resumes them, oldest first. Use it to bring back an `auto_paused` endpoint.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ],
-      [
-        400,
-        "VALIDATION_FAILED",
-        "No field sent, or a bad URL."
-      ]
-    ]
-  },
-  "deleteWebhookEndpoint": {
-    "title": "Delete an endpoint",
-    "description": "Deliveries still waiting for it stop. The events stay in the feed for 30 days.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ]
-    ]
-  },
-  "testWebhookEndpoint": {
-    "title": "Send a test event",
-    "description": "Sends a signed `webhook.test` right now and shows what your server answered. Not stored, not retried.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ]
-    ]
-  },
-  "backfillWebhookEndpoint": {
-    "title": "Backfill past results",
-    "description": "Queues the results since `from` (at most 30 days back) as normal deliveries. Safe to repeat.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ]
-    ]
-  },
-  "listWebhookDeliveries": {
-    "title": "List deliveries",
-    "description": "Every send to this endpoint, newest first: attempts, last HTTP status or error, when the next retry is due.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ]
-    ]
-  },
-  "retryWebhookDelivery": {
-    "title": "Retry a delivery",
-    "description": "For a dead one after you fixed your endpoint. Its attempts count from zero again.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such delivery."
-      ]
-    ]
-  },
-  "pullEvents": {
-    "title": "Pull and confirm events",
-    "description": "One call does both jobs. Send the `ack` ids of the events you already processed, and get the next events back. An event keeps coming back until you put its id in `ack`. Use it when you cannot expose a URL, and as a safety net next to the webhook.",
-    "fields": {
-      "ack": "Ids of the events you processed. Leave it empty on your first call.",
-      "status": "`unacked` (default) gives only events you have not confirmed. `all` replays history (use it with `from`).",
-      "type": "Only this event type.",
-      "from": "Only events created at or after this time (replay).",
-      "after": "Only events with a higher `sequence` than this. A paging shortcut: rely on `unacked`.",
-      "limit": "1 to 100, default 100."
-    },
-    "errors": [
-      [
-        400,
-        "VALIDATION_FAILED",
-        "An `ack` id that is not an event id, more than 100 ids, a bad date, or `limit` above 100."
-      ]
-    ]
-  },
-  "getEvent": {
-    "title": "Get an event",
-    "description": "Fetch one event by its id.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such event (or older than 30 days)."
       ]
     ]
   },
@@ -980,6 +738,21 @@
         404,
         "NOT_FOUND",
         "No such campaign."
+      ]
+    ]
+  },
+  "getCredits": {
+    "title": "Get your credits",
+    "description": "The credits your organisation can spend on blue-collar campaigns, for the mode of your key (a test key reads the test wallet, a live key the live wallet), and what one candidate costs per verification method."
+  },
+  "listCreditUsage": {
+    "title": "List credit usage",
+    "description": "Where credits were used, newest first: one entry per verification method of each candidate added to a campaign, and refunds or corrections as their own entries. Filter by campaign, candidate or time.",
+    "errors": [
+      [
+        400,
+        "VALIDATION_FAILED",
+        "Malformed `campaign_id`, `candidate_id`, `from`, `to` or `cursor`, or `from` is after `to`."
       ]
     ]
   }

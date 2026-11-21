@@ -281,8 +281,8 @@
               "blue-collar-api/guides/lookups",
               "blue-collar-api/guides/campaigns",
               "blue-collar-api/guides/results",
-              "blue-collar-api/guides/webhooks",
-              "blue-collar-api/guides/analytics"
+              "blue-collar-api/guides/analytics",
+              "blue-collar-api/guides/credits"
             ]
           },
           {
@@ -312,8 +312,7 @@
               "POST /workflows",
               "GET /workflows",
               "GET /workflows/{workflow_id}",
-              "PATCH /workflows/{workflow_id}",
-              "DELETE /workflows/{workflow_id}"
+              "PATCH /workflows/{workflow_id}"
             ]
           },
           {
@@ -328,9 +327,7 @@
               "PUT /mandates/{mandate_id}",
               "PUT /mandates/{mandate_id}/methods",
               "PUT /mandates/{mandate_id}/skills",
-              "PUT /mandates/{mandate_id}/enrichment-questions",
-              "POST /mandates/{mandate_id}/archive",
-              "DELETE /mandates/{mandate_id}"
+              "PUT /mandates/{mandate_id}/enrichment-questions"
             ]
           },
           {
@@ -387,35 +384,106 @@
             ]
           },
           {
-            "group": "Webhooks",
-            "openapi": "blue-collar-api/api-reference/openapi.json",
-            "pages": [
-              "POST /webhooks/endpoints",
-              "GET /webhooks/endpoints",
-              "GET /webhooks/endpoints/{endpoint_id}",
-              "PATCH /webhooks/endpoints/{endpoint_id}",
-              "DELETE /webhooks/endpoints/{endpoint_id}",
-              "POST /webhooks/endpoints/{endpoint_id}/test",
-              "POST /webhooks/endpoints/{endpoint_id}/backfill",
-              "GET /webhooks/endpoints/{endpoint_id}/deliveries",
-              "POST /webhooks/deliveries/{delivery_id}/retry"
-            ]
-          },
-          {
-            "group": "Events",
-            "openapi": "blue-collar-api/api-reference/openapi.json",
-            "pages": [
-              "POST /events/pull",
-              "GET /events/{event_id}"
-            ]
-          },
-          {
             "group": "Analytics",
             "openapi": "blue-collar-api/api-reference/openapi.json",
             "pages": [
               "GET /analytics/workflows/{workflow_id}",
               "GET /analytics/mandates/{mandate_id}",
               "GET /analytics/campaigns/{campaign_id}"
+            ]
+          },
+          {
+            "group": "Credits",
+            "openapi": "blue-collar-api/api-reference/openapi.json",
+            "pages": [
+              "GET /credits",
+              "GET /credits/usage"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Enrichment API Guides",
+        "hidden": true,
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              "enrichment-api/index",
+              "enrichment-api/quickstart",
+              "enrichment-api/authentication"
+            ]
+          },
+          {
+            "group": "Integration",
+            "pages": [
+              "enrichment-api/guides/enrichments",
+              "enrichment-api/guides/campaigns",
+              "enrichment-api/guides/candidates-and-results",
+              "enrichment-api/guides/credits"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "enrichment-api/reference/statuses",
+              "enrichment-api/reference/limits"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Enrichment API Reference",
+        "hidden": true,
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "enrichment-api/api-reference/introduction"
+            ]
+          },
+          {
+            "group": "Enrichments",
+            "openapi": "enrichment-api/api-reference/openapi.json",
+            "pages": [
+              "POST /enrichments",
+              "GET /enrichments",
+              "GET /enrichments/{enrichment_id}",
+              "GET /enrichments/{enrichment_id}/overview"
+            ]
+          },
+          {
+            "group": "Campaigns",
+            "openapi": "enrichment-api/api-reference/openapi.json",
+            "pages": [
+              "POST /enrichments/{enrichment_id}/campaigns",
+              "GET /enrichments/{enrichment_id}/campaigns",
+              "GET /enrichments/{enrichment_id}/campaigns/{campaign_id}",
+              "POST /enrichments/{enrichment_id}/campaigns/{campaign_id}/pause",
+              "POST /enrichments/{enrichment_id}/campaigns/{campaign_id}/resume"
+            ]
+          },
+          {
+            "group": "Candidates",
+            "openapi": "enrichment-api/api-reference/openapi.json",
+            "pages": [
+              "GET /enrichments/{enrichment_id}/candidates",
+              "GET /enrichments/{enrichment_id}/candidates/{candidate_id}"
+            ]
+          },
+          {
+            "group": "Results",
+            "openapi": "enrichment-api/api-reference/openapi.json",
+            "pages": [
+              "GET /enrichments/{enrichment_id}/results"
+            ]
+          },
+          {
+            "group": "Credits",
+            "openapi": "enrichment-api/api-reference/openapi.json",
+            "pages": [
+              "GET /enrichment-credits",
+              "GET /enrichment-credits/usage"
             ]
           }
         ]
@@ -533,7 +601,8 @@
         "pages": [
           "terms-and-conditions",
           "privacy",
-          "cookie-policy"
+          "cookie-policy",
+          "playground-cookie-policy"
         ]
       },
       {

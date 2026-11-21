@@ -18,7 +18,7 @@
       [
         403,
         "FORBIDDEN",
-        "A TEST key's organisation already has 5 active enrichments. Archive one."
+        "A TEST key's organisation already has 5 active enrichments. Archive one in the Record playground."
       ],
       [
         409,
@@ -46,22 +46,6 @@
         404,
         "NOT_FOUND",
         "No such enrichment in your organisation and mode."
-      ]
-    ]
-  },
-  "archiveEnrichment": {
-    "title": "Archive an enrichment",
-    "description": "Archive an enrichment you created. It is not erased: its campaigns, candidates and results stay readable. Campaigns that are already live keep running, so pause them first if they should stop. Archiving again changes nothing.",
-    "errors": [
-      [
-        403,
-        "FORBIDDEN",
-        "The enrichment was made in the playground. The API changes only what it created."
-      ],
-      [
-        404,
-        "NOT_FOUND",
-        "No such enrichment."
       ]
     ]
   },
@@ -99,7 +83,7 @@
       [
         403,
         "FORBIDDEN",
-        "The enrichment was made in the playground, or a TEST key would exceed 50 candidates in this enrichment."
+        "A TEST key would exceed 50 candidates in this enrichment."
       ],
       [
         404,
@@ -141,11 +125,6 @@
     "description": "Stop everything still to go out (invites, follow-ups, SMS, calls) until you resume. Only a live campaign can be paused, and one whose candidates have all finished has nothing left to pause.",
     "errors": [
       [
-        403,
-        "FORBIDDEN",
-        "The enrichment was made in the playground."
-      ],
-      [
         404,
         "NOT_FOUND",
         "No such enrichment or campaign."
@@ -161,11 +140,6 @@
     "title": "Resume a campaign",
     "description": "Carry on where the campaign stopped. Only a paused campaign can be resumed.",
     "errors": [
-      [
-        403,
-        "FORBIDDEN",
-        "The enrichment was made in the playground."
-      ],
       [
         404,
         "NOT_FOUND",
@@ -221,141 +195,25 @@
       ]
     ]
   },
-  "createWebhookEndpoint": {
-    "title": "Create an endpoint",
-    "description": "Register the HTTPS URL that receives each candidate's result as soon as they finish an enrichment. Send `event_types: [\"enrichment.result\"]`: enrichment results are opt-in, and the key needs an enrichment scope as well as `webhooks:manage`. Deliveries are signed with your API secret key and retried until you answer `2xx`.",
+  "getEnrichmentCredits": {
+    "title": "Your available credits",
+    "description": "The credits your organisation can spend on enrichments, in the wallet of the key you signed with: a `VFN_TEST_` key sees the test wallet and a `VFN_LIVE_` key the live one. `unit_price` is what one candidate costs and `candidates_affordable` is how many more the balance covers. A campaign that costs more than the balance is refused with `402 INSUFFICIENT_CREDITS` and nothing is created. This call changes nothing. With no billing account or no test wallet you still get `200`, with `billing_configured` or `wallet_configured` false and `wallet` null."
+  },
+  "listEnrichmentCreditUsage": {
+    "title": "Where your enrichment credits were used",
+    "description": "One row for every candidate added to an enrichment campaign, newest first, in the wallet of the key you signed with. `credits` is negative when credits were spent and positive when they were given back. `summary.net_credits` adds up every row that matches your filters, not only the page you are on. An id from another organisation returns an empty list. This call changes nothing.",
     "fields": {
-      "url": "HTTPS, port 443, a public host. Any 2xx answer counts as the acknowledgement.",
-      "description": "Up to 200 characters.",
-      "event_types": "`[\"enrichment.result\"]` for enrichment results. Leave out for `candidate.result` only (Blue Collar verification results). Both can be listed.",
-      "backfill_from": "ISO date-time: also send results from then on (at most 30 days back)."
+      "enrichment_id": "Only credits spent in this enrichment.",
+      "campaign_id": "Only credits spent in this campaign.",
+      "candidate_id": "Only credits spent on this candidate.",
+      "from": "Only rows from this moment on (included). ISO 8601 date-time.",
+      "to": "Only rows before this moment (not included). ISO 8601 date-time."
     },
     "errors": [
       [
         400,
         "VALIDATION_FAILED",
-        "URL not https, a private address, a port other than 443, or an unknown event type."
-      ],
-      [
-        422,
-        "LIMIT_EXCEEDED",
-        "Already 5 endpoints."
-      ]
-    ]
-  },
-  "listWebhookEndpoints": {
-    "title": "List endpoints",
-    "description": "Each endpoint with its status (`active`, `paused`, `auto_paused`), consecutive failures and last success."
-  },
-  "getWebhookEndpoint": {
-    "title": "Get an endpoint",
-    "description": "One endpoint with its current status.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ]
-    ]
-  },
-  "updateWebhookEndpoint": {
-    "title": "Update an endpoint",
-    "description": "Send only what changes. `status: paused` holds deliveries (nothing is lost); `status: active` resumes them, oldest first. Use it to bring back an `auto_paused` endpoint.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ],
-      [
-        400,
-        "VALIDATION_FAILED",
-        "No field sent, or a bad URL."
-      ]
-    ]
-  },
-  "deleteWebhookEndpoint": {
-    "title": "Delete an endpoint",
-    "description": "Deliveries still waiting for it stop. The events stay in the feed for 30 days.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ]
-    ]
-  },
-  "testWebhookEndpoint": {
-    "title": "Send a test event",
-    "description": "Sends a signed `webhook.test` event right now and shows what your server answered. Use it to check your URL and signature code before any candidate answers. It is not an `enrichment.result`, and it is not stored or retried.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ]
-    ]
-  },
-  "backfillWebhookEndpoint": {
-    "title": "Backfill past results",
-    "description": "Queues the `enrichment.result` events since `from` (at most 30 days back) as normal deliveries. Use it to replay results your server missed. Safe to repeat.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ]
-    ]
-  },
-  "listWebhookDeliveries": {
-    "title": "List deliveries",
-    "description": "Every send to this endpoint, newest first: attempts, last HTTP status or error, when the next retry is due.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such endpoint."
-      ]
-    ]
-  },
-  "retryWebhookDelivery": {
-    "title": "Retry a delivery",
-    "description": "For a dead one after you fixed your endpoint. Its attempts count from zero again.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such delivery."
-      ]
-    ]
-  },
-  "pullEvents": {
-    "title": "Pull and confirm events",
-    "description": "Use this when you cannot expose a URL, or as a safety net next to the webhook. Send `type: \"enrichment.result\"`, and the `ack` ids of the events you already processed, and get the next events back. Needs `events:read` and an enrichment scope.",
-    "fields": {
-      "ack": "Ids of the events you processed. Leave it empty on your first call.",
-      "status": "`unacked` (default) gives only events you have not confirmed. `all` replays history (use it with `from`).",
-      "type": "Only this event type.",
-      "from": "Only events created at or after this time (replay).",
-      "after": "Only events with a higher `sequence` than this. A paging shortcut: rely on `unacked`.",
-      "limit": "1 to 100, default 100."
-    },
-    "errors": [
-      [
-        400,
-        "VALIDATION_FAILED",
-        "An `ack` id that is not an event id, more than 100 ids, a bad date, or `limit` above 100."
-      ]
-    ]
-  },
-  "getEvent": {
-    "title": "Get an event",
-    "description": "Fetch one event by its id.",
-    "errors": [
-      [
-        404,
-        "NOT_FOUND",
-        "No such event (or older than 30 days)."
+        "Bad `from`, `to` or `cursor`."
       ]
     ]
   }

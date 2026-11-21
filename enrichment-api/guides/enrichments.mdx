@@ -113,7 +113,7 @@ data = res.json()["data"]
 {
   "success": true,
   "data": {
-    "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
+    "enrichment_id": "WF_EN_261121094822026AEDRUB86TQVSML",
     "external_id": "enr-chennai-warehouse",
     "name": "Warehouse talent pool - Chennai",
     "status": "active",
@@ -123,14 +123,14 @@ data = res.json()["data"]
     "counts": { "campaigns": 0, "candidates": 0, "sent": 0, "completed": 0 },
     "is_external": true,
     "questions": [
-      { "question_id": "EQ_261110101530001A", "order": 0, "question_text": "Are you open to a new job right now?", "type": "yes_no", "preferred_answer": "yes", "required": true },
-      { "question_id": "EQ_261110101530002B", "order": 1, "question_text": "Tell us about the work you do and where you want to work.", "type": "voice", "preferred_answer": null, "required": true }
+      { "question_id": "eqq_cc9800817588972e", "order": 0, "question_text": "Are you open to a new job right now?", "type": "yes_no", "preferred_answer": "yes", "required": true },
+      { "question_id": "eqq_7a31f0c2d95b84e6", "order": 1, "question_text": "Tell us about the work you do and where you want to work.", "type": "voice", "preferred_answer": null, "required": true }
     ]
   }
 }
 ```
 
-**Errors:** `400 VALIDATION_FAILED` (a field missing or wrong, a `yes_no` without `preferred_answer`, a start time not before the end time), `403 FORBIDDEN` (a TEST key's organisation already has 5 active enrichments: archive one), `409 CONFLICT` (`external_id` already used).
+**Errors:** `400 VALIDATION_FAILED` (a field missing or wrong, a `yes_no` without `preferred_answer`, a start time not before the end time), `403 FORBIDDEN` (a TEST key's organisation already has 5 active enrichments: archive one in the Record playground), `409 CONFLICT` (`external_id` already used).
 
 ### List enrichments
 
@@ -157,14 +157,6 @@ One enrichment with its questions. Repeat it until `questions_status` is `ready`
 
 **Scope:** `enrichment:read` · **Errors:** `404 NOT_FOUND`
 
-### Archive an enrichment
-
-`DELETE /enrichments/{enrichment_id}`
-
-Archives an enrichment **you created**. Nothing is erased: campaigns, candidates and results stay readable. Campaigns already live keep running until you [pause](/enrichment-api/guides/campaigns#pause-a-campaign) them. Archiving again changes nothing. An archived enrichment takes no new campaign.
-
-**Scope:** `enrichment:write` · **Idempotency-Key:** optional · **Errors:** `403 FORBIDDEN` (made in the playground), `404 NOT_FOUND`
-
 ### Get the overview
 
 `GET /enrichments/{enrichment_id}/overview`
@@ -177,7 +169,7 @@ Funnel numbers across all campaigns.
 {
   "success": true,
   "data": {
-    "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
+    "enrichment_id": "WF_EN_261121094822026AEDRUB86TQVSML",
     "campaign_count": 1,
     "kpis": { "uploaded": 120, "rejected": 6, "sent": 118, "delivered": 110, "link_opened": 64, "completed": 41, "opted_out": 2 },
     "standing": { "completed": 41, "in_progress": 8, "sent": 62, "not_interested": 5, "opted_out": 2 }

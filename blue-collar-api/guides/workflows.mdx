@@ -15,8 +15,8 @@ A workflow is a reusable template: how candidates are reached and when. Create i
 - **Channels and timing.** `delivery` picks WhatsApp, voice call and SMS backup; Record switches all three on by default, as it does in the playground. `schedule` is required: the daily send window, the days, the time zone and how often to retry.
 - **Verification methods.** Every workflow answers with `verification_methods`. Record switches both on for every workflow; you cannot set or change them.
 - **Changing.** `PATCH` changes only the fields you send. Send `start_time` and `end_time` together; other `schedule` keys merge, and `days` is replaced as a whole list.
-- **Archiving.** `DELETE` archives the workflow; nothing is erased. It answers `409 WORKFLOW_IN_USE` while the workflow still has open mandates.
-- **Playground workflows.** `GET /workflows` lists every workflow in your organisation, including ones made in the Record playground. `is_external` is `true` for the ones made through the API. You can read all of them, but only change the ones you created through the API; the others answer `403 FORBIDDEN`.
+- **No delete.** The API does not delete or archive workflows. To stop using one, `PATCH` its `status` to `inactive`.
+- **Playground workflows.** `GET /workflows` lists every workflow in your organisation, including ones made in the Record playground. `is_external` is `true` for the ones made through the API. You can read and change all of them, whether they were made in the playground or through the API.
 
 ## Endpoints
 
@@ -31,14 +31,14 @@ Create the template your jobs run under: how candidates are reached, when, and w
 | Field | Type | Description |
 |---|---|---|
 | `name` | `string` | **Required.** Display name, 1–200 characters. |
-| `external_id` | `string` | Your own id (A-Z a-z 0-9 . _ : -, up to 128). Must be unique. |
+| `external_id` | `string` | **Optional.** Your own id (A-Z a-z 0-9 . _ : -, up to 128). Must be unique. Without it, use `workflow_id`. |
 | `status` | `string` | `active` (default), `inactive` or `draft`. |
 | `default_methods` | `array<string>` | Optional. Checks a mandate uses when it sends none, each listed once: `data_enrichment`, `skill_verification`, `interest_collection`. Leave out for all three. |
 | `delivery` | `object` | Optional. Channels: `whatsapp`, `voice_call`, `sms_backup`, each `true` or `false`. Leave out for all three on, as Record sets them for every blue-collar workflow. |
 | `schedule` | `object` | **Required.** Send all six keys below. |
 | `schedule.start_time` | `string` | **Required.** Send window start, "HH:MM" (24-hour). |
 | `schedule.end_time` | `string` | **Required.** Send window end, "HH:MM" (24-hour). |
-| `schedule.days` | `array<string>` | **Required.** At least one of mon…sun, each once. |
+| `schedule.days` | `array<string>` | **Required.** At least one of mon…sun, each once. Any casing is accepted (`mon`, `Mon`, `Monday`); the API always returns lowercase and the playground shows them as Mon…Sun. |
 | `schedule.timezone` | `string` | **Required.** IANA time zone, for example `Asia/Kolkata`. |
 | `schedule.max_retries` | `integer` | **Required.** Follow-up calls, 1 to 3. |
 | `schedule.retry_after_hours` | `integer` | **Required.** Hours before a retry: `6`, `8` or `12`. |
@@ -299,7 +299,7 @@ Change only the fields you send (send at least one), for example the send window
 | Field | Type | Description |
 |---|---|---|
 | `name` | `string` | **Can change.** 1–200 characters. |
-| `status` | `string` | **Can change.** `active`, `inactive` or `draft`. To archive, use `DELETE`; `archived` cannot be set here. |
+| `status` | `string` | **Can change.** `active`, `inactive` or `draft`. `archived` cannot be set here. |
 | `external_id` | `string` | **Can change.** Must not be used by another workflow (`409 CONFLICT`). |
 | `delivery` | `object` | **Can change.** `whatsapp`, `voice_call`, `sms_backup`. Only the keys you send change. |
 | `schedule` | `object` | **Can change.** Send `start_time` and `end_time` together. Other keys merge; `days` is replaced as a whole list. |
@@ -364,73 +364,6 @@ pcall PATCH "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8" '{
 |---|---|
 | 400 `VALIDATION_FAILED` | Empty body, `verification_methods` or another unknown field, a time not HH:MM, only one of start_time / end_time, or a bad value. |
 | 404 `NOT_FOUND` | No such workflow. |
-| 403 `FORBIDDEN` | Workflow was made in the playground; the API can only read it. |
 | 409 `CONFLICT` | Workflow is archived, or `external_id` is taken. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/workflows/update-a-workflow)
-
----
-
-### Archive a workflow
-
-`DELETE /workflows/{workflow_id}`
-
-Retire a workflow you no longer use. It is archived, not erased.
-
-**Scope:** `workflows:write` · **Idempotency-Key:** optional
-
-<CodeGroup>
-
-```javascript JavaScript
-const res = await call("DELETE", "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8");
-const { data } = await res.json();
-```
-
-```python Python
-res = call("DELETE", "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8")
-data = res.json()["data"]
-```
-
-```bash cURL
-pcall DELETE "/api/v1/partner/workflows/WF_BG_261009101530123K7M2P9Q4X7R5T8"
-```
-
-```json 200 Response
-{
-  "success": true,
-  "data": {
-    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
-    "external_id": "wf-warehouse-chennai",
-    "name": "Warehouse associates - Chennai",
-    "collar": "blue",
-    "status": "archived",
-    "default_methods": ["data_enrichment", "skill_verification"],
-    "verification_methods": [
-      { "type": "scenario-questions", "enabled": true },
-      { "type": "ai-phone-call", "enabled": true }
-    ],
-    "delivery": { "whatsapp": true, "voice_call": true, "sms_backup": false },
-    "schedule": {
-      "start_time": "09:00",
-      "end_time": "19:00",
-      "days": ["mon", "tue", "wed", "thu", "fri", "sat"],
-      "timezone": "Asia/Kolkata",
-      "max_retries": 3,
-      "retry_after_hours": 6
-    },
-    "is_external": true,
-    "created_at": "2026-10-09T10:15:30.123Z",
-    "updated_at": "2026-10-09T11:30:00.000Z"
-  }
-}
-```
-
-</CodeGroup>
-
-| Error | When |
-|---|---|
-| 404 `NOT_FOUND` | No such workflow. |
-| 403 `FORBIDDEN` | Workflow was made in the playground. |
-| 409 `WORKFLOW_IN_USE` | It still has open mandates. Archive them first. |
-
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/workflows/archive-a-workflow)

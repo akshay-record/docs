@@ -32,7 +32,7 @@ Do the steps in this order. Each one returns an id that the next one needs.
 3. [`POST /enrichments/{enrichment_id}/campaigns`](/enrichment-api/guides/campaigns#create-a-campaign) → save `campaign_id`
 4. [`GET /enrichments/{enrichment_id}/campaigns/{campaign_id}`](/enrichment-api/guides/campaigns#get-a-campaign) → watch it go out
 5. [`GET /enrichments/{enrichment_id}/candidates`](/enrichment-api/guides/candidates-and-results#list-candidates) → who answered, who did not
-6. [`GET /enrichments/{enrichment_id}/results`](/enrichment-api/guides/candidates-and-results#list-results) → the final result of each candidate who finished. Or have each one sent to you as it happens with an [`enrichment.result` webhook](/enrichment-api/guides/webhooks)
+6. [`GET /enrichments/{enrichment_id}/results`](/enrichment-api/guides/candidates-and-results#list-results) → the final result of each candidate who finished.
 
 ## 4 rules to remember
 

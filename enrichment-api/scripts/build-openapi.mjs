@@ -178,7 +178,6 @@ const GROUP_OF = {
   createEnrichment: "Enrichments",
   listEnrichments: "Enrichments",
   getEnrichment: "Enrichments",
-  archiveEnrichment: "Enrichments",
   getEnrichmentOverview: "Enrichments",
   createEnrichmentCampaign: "Enrichment campaigns",
   listEnrichmentCampaigns: "Enrichment campaigns",
@@ -188,18 +187,8 @@ const GROUP_OF = {
   listEnrichmentCandidates: "Enrichment candidates",
   getEnrichmentCandidate: "Enrichment candidates",
   listEnrichmentResults: "Enrichment results",
-  // The webhook and event calls are shared with the Blue Collar API; the tags keep their page URLs apart from that tab's.
-  createWebhookEndpoint: "Enrichment webhooks",
-  listWebhookEndpoints: "Enrichment webhooks",
-  getWebhookEndpoint: "Enrichment webhooks",
-  updateWebhookEndpoint: "Enrichment webhooks",
-  deleteWebhookEndpoint: "Enrichment webhooks",
-  testWebhookEndpoint: "Enrichment webhooks",
-  backfillWebhookEndpoint: "Enrichment webhooks",
-  listWebhookDeliveries: "Enrichment webhooks",
-  retryWebhookDelivery: "Enrichment webhooks",
-  pullEvents: "Enrichment events",
-  getEvent: "Enrichment events",
+  getEnrichmentCredits: "Enrichment credits",
+  listEnrichmentCreditUsage: "Enrichment credits",
 };
 for (const methods of Object.values(spec.paths)) {
   for (const op of Object.values(methods)) op.tags = [GROUP_OF[op.operationId] ?? "Enrichments"];

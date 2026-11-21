@@ -21,7 +21,7 @@ You hold **two values**. Your code (or the **Try it** button) makes the rest on 
 You do not calculate these by hand. Copy the [signing helper](#signing-helper) once, then call `call("GET", "/api/v1/partner/…")`.
 
 <Info>
-  Optional: `x-on-behalf-of` is your own id for the recruiter making the call (1 to 128 of `A-Z a-z 0-9 . _ : @ -`). It sets per-recruiter rate limits, is kept in the audit log, and fills `owner` on a mandate or `requested_by` on a skill request when you leave them out.
+  Optional: `x-on-behalf-of` is your own id for the recruiter making the call (1 to 128 of `A-Z a-z 0-9 . _ : @ -`). It sets per-recruiter rate limits, is kept in the audit log, and fills `requested_by` on a skill request when you leave it out.
 </Info>
 
 ## Why a signature and not just the secret?
@@ -90,15 +90,14 @@ Record switches the Blue Collar API on per key by granting scopes. A key without
 | `skills:read` | Skill search, browse, lookup, match and extract. |
 | `skills:request` | Ask Record to add a missing skill, and track your requests. |
 | `workflows:read` | Read workflows. |
-| `workflows:write` | Create, change and archive workflows. Also reads them. |
+| `workflows:write` | Create and change workflows. Also reads them. |
 | `mandates:read` | Read job mandates and their questions, and the place, country, employment-type and shift lookups. |
-| `mandates:write` | Create, change and close job mandates. Also everything in `mandates:read`. |
+| `mandates:write` | Create and change job mandates. Also everything in `mandates:read`. |
 | `campaigns:write` | Create, start, pause and resume campaigns, add candidates and resend links. Also reads campaigns and candidate rows (without verdicts). |
 | `results:read` | Campaigns, candidate rows and result records. |
 | `results:answers` | Adds what the candidate said to `GET /candidates/{candidate_id}/result?include=answers`. |
-| `webhooks:manage` | Webhook endpoints, delivery logs, tests and backfills. |
-| `events:read` | The event feed (`POST /events/pull`) and `GET /events/{event_id}`. |
 | `analytics:read` | Workflow, mandate and campaign analytics. |
+| `credits:read` | Your available credits and where they were used. |
 
 ## How a request is signed
 

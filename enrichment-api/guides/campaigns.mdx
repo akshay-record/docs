@@ -84,8 +84,8 @@ data = res.json()["data"]
   "success": true,
   "data": {
     "campaign": {
-      "campaign_id": "EC_261110103045123M4P8T2K6Q9R",
-      "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
+      "campaign_id": "EC_261121095438377TFUX07WN2XT42V",
+      "enrichment_id": "WF_EN_261121094822026AEDRUB86TQVSML",
       "name": "November talent pool",
       "language": "english",
       "status": "sent",
@@ -106,7 +106,7 @@ data = res.json()["data"]
 }
 ```
 
-**Errors:** `400 VALIDATION_FAILED` (no contactable number, or a field wrong), `402 INSUFFICIENT_CREDITS` (the organisation's credits do not cover the whole batch; nothing is created), `403 FORBIDDEN` (the enrichment was made in the playground, or the TEST limit), `404 NOT_FOUND` (no such enrichment, or it is archived), `429 DAILY_CAP` (the key's daily allowance of different people is used up).
+**Errors:** `400 VALIDATION_FAILED` (no contactable number, or a field wrong), `402 INSUFFICIENT_CREDITS` (the organisation's credits do not cover the whole batch; nothing is created), `403 FORBIDDEN` (the TEST limit), `404 NOT_FOUND` (no such enrichment, or it is archived), `429 DAILY_CAP` (the key's daily allowance of different people is used up).
 
 ### List campaigns
 
@@ -128,8 +128,8 @@ Progress of one campaign: the funnel, numbers per channel and where candidates d
 {
   "success": true,
   "data": {
-    "campaign_id": "EC_261110103045123M4P8T2K6Q9R",
-    "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
+    "campaign_id": "EC_261121095438377TFUX07WN2XT42V",
+    "enrichment_id": "WF_EN_261121094822026AEDRUB86TQVSML",
     "kpis": {
       "uploaded": 3, "rejected": 1, "sent": 2,
       "sent_by": { "whatsapp": 2, "sms": 0, "call": 1 },
@@ -152,7 +152,7 @@ Progress of one campaign: the funnel, numbers per channel and where candidates d
 
 Nothing more goes out (no invite, follow-up, SMS or call) until you resume. Only a live campaign can be paused, and one whose candidates have all finished has nothing left to pause.
 
-**Scope:** `enrichment:campaigns` · **Idempotency-Key:** optional · **Errors:** `403 FORBIDDEN`, `404 NOT_FOUND`, `409 CONFLICT` (the campaign is not live, or every candidate has already finished)
+**Scope:** `enrichment:campaigns` · **Idempotency-Key:** optional · **Errors:** `404 NOT_FOUND`, `409 CONFLICT` (the campaign is not live, or every candidate has already finished)
 
 ### Resume a campaign
 
@@ -160,4 +160,4 @@ Nothing more goes out (no invite, follow-up, SMS or call) until you resume. Only
 
 Sending carries on where it stopped. Only a paused campaign can be resumed.
 
-**Scope:** `enrichment:campaigns` · **Idempotency-Key:** optional · **Errors:** `403 FORBIDDEN`, `404 NOT_FOUND`, `409 CONFLICT` (the campaign is not paused)
+**Scope:** `enrichment:campaigns` · **Idempotency-Key:** optional · **Errors:** `404 NOT_FOUND`, `409 CONFLICT` (the campaign is not paused)

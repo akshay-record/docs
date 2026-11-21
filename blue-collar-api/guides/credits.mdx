@@ -1,0 +1,107 @@
+---
+title: "Credits"
+description: "Check the credits you can spend and where they were used."
+---
+
+Campaigns spend credits when candidates are added to them. These two read-only endpoints let you check the balance before you send and see where credits went afterwards. Credits are added only by Record.
+
+| Needs | You get | Scope |
+|---|---|---|
+| Nothing | Your wallet and the price of one candidate per verification method | `credits:read` |
+| Optionally a `campaign_id`, a `candidate_id` or a time window | The entries that moved your wallet | `credits:read` |
+
+## Live and test credits
+
+Your organisation has two separate wallets at the same prices: **live** and **test**. The mode of your API key decides which one you see. A test key reads the test credits and a live key reads the live credits, never the other's. If a wallet was never set up (for example, test credits), `wallet_configured` is `false` and a campaign in that mode is refused until Record adds credits.
+
+## What a candidate costs
+
+Each verification method on a job has its own price per candidate:
+
+| `service` | Charged when |
+|---|---|
+| `skill_verification` | The job uses skill verification. |
+| `data_enrichment` | The job uses data enrichment. |
+
+A campaign whose job uses both is charged for each. A price of `null` means none is set for your organisation, and a campaign that needs that method is refused.
+
+## Endpoints
+
+### Get your credits
+`GET /credits`
+
+**Scope:** `credits:read`
+
+```json
+{
+  "success": true,
+  "data": {
+    "mode": "live",
+    "currency": "INR",
+    "account_status": "active",
+    "billing_configured": true,
+    "wallet_configured": true,
+    "wallet": { "granted": 50000, "consumed": 18250, "balance": 31750 },
+    "prices": [
+      { "service": "skill_verification", "label": "Scenario questions", "unit_price": 25 },
+      { "service": "data_enrichment", "label": "Enrichment", "unit_price": 5 }
+    ]
+  }
+}
+```
+
+`wallet.balance` is what a campaign can spend now. `wallet` is `null` when `wallet_configured` is `false`, and `billing_configured` is `false` when your organisation has no billing account at all.
+
+### List credit usage
+`GET /credits/usage`
+
+**Scope:** `credits:read`
+
+| Query | Meaning |
+|---|---|
+| `campaign_id` | Only the entries of this campaign. |
+| `candidate_id` | Only the entries of this candidate. |
+| `from`, `to` | Only entries at or after `from` and before `to` (ISO 8601). `from` must not be after `to`. |
+| `limit`, `cursor` | Paging: up to 200 per page, 50 by default. Pass `next_cursor` as `cursor` for the next page. |
+
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "ledger_id": "LGR_5f2c1a9b7d3e4f60",
+        "type": "debit",
+        "service": "skill_verification",
+        "service_label": "Scenario questions",
+        "quantity": 1,
+        "unit_price": 25,
+        "credits": -25,
+        "balance_after": 31750,
+        "campaign_id": "asmnt_0a1b2c3d4e5f6a7b",
+        "candidate_id": "cand_8f3a1c2e",
+        "created_at": "2026-10-05T12:41:11.000Z"
+      }
+    ],
+    "count": 1,
+    "total": 1,
+    "has_more": false,
+    "next_cursor": null,
+    "mode": "live",
+    "totals": { "credits_used": 25 }
+  }
+}
+```
+
+- Newest entries come first. `credits` is negative when credits were used and positive when they were given back (`type` is then `refund`, `reversal` or `adjustment`).
+- `totals.credits_used` covers **everything that matches your filters**, not just this page, net of anything given back.
+- Only blue-collar entries of your organisation and your key's mode are listed.
+
+## Errors
+
+| Error | When |
+|---|---|
+| 400 `VALIDATION_FAILED` | Malformed `campaign_id`, `candidate_id`, `from`, `to` or `cursor`, or `from` is after `to`. |
+| 403 `SCOPE_MISSING` | The key does not have `credits:read`. |
+
+Both calls also return the [common errors](/blue-collar-api/reference/errors).

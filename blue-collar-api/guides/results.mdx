@@ -3,7 +3,7 @@ title: "Results"
 description: "Step 4. What Record collected from each candidate, and how to get it."
 ---
 
-A result is what Record **collected** from the candidate: the answers to your screening questions, the skill-verification verdict and score, and other roles they are open to. It comes as one record per candidate. The best way to get it is the [webhook](/blue-collar-api/guides/webhooks); these endpoints are for catching up and checking.
+A result is what Record **collected** from the candidate: the answers to your screening questions, the skill-verification verdict and score, and other roles they are open to. It comes as one record per candidate. Read it with these endpoints and poll for changes with `updated_since`. `is_final` tells you whether a result can still gain parts.
 
 | Needs | You get | Scope |
 |---|---|---|
@@ -13,7 +13,7 @@ A result is what Record **collected** from the candidate: the answers to your sc
 
 | Status | Meaning |
 |---|---|
-| `pending` | Invited or answering; not finished. Read endpoints only, never sent by webhook. |
+| `pending` | Invited or answering; not finished. |
 | `completed` | Finished. `output` holds what Record collected. |
 | `declined` | The candidate said they are not interested. |
 | `failed` | No result could be got. `reason` is `undeliverable` (the invite could not be delivered) or `no_response` (every attempt went unanswered). |
@@ -34,10 +34,12 @@ A result is what Record **collected** from the candidate: the answers to your sc
   "attempts": 3,
   "language": "tamil",
   "location_name": "Coimbatore",
+  "pincode": "641001",
   "metadata": { "ats_application_id": "app_991" },
   "started_at": "2026-10-05T09:30:00.000Z",
   "completed_at": "2026-10-05T12:41:10.000Z",
   "updated_at": "2026-10-05T12:41:10.000Z",
+  "is_final": true,
   "output": {
     "enrichment": {
       "qualified": true,
@@ -92,12 +94,23 @@ A result is what Record **collected** from the candidate: the answers to your sc
 
 - **Your own fields.** Send up to 10 fields of your own as `metadata` (with `external_id`) when you add a candidate: they come back unchanged on every result.
 - **Sections.** A section of `output` appears only once its data exists and only if that check ran for the job.
+- **`is_final`.** `false` while the result can still gain parts, so read it again later. A `declined` or `failed` result is final at once. A `completed` result is final when every check the job switched on is in `output`, or 10 minutes after completion, even if a part never arrived.
 - **Screening answers** are keyed by the question text. `qualified` is `true` when every yes/no answer is the wanted one (the opposite of its `knockout`, or `yes` when no knockout is set), and `null` when there is no yes/no answer to judge. `answers_native` holds the original-language text of voice answers.
 - **Skill verification** gives the `verdict`, `total_score`, an `evidenceClass` per skill (`Sufficient`, `Partial`, `Minimal`, `Incorrect` or `No Response`), and how many questions were `answered` of `total`. `answers` holds what the candidate said to each question, with its `evidenceClass`, its `score` as score and maximum in one value (like `7.5/10`) and a `summary`.
 - **Other roles (post-screening).** `answers` in `interest_collection` holds what the candidate said for each role. Every entry in `transcripts` has a `label`, the `text` as Record shows it, and `transcript` (what they said, in their own words). `transcript` is left out of the entry when nothing was said, not sent as `null`.
 - **Video or phone call.** The recording depends on how the candidate verified. On the video link, each answer has a `video_url` and its length in `duration_seconds`, and `call_recording_url` is `null`. By phone call there is one recording of the whole call in `call_recording_url`, and every answer's `video_url` and `duration_seconds` are `null`. So check `call_recording_url` first: when it is set, there are no videos. A candidate who did both gets the more recent one.
-- **Location.** `location_name` is the town the candidate was in when they allowed location on the verification link (`null` when they denied it, it could not be looked up, or they verified by phone call); coordinates are never returned.
+- **Location.** `location_name` is the town the candidate was in when they allowed location on the verification link (`null` when they denied it, it could not be looked up, or they verified by phone call); `pincode` is that town's pincode (`null` when no pincode could be found); coordinates are never returned.
 - **Privacy.** Phone numbers are never returned.
+
+## Poll for results
+
+Read the results of a campaign with [`GET /campaigns/{campaign_id}/results`](#list-campaign-results). To get only what changed, pass `updated_since` with the time you started your last poll:
+
+1. Poll, passing `updated_since` (leave it out the first time) and page with `cursor` until `has_more` is `false`.
+2. Keep the time you started the poll. Use it as `updated_since` next time.
+3. A record with `is_final: false` can still change: it comes back in a later poll when it does. Stop reading a record once `is_final` is `true`.
+
+A record moves forward in `updated_at` whenever its status, its answers or its translations change.
 
 ## Endpoints
 
@@ -166,7 +179,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 `GET /campaigns/{campaign_id}/results`
 
-One record per candidate: `status` (pending, completed, declined, failed) and `output` with what Record collected. Prefer the webhook; use this to catch up or check.
+One record per candidate: `status` (pending, completed, declined, failed) and `output` with what Record collected. Poll it with `updated_since` (the time of your last poll) and read `is_final`.
 
 **Scope:** `results:read`
 
@@ -211,10 +224,12 @@ pcall GET "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/results?limit=50"
         "attempts": 3,
         "language": "tamil",
         "location_name": "Coimbatore",
+        "pincode": "641001",
         "metadata": { "ats_application_id": "app_991" },
         "started_at": "2026-10-05T09:30:00.000Z",
         "completed_at": "2026-10-05T12:41:10.000Z",
         "updated_at": "2026-10-05T12:41:10.000Z",
+        "is_final": true,
         "output": {
           "enrichment": {
             "qualified": true,
@@ -295,7 +310,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 `GET /results/{candidate_id}`
 
-The same record the webhook delivers for this candidate.
+One candidate's result record. Read `is_final` to know whether it can still change.
 
 **Scope:** `results:read`
 
@@ -331,10 +346,12 @@ pcall GET "/api/v1/partner/results/a3f1c9d2-7b44-4e0a-9c1d-5e6f7a8b9c01"
     "attempts": 3,
     "language": "tamil",
     "location_name": "Coimbatore",
+    "pincode": "641001",
     "metadata": { "ats_application_id": "app_991" },
     "started_at": "2026-10-05T09:30:00.000Z",
     "completed_at": "2026-10-05T12:41:10.000Z",
     "updated_at": "2026-10-05T12:41:10.000Z",
+    "is_final": true,
     "output": {
       "enrichment": {
         "qualified": true,
@@ -404,7 +421,7 @@ Can also return the [common errors](/blue-collar-api/reference/errors). [Full sc
 
 `GET /candidates/{candidate_id}/journey`
 
-What Record has done with one candidate so far, in order: the WhatsApp invite, their reply, reminders, the SMS and each voice call, then what is waiting. Use it to explain a `pending` or `failed` status. It is read on request; the webhook carries only the final result. Phone numbers are never returned.
+What Record has done with one candidate so far, in order: the WhatsApp invite, their reply, reminders, the SMS and each voice call, then what is waiting. Use it to explain a `pending` or `failed` status. It is read on request, for the path as well as the result. Phone numbers are never returned.
 
 **Scope:** `results:read`
 
@@ -566,7 +583,7 @@ Verdict, score, a rating per skill and a report link. Add `include=answers` to a
 
 | Query | Type | Description |
 |---|---|---|
-| `include` | `string` | `answers` adds what the candidate said. Needs the `results:answers` scope. |
+| `include` | `string` | `answers` adds what the candidate said: enrichment `answers[]`, skill verification `answers[]` (`answer` in English, `answer_native` in their own language) and interest `transcripts[]` (`text` in English, `transcript` in their own words). Needs the `results:answers` scope. |
 
 <CodeGroup>
 

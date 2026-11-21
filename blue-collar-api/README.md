@@ -15,7 +15,7 @@ Opens on http://localhost:3000. Check links with `npx mint broken-links`.
 | Path | Contents |
 |---|---|
 | `index.mdx`, `quickstart.mdx`, `authentication.mdx` | Get started |
-| `guides/` | Workflows, job mandates, skills, lookups, campaigns, results, webhooks, analytics. Each page ends with every endpoint of its step: fields, example, response and errors |
+| `guides/` | Workflows, job mandates, skills, lookups, campaigns, results, analytics. Each page ends with every endpoint of its step: fields, example, response and errors |
 | `reference/` | Requests and responses, errors, limits, statuses |
 | `api-reference/openapi.json` | Generated. Do not edit by hand |
 | `playground-signing.js` | Makes **Try it** work with only a key id and a secret (see below). Mintlify loads it on every page, but it only touches requests to the API host |

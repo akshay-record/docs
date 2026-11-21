@@ -67,7 +67,7 @@ description: "From an API key to your first candidate result in six calls."
   </Step>
 
   <Step title="Create a job mandate">
-    The mandate is the job: 5 to 10 skills (at most 3 with `verify: true`) and up to 5 screening questions (10 with enrichment only). Find skill ids with [`GET /skills/search`](/blue-collar-api/guides/skills#search-skills).
+    The mandate is the job: exactly 3 skills and 1 to 5 screening questions (10 with enrichment only). Find skill ids with [`GET /skills/search`](/blue-collar-api/guides/skills#search-skills).
 
     <CodeGroup>
 
@@ -81,8 +81,6 @@ description: "From an API key to your first candidate result in six calls."
         { skill_id: "sk_36440", verify: true },
         { skill_id: "sk_38973", verify: true },
         { skill_id: "sk_38824", verify: true },
-        { skill_id: "sk_2338" },
-        { skill_id: "sk_2452" },
       ],
       enrichment_questions: [
         { key: "has_licence", type: "yes_no", text: "Do you hold a valid forklift licence?", knockout: "no" },
@@ -101,8 +99,6 @@ description: "From an API key to your first candidate result in six calls."
             {"skill_id": "sk_36440", "verify": True},
             {"skill_id": "sk_38973", "verify": True},
             {"skill_id": "sk_38824", "verify": True},
-            {"skill_id": "sk_2338"},
-            {"skill_id": "sk_2452"},
         ],
         "enrichment_questions": [
             {"key": "has_licence", "type": "yes_no", "text": "Do you hold a valid forklift licence?", "knockout": "no"},
@@ -116,30 +112,12 @@ description: "From an API key to your first candidate result in six calls."
     The answer is `202 Accepted` with `status: "preparing"` while Record writes the skill questions. `GET /api/v1/partner/mandates/{mandate_id}` shows `ready` when they are done. You do not have to wait: a campaign created now goes out by itself once the mandate is ready.
   </Step>
 
-  <Step title="Register a webhook">
-    Give Record an HTTPS URL. Each finished candidate's result is posted there, signed with your secret. See [Webhooks](/blue-collar-api/guides/webhooks) to verify the signature.
-
-    <CodeGroup>
-
-    ```javascript JavaScript
-    await call("POST", "/api/v1/partner/webhooks/endpoints", {
-      url: "https://ats.example.com/hooks/record",
-      event_types: ["candidate.result"],
-    });
-    ```
-
-    ```python Python
-    call("POST", "/api/v1/partner/webhooks/endpoints", {
-        "url": "https://ats.example.com/hooks/record",
-        "event_types": ["candidate.result"],
-    })
-    ```
-
-    </CodeGroup>
-  </Step>
-
   <Step title="Create a campaign">
-    Send the candidates. With a TEST key, use only the phone numbers Record listed for your key.
+    Send the candidates. A TEST key contacts the numbers you send, just like a live key, so use your own number.
+
+    <Warning>
+      The phone number in these samples is a placeholder and may belong to a real person. Replace it with your own number, or a candidate who has agreed to be contacted, before you run it. The sample uses `"start": "now"`, which sends the invite straight away.
+    </Warning>
 
     <CodeGroup>
 
@@ -148,7 +126,7 @@ description: "From an API key to your first candidate result in six calls."
       mandate_id,
       name: "Warehouse Associate - October batch",
       start: "now",
-      candidates: [{ external_id: "cand-88231", name: "Ravi Kumar", phone: "+91 98765 43210" }],
+      candidates: [{ external_id: "cand-88231", name: "Ravi Kumar", phone: "9876543210" }],
     });
     const { campaign, accepted, rejected } = (await res.json()).data;
     ```
@@ -158,7 +136,7 @@ description: "From an API key to your first candidate result in six calls."
         "mandate_id": mandate_id,
         "name": "Warehouse Associate - October batch",
         "start": "now",
-        "candidates": [{"external_id": "cand-88231", "name": "Ravi Kumar", "phone": "+91 98765 43210"}],
+        "candidates": [{"external_id": "cand-88231", "name": "Ravi Kumar", "phone": "9876543210"}],
     })
     data = res.json()["data"]
     campaign_id = data["campaign"]["campaign_id"]
@@ -170,17 +148,17 @@ description: "From an API key to your first candidate result in six calls."
   </Step>
 
   <Step title="Receive results">
-    When a candidate finishes, your webhook receives a `candidate.result` event with their [result record](/blue-collar-api/guides/results). No public URL? [Pull the events](/blue-collar-api/guides/webhooks#pull-and-confirm-events) instead. To catch up or check, read the results directly:
+    Read the results of the campaign. A result has a `status` and, once the candidate has finished, an `output` with what Record collected. Poll for changes with `updated_since` (the time of your last poll) and read `is_final`: `false` means the result can still gain parts, so read it again later. See the [result record](/blue-collar-api/guides/results).
 
     <CodeGroup>
 
     ```javascript JavaScript
-    const res = await call("GET", `/api/v1/partner/campaigns/${campaign.campaign_id}/results`);
+    const res = await call("GET", `/api/v1/partner/campaigns/${campaign.campaign_id}/results?updated_since=2026-11-20T00:00:00Z`);
     const { items } = (await res.json()).data;
     ```
 
     ```python Python
-    res = call("GET", f"/api/v1/partner/campaigns/{campaign_id}/results")
+    res = call("GET", f"/api/v1/partner/campaigns/{campaign_id}/results?updated_since=2026-11-20T00:00:00Z")
     items = res.json()["data"]["items"]
     ```
 
