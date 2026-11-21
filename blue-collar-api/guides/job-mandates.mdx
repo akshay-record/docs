@@ -39,6 +39,7 @@ Repeat `GET /mandates/{mandate_id}` until `status` is `ready`. A campaign create
 | Skills | Yes | `PUT …/skills` |
 | Screening questions | Yes | `PUT …/questions` or `PUT …/enrichment-questions` (1–5, or 10 with enrichment only; your own text) |
 | Which checks run | Yes | `PUT …/methods` |
+| Open or closed | Yes | `POST …/close` and `POST …/reopen` |
 | Skill questions (the 3 Record writes) | Regenerate only | `PUT …/questions` with `skill_questions.regenerate`: all 3 or chosen slots. Record writes the new text; you cannot supply or edit it. Changing which skills have `verify: true` also regenerates them. Read them with `GET …/questions`. |
 | Interest questions | No | A fixed prompt per language ("Apart from the job, what other work have you done?"). You can only switch it on or off by adding or removing `interest_collection` in `methods`. |
 
@@ -335,7 +336,7 @@ List your organisation’s job mandates (made here or in the playground).
 
 | Query | Type | Description |
 |---|---|---|
-| `status` | `string` | One of `preparing`, `ready`, `failed`, `archived`. |
+| `status` | `string` | One of `preparing`, `ready`, `failed`, `closed`. |
 | `workflow_id` | `string` | At most 64 characters. |
 | `updated_since` | `string` | ISO 8601 date-time. |
 | `limit` | `integer` | 1 to 100, default 50. |
@@ -807,7 +808,7 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/methods" '{
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such mandate. |
-| 409 `CONFLICT` | Archived, still `preparing`, or too many changes this hour. |
+| 409 `CONFLICT` | Closed (reopen it first), still `preparing`, or too many changes this hour. |
 | 400 `VALIDATION_FAILED` | Empty / repeated methods, or a check without its data. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/update-mandate-checks)
@@ -880,7 +881,7 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/skills" '{
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such mandate. |
-| 409 `CONFLICT` | Archived, still `preparing`, or too many changes this hour. |
+| 409 `CONFLICT` | Closed (reopen it first), still `preparing`, or too many changes this hour. |
 | 422 `LIMIT_EXCEEDED` | More than 3 skills. |
 | 400 `VALIDATION_FAILED` | Unknown or repeated skill. |
 
@@ -984,8 +985,98 @@ pcall PUT "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/enrichment-
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such mandate. |
-| 409 `CONFLICT` | Archived, still `preparing`, or too many changes this hour. |
+| 409 `CONFLICT` | Closed (reopen it first), still `preparing`, or too many changes this hour. |
 | 422 `LIMIT_EXCEEDED` | More than 5 questions. |
 | 400 `VALIDATION_FAILED` | A `type` other than `yes_no` / `voice`, an `options` field, or a repeated `key`. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/replace-screening-questions)
+
+---
+
+### Close a job mandate
+
+`POST /mandates/{mandate_id}/close`
+
+Close the job when the role is filled or cancelled, as a recruiter does in the Record playground. It takes no new campaigns and its running campaigns are paused. Results already collected stay readable, and a closed mandate cannot be changed until it is reopened. Closing a closed mandate changes nothing.
+
+**Scope:** `mandates:write` · **Idempotency-Key:** required
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("POST", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/close");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("POST", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/close")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall POST "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/close"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "status": "closed"
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such mandate. |
+
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/close-a-job-mandate)
+
+---
+
+### Reopen a job mandate
+
+`POST /mandates/{mandate_id}/reopen`
+
+Reopen a closed job. It takes campaigns again and its paused campaigns resume, including a campaign you paused yourself. Reopening an open mandate changes nothing.
+
+**Scope:** `mandates:write` · **Idempotency-Key:** required
+
+<CodeGroup>
+
+```javascript JavaScript
+const res = await call("POST", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/reopen");
+const { data } = await res.json();
+```
+
+```python Python
+res = call("POST", "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/reopen")
+data = res.json()["data"]
+```
+
+```bash cURL
+pcall POST "/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/reopen"
+```
+
+```json 200 Response
+{
+  "success": true,
+  "data": {
+    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+    "job_id": "job-10452",
+    "status": "ready"
+  }
+}
+```
+
+</CodeGroup>
+
+| Error | When |
+|---|---|
+| 404 `NOT_FOUND` | No such mandate. |
+
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/job-mandates/reopen-a-job-mandate)

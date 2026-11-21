@@ -4442,7 +4442,7 @@
                 "preparing",
                 "ready",
                 "failed",
-                "archived"
+                "closed"
               ]
             },
             "example": "ready"
@@ -4536,7 +4536,7 @@
                                   "preparing",
                                   "ready",
                                   "failed",
-                                  "archived"
+                                  "closed"
                                 ]
                               },
                               "flow_version": {
@@ -5325,7 +5325,7 @@
                             "preparing",
                             "ready",
                             "failed",
-                            "archived"
+                            "closed"
                           ]
                         },
                         "flow_version": {
@@ -5508,7 +5508,7 @@
                             "preparing",
                             "ready",
                             "failed",
-                            "archived"
+                            "closed"
                           ]
                         },
                         "flow_version": {
@@ -6258,7 +6258,7 @@
                             "preparing",
                             "ready",
                             "failed",
-                            "archived"
+                            "closed"
                           ]
                         },
                         "flow_version": {
@@ -6486,7 +6486,7 @@
                             "preparing",
                             "ready",
                             "failed",
-                            "archived"
+                            "closed"
                           ]
                         },
                         "flow_version": {
@@ -6557,7 +6557,7 @@
             }
           },
           "409": {
-            "description": "`CONFLICT`: Archived, still `preparing`, or too many changes this hour.",
+            "description": "`CONFLICT`: Closed (reopen it first), still `preparing`, or too many changes this hour.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6746,7 +6746,7 @@
                             "preparing",
                             "ready",
                             "failed",
-                            "archived"
+                            "closed"
                           ]
                         },
                         "flow_version": {
@@ -6817,7 +6817,7 @@
             }
           },
           "409": {
-            "description": "`CONFLICT`: Archived, still `preparing`, or too many changes this hour.",
+            "description": "`CONFLICT`: Closed (reopen it first), still `preparing`, or too many changes this hour.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7017,7 +7017,7 @@
                             "preparing",
                             "ready",
                             "failed",
-                            "archived"
+                            "closed"
                           ]
                         },
                         "flow_version": {
@@ -7088,7 +7088,7 @@
             }
           },
           "409": {
-            "description": "`CONFLICT`: Archived, still `preparing`, or too many changes this hour.",
+            "description": "`CONFLICT`: Closed (reopen it first), still `preparing`, or too many changes this hour.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7217,7 +7217,7 @@
                             "preparing",
                             "ready",
                             "failed",
-                            "archived"
+                            "closed"
                           ]
                         },
                         "flow_version": {
@@ -7544,7 +7544,7 @@
                             "preparing",
                             "ready",
                             "failed",
-                            "archived"
+                            "closed"
                           ]
                         },
                         "flow_version": {
@@ -7615,7 +7615,7 @@
             }
           },
           "409": {
-            "description": "`CONFLICT`: Archived, still `preparing` (wait Retry-After), or over 10 changes this hour.",
+            "description": "`CONFLICT`: Closed (reopen it first), still `preparing` (wait Retry-After), or over 10 changes this hour.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7656,6 +7656,884 @@
             "lang": "python",
             "label": "Python",
             "source": "res = call(\"PUT\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/questions\", {\n    \"skill_questions\": {\n        \"regenerate\": \"all\"\n    }\n})\ndata = res.json()[\"data\"]"
+          }
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
+      }
+    },
+    "/mandates/{mandate_id}/close": {
+      "post": {
+        "operationId": "closeMandateById",
+        "tags": [
+          "Job mandates"
+        ],
+        "summary": "Close a job mandate",
+        "description": "Close the job when the role is filled or cancelled, as a recruiter does in the Record playground: it takes no new campaigns and its running campaigns are paused. Results stay readable. Closing a closed mandate changes nothing.\n\n**Scope:** `mandates:write` · **Idempotency-Key:** optional",
+        "parameters": [
+          {
+            "name": "mandate_id",
+            "in": "path",
+            "required": true,
+            "description": "Record's mandate id (B_JM_..., or JM_... on older mandates): the mandate_id returned when you create the mandate",
+            "schema": {
+              "type": "string",
+              "pattern": "^(?:B_)?JM_[A-Z0-9]{10,40}$"
+            },
+            "example": "JM_261009101612456H3N8W2L5C9V1Z4"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 255
+            },
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The closed mandate",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "const": true,
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "mandate_id": {
+                          "type": "string"
+                        },
+                        "job_id": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "Your job id; null for a mandate created without one (it is known by its mandate_id)"
+                        },
+                        "workflow_id": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "preparing",
+                            "ready",
+                            "failed",
+                            "closed"
+                          ]
+                        },
+                        "flow_version": {
+                          "anyOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "Counts the changes made through this API; null for a playground mandate the API has not changed yet"
+                        },
+                        "methods": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "data_enrichment",
+                              "skill_verification",
+                              "interest_collection"
+                            ]
+                          }
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "company_name": {
+                          "type": "string"
+                        },
+                        "location_type": {
+                          "type": "string",
+                          "enum": [
+                            "india",
+                            "abroad"
+                          ],
+                          "description": "india when the job is in India (the default for mandates made before the Abroad option existed)"
+                        },
+                        "location": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "city": {
+                                  "type": "string"
+                                },
+                                "state": {
+                                  "type": "string"
+                                },
+                                "pincode": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "The place in India; null for an abroad job, or when none was given"
+                        },
+                        "countries": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "string",
+                                "description": "ISO 3166-1 alpha-2, e.g. SG"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "description": "The countries of an abroad job, in the order picked; empty for an India job"
+                        },
+                        "location_names": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Every place (India) or country name (abroad) the playground shows for the job, in full"
+                        },
+                        "experience": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "min_years": {
+                                  "type": "number"
+                                },
+                                "max_years": {
+                                  "type": "number"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "openings": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "salary": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "min": {
+                                  "type": "number"
+                                },
+                                "max": {
+                                  "type": "number"
+                                },
+                                "currency": {
+                                  "type": "string"
+                                },
+                                "period": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "shift": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "employment_type": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "skills": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "skill_id": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "name": {
+                                "type": "string",
+                                "description": "The current name (it follows taxonomy renames)"
+                              },
+                              "verify": {
+                                "type": "boolean"
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "active",
+                                  "pending",
+                                  "not_found"
+                                ]
+                              }
+                            }
+                          }
+                        },
+                        "enrichment_questions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "text": {
+                                "type": "string"
+                              },
+                              "knockout": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "required": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        },
+                        "warnings": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "is_external": {
+                          "type": "boolean",
+                          "description": "true when the mandate was created through the Partner API, false when it was made in the Record playground"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "updated_at": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+                    "job_id": "job-10452",
+                    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+                    "status": "closed",
+                    "flow_version": 1,
+                    "methods": [
+                      "data_enrichment",
+                      "skill_verification",
+                      "interest_collection"
+                    ],
+                    "title": "Warehouse Associate (Forklift)",
+                    "company_name": "Acme Logistics Pvt Ltd",
+                    "location_type": "india",
+                    "location": {
+                      "city": "Chennai",
+                      "state": "Tamil Nadu",
+                      "pincode": "600001"
+                    },
+                    "countries": [],
+                    "location_names": [
+                      "Chennai, Tamil Nadu"
+                    ],
+                    "experience": {
+                      "min_years": 1,
+                      "max_years": 5
+                    },
+                    "openings": 12,
+                    "salary": {
+                      "min": 18000,
+                      "max": 24000,
+                      "currency": "INR",
+                      "period": "month"
+                    },
+                    "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
+                    "shift": "Day shift",
+                    "employment_type": "Full-time",
+                    "skills": [
+                      {
+                        "skill_id": "sk_36440",
+                        "name": "Forklift Basic Operation",
+                        "verify": true,
+                        "status": "active"
+                      },
+                      {
+                        "skill_id": "sk_38973",
+                        "name": "Pallet Jack Safety Check",
+                        "verify": true,
+                        "status": "active"
+                      },
+                      {
+                        "skill_id": "sk_38824",
+                        "name": "Packing Station Setup",
+                        "verify": true,
+                        "status": "active"
+                      }
+                    ],
+                    "enrichment_questions": [
+                      {
+                        "key": "has_licence",
+                        "type": "yes_no",
+                        "text": "Do you hold a valid forklift licence?",
+                        "knockout": "no",
+                        "required": true
+                      },
+                      {
+                        "key": "why_this_job",
+                        "type": "voice",
+                        "text": "Tell us in your own words why you want this job.",
+                        "knockout": null,
+                        "required": false
+                      }
+                    ],
+                    "warnings": [],
+                    "is_external": true,
+                    "created_at": "2026-10-09T10:16:12.456Z",
+                    "updated_at": "2026-10-09T10:16:12.456Z"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`NOT_FOUND`: No such mandate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "SecretKey": []
+          }
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "pcall POST \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/close\""
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const res = await call(\"POST\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/close\");\nconst { data } = await res.json();"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "res = call(\"POST\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/close\")\ndata = res.json()[\"data\"]"
+          }
+        ],
+        "x-mint": {
+          "metadata": {
+            "playground": "interactive"
+          }
+        }
+      }
+    },
+    "/mandates/{mandate_id}/reopen": {
+      "post": {
+        "operationId": "reopenMandateById",
+        "tags": [
+          "Job mandates"
+        ],
+        "summary": "Reopen a job mandate",
+        "description": "Reopen a closed job: it takes campaigns again and its paused campaigns resume, including one you paused yourself. Reopening an open mandate changes nothing.\n\n**Scope:** `mandates:write` · **Idempotency-Key:** optional",
+        "parameters": [
+          {
+            "name": "mandate_id",
+            "in": "path",
+            "required": true,
+            "description": "Record's mandate id (B_JM_..., or JM_... on older mandates): the mandate_id returned when you create the mandate",
+            "schema": {
+              "type": "string",
+              "pattern": "^(?:B_)?JM_[A-Z0-9]{10,40}$"
+            },
+            "example": "JM_261009101612456H3N8W2L5C9V1Z4"
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 255
+            },
+            "description": "Optional. A retry with the same key returns the first answer (kept 24 h). Leave empty in Try it: a new one is made for every call."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The reopened mandate",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "const": true,
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "mandate_id": {
+                          "type": "string"
+                        },
+                        "job_id": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "Your job id; null for a mandate created without one (it is known by its mandate_id)"
+                        },
+                        "workflow_id": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "preparing",
+                            "ready",
+                            "failed",
+                            "closed"
+                          ]
+                        },
+                        "flow_version": {
+                          "anyOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "Counts the changes made through this API; null for a playground mandate the API has not changed yet"
+                        },
+                        "methods": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "data_enrichment",
+                              "skill_verification",
+                              "interest_collection"
+                            ]
+                          }
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "company_name": {
+                          "type": "string"
+                        },
+                        "location_type": {
+                          "type": "string",
+                          "enum": [
+                            "india",
+                            "abroad"
+                          ],
+                          "description": "india when the job is in India (the default for mandates made before the Abroad option existed)"
+                        },
+                        "location": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "city": {
+                                  "type": "string"
+                                },
+                                "state": {
+                                  "type": "string"
+                                },
+                                "pincode": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ],
+                          "description": "The place in India; null for an abroad job, or when none was given"
+                        },
+                        "countries": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "string",
+                                "description": "ISO 3166-1 alpha-2, e.g. SG"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "description": "The countries of an abroad job, in the order picked; empty for an India job"
+                        },
+                        "location_names": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Every place (India) or country name (abroad) the playground shows for the job, in full"
+                        },
+                        "experience": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "min_years": {
+                                  "type": "number"
+                                },
+                                "max_years": {
+                                  "type": "number"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "openings": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "salary": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "min": {
+                                  "type": "number"
+                                },
+                                "max": {
+                                  "type": "number"
+                                },
+                                "currency": {
+                                  "type": "string"
+                                },
+                                "period": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "shift": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "employment_type": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "skills": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "skill_id": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "name": {
+                                "type": "string",
+                                "description": "The current name (it follows taxonomy renames)"
+                              },
+                              "verify": {
+                                "type": "boolean"
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "active",
+                                  "pending",
+                                  "not_found"
+                                ]
+                              }
+                            }
+                          }
+                        },
+                        "enrichment_questions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "text": {
+                                "type": "string"
+                              },
+                              "knockout": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "required": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        },
+                        "warnings": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "is_external": {
+                          "type": "boolean",
+                          "description": "true when the mandate was created through the Partner API, false when it was made in the Record playground"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "updated_at": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "mandate_id": "JM_261009101612456H3N8W2L5C9V1Z4",
+                    "job_id": "job-10452",
+                    "workflow_id": "WF_BG_261009101530123K7M2P9Q4X7R5T8",
+                    "status": "ready",
+                    "flow_version": 1,
+                    "methods": [
+                      "data_enrichment",
+                      "skill_verification",
+                      "interest_collection"
+                    ],
+                    "title": "Warehouse Associate (Forklift)",
+                    "company_name": "Acme Logistics Pvt Ltd",
+                    "location_type": "india",
+                    "location": {
+                      "city": "Chennai",
+                      "state": "Tamil Nadu",
+                      "pincode": "600001"
+                    },
+                    "countries": [],
+                    "location_names": [
+                      "Chennai, Tamil Nadu"
+                    ],
+                    "experience": {
+                      "min_years": 1,
+                      "max_years": 5
+                    },
+                    "openings": 12,
+                    "salary": {
+                      "min": 18000,
+                      "max": 24000,
+                      "currency": "INR",
+                      "period": "month"
+                    },
+                    "description": "Pick, pack and load orders in a busy warehouse. Forklift licence preferred.",
+                    "shift": "Day shift",
+                    "employment_type": "Full-time",
+                    "skills": [
+                      {
+                        "skill_id": "sk_36440",
+                        "name": "Forklift Basic Operation",
+                        "verify": true,
+                        "status": "active"
+                      },
+                      {
+                        "skill_id": "sk_38973",
+                        "name": "Pallet Jack Safety Check",
+                        "verify": true,
+                        "status": "active"
+                      },
+                      {
+                        "skill_id": "sk_38824",
+                        "name": "Packing Station Setup",
+                        "verify": true,
+                        "status": "active"
+                      }
+                    ],
+                    "enrichment_questions": [
+                      {
+                        "key": "has_licence",
+                        "type": "yes_no",
+                        "text": "Do you hold a valid forklift licence?",
+                        "knockout": "no",
+                        "required": true
+                      },
+                      {
+                        "key": "why_this_job",
+                        "type": "voice",
+                        "text": "Tell us in your own words why you want this job.",
+                        "knockout": null,
+                        "required": false
+                      }
+                    ],
+                    "warnings": [],
+                    "is_external": true,
+                    "created_at": "2026-10-09T10:16:12.456Z",
+                    "updated_at": "2026-10-09T10:16:12.456Z"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`NOT_FOUND`: No such mandate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "SecretKey": []
+          }
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "pcall POST \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/reopen\""
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const res = await call(\"POST\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/reopen\");\nconst { data } = await res.json();"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "res = call(\"POST\", \"/api/v1/partner/mandates/JM_261009101612456H3N8W2L5C9V1Z4/reopen\")\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
@@ -8074,7 +8952,7 @@
             }
           },
           "409": {
-            "description": "`CONFLICT`: Mandate is archived, or campaign `external_id` is taken.",
+            "description": "`CONFLICT`: Mandate is closed, or campaign `external_id` is taken.",
             "content": {
               "application/json": {
                 "schema": {
@@ -8978,7 +9856,7 @@
             }
           },
           "409": {
-            "description": "`CONFLICT`: Already started, or the job is archived.",
+            "description": "`CONFLICT`: Already started, or the job is closed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -9372,7 +10250,7 @@
             }
           },
           "409": {
-            "description": "`CONFLICT`: Campaign is completed / cancelled, or the job is archived.",
+            "description": "`CONFLICT`: Campaign is completed / cancelled, or the job is closed.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10372,7 +11250,7 @@
             }
           },
           "409": {
-            "description": "`CONFLICT`: Not paused, or the job is archived.",
+            "description": "`CONFLICT`: Not paused, or the job is closed.",
             "content": {
               "application/json": {
                 "schema": {
