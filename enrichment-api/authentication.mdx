@@ -24,7 +24,7 @@ Record switches the Enrichment API on per key by granting scopes. Any one scope 
 | Scope | Lets the key |
 |---|---|
 | `enrichment:read` | Read enrichments, campaigns, candidates and results. |
-| `enrichment:write` | Create and archive enrichments. Also includes everything in `enrichment:read`. |
+| `enrichment:write` | Create enrichments. Also includes everything in `enrichment:read`. |
 | `enrichment:campaigns` | Create, pause and resume campaigns. **Contacts real people and spends credits.** Also includes `enrichment:read`. |
 | `enrichment:credits` | Read your available credits and where they were spent. Changes nothing, and includes no other scope. |
 
@@ -32,14 +32,12 @@ Record switches the Enrichment API on per key by granting scopes. Any one scope 
   `enrichment:write` alone cannot create a campaign. Starting a campaign needs `enrichment:campaigns`, so a key that only manages questions can never message your candidates.
 </Warning>
 
-Receiving results by webhook or the pull feed also needs `webhooks:manage` or `events:read`; see [Webhooks](/enrichment-api/guides/webhooks).
-
 A key with no scopes is not enabled and every call answers `403 SCOPE_MISSING`. Ask your Record contact to grant the scopes you need.
 
 ## What you can read and change
 
 - **Read:** every enrichment of your organisation in the key's mode, made through the API or on the Enrichment page of the playground. `is_external` says which.
-- **Change:** all of them, whichever way they were made: archive an enrichment, add a campaign to it, and pause or resume its campaigns. What is created in the playground can be managed through the API too. Enrichments themselves are never edited: different questions mean a new enrichment.
+- **Change:** all of them, whichever way they were made: add a campaign to it, and pause or resume its campaigns. What is created in the playground can be managed through the API too. Enrichments themselves are never edited: different questions mean a new enrichment.
 - **Other organisations:** their data answers `404 NOT_FOUND`, never `403`.
 
 ## Test and live

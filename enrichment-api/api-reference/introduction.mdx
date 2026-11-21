@@ -30,11 +30,9 @@ Every endpoint page has a **Try it** button. Enter your key id in `x-api-key` an
 
 | Group | What it covers |
 |---|---|
-| Enrichments | Create, list, read and archive an enrichment, and its overview. |
+| Enrichments | Create, list and read an enrichment, and its overview. |
 | Campaigns | Send candidates, follow progress, pause and resume. |
 | Candidates | Where each candidate stands, and one candidate in full. |
 | Results | The final result of each candidate who finished. |
-| Webhooks | Register the URL that receives each `enrichment.result`, send a test event, replay and read the delivery log. These are the Blue Collar webhook calls, shown here so you can set up and test results in one place. |
-| Events | Pull `enrichment.result` events instead of receiving them. |
 
-Two ways to get results: [poll `GET /results`](/enrichment-api/guides/candidates-and-results#two-ways-to-get-results), or have them sent to you. The step-by-step, including how to test, is in the [Webhooks guide](/enrichment-api/guides/webhooks#test-it-end-to-end).
+Results are read with [`GET /results`](/enrichment-api/guides/candidates-and-results#how-to-get-results): each one is final as soon as it appears.
