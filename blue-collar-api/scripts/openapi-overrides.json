@@ -165,9 +165,9 @@
       ]
     ]
   },
-  "extractSkills": {
-    "title": "Extract skills from a job",
-    "description": "Suggest skills from a job title and description. Nothing is saved.",
+  "suggestSkills": {
+    "title": "Suggest skills for a job",
+    "description": "Suggest skills for a job, the same way the Record playground does: an AI model reads the title and description and picks up to 5 skills of this taxonomy. Nothing is saved. If the AI service is unavailable, `source` is `keyword` and the skills named in the text are returned.",
     "errors": [
       [
         400,
