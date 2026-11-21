@@ -24,7 +24,7 @@ An enrichment is a set of questions plus the window candidates are contacted in.
 
 | Field | Description |
 |---|---|
-| `language` | Opening language of messages and calls: `english`, `hindi`, `tamil`, `kannada`, `telugu` or `malayalam`. The candidate can switch. |
+| `language` | Optional, default `english`. Opening language of messages and calls: `english`, `hindi`, `tamil`, `kannada`, `telugu`, `malayalam`, `bengali` or `marathi`. The candidate can switch. |
 | `start_time`, `end_time` | The daily window, `HH:MM` in 24 hours. `start_time` must be before `end_time`. |
 | `days` | `mon` to `sun`, each listed once. |
 | `timezone` | An IANA time zone, such as `Asia/Kolkata`. |
@@ -58,7 +58,7 @@ Returns `enrichment_id`.
 | Field | Type | Description |
 |---|---|---|
 | `name` | `string` | **Required.** 1–120 characters. |
-| `schedule` | `object` | **Required.** All six fields above. |
+| `schedule` | `object` | **Required.** Send `start_time`, `end_time`, `days`, `timezone`, `max_retries` and `retry_after_hours`. `language` is optional and defaults to `english`. |
 | `questions` | `array<object>` | **Required.** 1–15 of `{ question_text, type, preferred_answer?, required? }`. |
 | `external_id` | `string` | Your own id. Unique per organisation and mode. |
 | `description` | `string` | Optional, up to 500 characters. |

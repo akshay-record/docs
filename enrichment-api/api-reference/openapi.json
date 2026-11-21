@@ -84,7 +84,9 @@
                           "hindi",
                           "kannada",
                           "telugu",
-                          "malayalam"
+                          "malayalam",
+                          "bengali",
+                          "marathi"
                         ],
                         "default": "english",
                         "description": "Opening language of messages and calls (the candidate can switch)"
@@ -144,7 +146,7 @@
                       "retry_after_hours"
                     ],
                     "additionalProperties": false,
-                    "description": "Required. Send all six: `language` (english, hindi, tamil, kannada, telugu, malayalam), `start_time` and `end_time` (\"HH:MM\", start before end), `days` (mon…sun, each once), `timezone` (IANA), `max_retries` 1 to 20, `retry_after_hours` 1 to 48."
+                    "description": "Required. Send these six: `start_time` and `end_time` (\"HH:MM\", start before end), `days` (mon…sun, each once), `timezone` (IANA), `max_retries` 1 to 20 and `retry_after_hours` 1 to 48. `language` is optional and defaults to `english`: english, hindi, tamil, kannada, telugu, malayalam, bengali or marathi."
                   },
                   "questions": {
                     "type": "array",
@@ -575,7 +577,9 @@
                 "hindi",
                 "kannada",
                 "telugu",
-                "malayalam"
+                "malayalam",
+                "bengali",
+                "marathi"
               ]
             }
           },
@@ -1364,7 +1368,9 @@
                       "hindi",
                       "kannada",
                       "telugu",
-                      "malayalam"
+                      "malayalam",
+                      "bengali",
+                      "marathi"
                     ],
                     "description": "Invite language; defaults to the enrichment's schedule language"
                   },
