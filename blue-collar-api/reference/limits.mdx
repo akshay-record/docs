@@ -28,7 +28,8 @@ Every key has a bucket for the whole key and one per endpoint class. With `x-on-
 | `reads` | Reads | 20 (40) | 1,200 | |
 | `skillsSearch` | Skill search and browse | 100 (200) | 4,000 | |
 | `skillsLookup` | `GET /skills/{skill_id}`, `POST /skills/lookup` | 20 (40) | 600 | |
-| `skillsMatch` | `POST /skills/match`, `POST /skills/extract` | 10 (20) | 300 | 50,000 |
+| `skillsMatch` | `POST /skills/match` | 10 (20) | 300 | 50,000 |
+| `skillsSuggest` | `POST /skills/suggest` | 2 (5) | 60 | 2,000 |
 | `skillRequests` | `POST /skill-requests` | 2 (5) | 60 | 2,000 |
 | `workflowWrites` | Workflow writes | 5 (10) | 60 | 2,000 |
 | `mandateWrites` | Mandate writes | 10 (20) | 300 | 20,000 |

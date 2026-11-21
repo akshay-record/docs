@@ -12,7 +12,7 @@ Every mandate needs skills from Record's skill taxonomy. Store the `skill_id` va
 | One skill | `GET /skills/{skill_id}` |
 | Re-check stored ids | `POST /skills/lookup` (up to 50) |
 | Map free text to skills | `POST /skills/match`. `suggestion` is `auto` (use it), `confirm` (ask the recruiter) or `none`. |
-| Suggest from a job description | `POST /skills/extract` |
+| Suggest skills for a job | `POST /skills/suggest` |
 | Ask for a missing skill | `POST /skill-requests` |
 
 ## Missing skills
@@ -557,11 +557,11 @@ Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_
 
 ---
 
-### Extract skills from a job
+### Suggest skills for a job
 
-`POST /skills/extract`
+`POST /skills/suggest`
 
-Suggest skills from a job title and description. Nothing is saved.
+Suggest skills for a job, the same way the Record playground does: an AI model reads the title and description and picks the skills that fit the role. You get up to 5 skills of this taxonomy for the recruiter to confirm. Nothing is saved. If the AI service is unavailable, `source` is `keyword` and you get the skills named in the text instead.
 
 **Scope:** `skills:read` · **Idempotency-Key:** optional
 
@@ -574,7 +574,7 @@ Suggest skills from a job title and description. Nothing is saved.
 <CodeGroup>
 
 ```javascript JavaScript
-const res = await call("POST", "/api/v1/partner/skills/extract", {
+const res = await call("POST", "/api/v1/partner/skills/suggest", {
   "title": "Forklift Truck Operator",
   "description": "Must hold Forklift Certification. Order Picking and Loading And Unloading of trucks."
 });
@@ -582,7 +582,7 @@ const { data } = await res.json();
 ```
 
 ```python Python
-res = call("POST", "/api/v1/partner/skills/extract", {
+res = call("POST", "/api/v1/partner/skills/suggest", {
     "title": "Forklift Truck Operator",
     "description": "Must hold Forklift Certification. Order Picking and Loading And Unloading of trucks."
 })
@@ -590,7 +590,7 @@ data = res.json()["data"]
 ```
 
 ```bash cURL
-pcall POST "/api/v1/partner/skills/extract" '{
+pcall POST "/api/v1/partner/skills/suggest" '{
   "title": "Forklift Truck Operator",
   "description": "Must hold Forklift Certification. Order Picking and Loading And Unloading of trucks."
 }'
@@ -600,6 +600,7 @@ pcall POST "/api/v1/partner/skills/extract" '{
 {
   "success": true,
   "data": {
+    "source": "ai",
     "items": [
       {
         "skill": {
@@ -666,7 +667,7 @@ pcall POST "/api/v1/partner/skills/extract" '{
 |---|---|
 | 400 `VALIDATION_FAILED` | Missing `title`. |
 
-Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/skills/extract-skills-from-a-job)
+Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/skills/suggest-skills-for-a-job)
 
 ---
 
