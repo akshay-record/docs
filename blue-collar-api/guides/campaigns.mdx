@@ -174,7 +174,7 @@ Save `data.campaign.campaign_id` for the next step.
 | 402 `INSUFFICIENT_CREDITS` | Not enough credits (1 per candidate when skill verification is on). |
 | 403 `FORBIDDEN` | TEST key with a number not on its list. |
 | 404 `NOT_FOUND` | No such mandate. |
-| 409 `CONFLICT` | Mandate is archived, or campaign `external_id` is taken. |
+| 409 `CONFLICT` | Mandate is closed, or campaign `external_id` is taken. |
 | 429 `DAILY_CAP` | 2,000 different candidates already added today. |
 
 Can also return idempotency errors (`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/campaigns/create-a-campaign)
@@ -376,7 +376,7 @@ pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/start"
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such campaign. |
-| 409 `CONFLICT` | Already started, or the job is archived. |
+| 409 `CONFLICT` | Already started, or the job is closed. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/campaigns/start-a-campaign)
 
@@ -466,7 +466,7 @@ pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/candidates" '{
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such campaign. |
-| 409 `CONFLICT` | Campaign is completed / cancelled, or the job is archived. |
+| 409 `CONFLICT` | Campaign is completed / cancelled, or the job is closed. |
 | 422 `LIMIT_EXCEEDED` | More than 20,000 candidates in the campaign. |
 | 402 `INSUFFICIENT_CREDITS` | Not enough credits. |
 | 400 `VALIDATION_FAILED` | No usable phone number in the batch. |
@@ -634,6 +634,6 @@ pcall POST "/api/v1/partner/campaigns/asmnt_9f2c41d7a8b3e65f/resume"
 | Error | When |
 |---|---|
 | 404 `NOT_FOUND` | No such campaign. |
-| 409 `CONFLICT` | Not paused, or the job is archived. |
+| 409 `CONFLICT` | Not paused, or the job is closed. |
 
 Can also return idempotency errors (`IDEMPOTENCY_IN_PROGRESS`, `IDEMPOTENCY_KEY_REUSED`) and the [common errors](/blue-collar-api/reference/errors). [Full schema](/api-reference/campaigns/resume-a-campaign)

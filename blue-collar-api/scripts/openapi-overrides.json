@@ -330,7 +330,7 @@
       [
         409,
         "CONFLICT",
-        "Archived, still `preparing` (wait Retry-After), or over 10 changes this hour."
+        "Closed (reopen it first), still `preparing` (wait Retry-After), or over 10 changes this hour."
       ]
     ]
   },
@@ -372,7 +372,7 @@
       [
         409,
         "CONFLICT",
-        "Archived, still `preparing`, or too many changes this hour."
+        "Closed (reopen it first), still `preparing`, or too many changes this hour."
       ],
       [
         400,
@@ -393,7 +393,7 @@
       [
         409,
         "CONFLICT",
-        "Archived, still `preparing`, or too many changes this hour."
+        "Closed (reopen it first), still `preparing`, or too many changes this hour."
       ],
       [
         422,
@@ -419,7 +419,7 @@
       [
         409,
         "CONFLICT",
-        "Archived, still `preparing`, or too many changes this hour."
+        "Closed (reopen it first), still `preparing`, or too many changes this hour."
       ],
       [
         422,
@@ -467,7 +467,7 @@
       [
         409,
         "CONFLICT",
-        "Mandate is archived, or campaign `external_id` is taken."
+        "Mandate is closed, or campaign `external_id` is taken."
       ],
       [
         429,
@@ -516,7 +516,7 @@
       [
         409,
         "CONFLICT",
-        "Already started, or the job is archived."
+        "Already started, or the job is closed."
       ]
     ]
   },
@@ -538,7 +538,7 @@
       [
         409,
         "CONFLICT",
-        "Campaign is completed / cancelled, or the job is archived."
+        "Campaign is completed / cancelled, or the job is closed."
       ],
       [
         422,
@@ -613,7 +613,7 @@
       [
         409,
         "CONFLICT",
-        "Not paused, or the job is archived."
+        "Not paused, or the job is closed."
       ]
     ]
   },
@@ -753,6 +753,28 @@
         400,
         "VALIDATION_FAILED",
         "Malformed `campaign_id`, `candidate_id`, `from`, `to` or `cursor`, or `from` is after `to`."
+      ]
+    ]
+  },
+  "closeMandateById": {
+    "title": "Close a job mandate",
+    "description": "Close the job when the role is filled or cancelled, as a recruiter does in the Record playground: it takes no new campaigns and its running campaigns are paused. Results stay readable. Closing a closed mandate changes nothing.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such mandate."
+      ]
+    ]
+  },
+  "reopenMandateById": {
+    "title": "Reopen a job mandate",
+    "description": "Reopen a closed job: it takes campaigns again and its paused campaigns resume, including one you paused yourself. Reopening an open mandate changes nothing.",
+    "errors": [
+      [
+        404,
+        "NOT_FOUND",
+        "No such mandate."
       ]
     ]
   }

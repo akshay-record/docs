@@ -82,7 +82,7 @@ Send an `Idempotency-Key` header (a new UUID) on writes. A retry with the same k
 - **Reads** cover everything in your organisation, project and mode: objects made through the API and in the Record playground. `is_external: true` marks the ones made through the API.
 - **Changes** apply to everything in your organisation, project and mode, whether it was made in the playground or through the API. `is_external` keeps saying where an object came from.
 - **Test and live** data are separate. A TEST key never sees live objects, and the reverse.
-- **No deletes.** Nothing is deleted or archived through the API, and results stay readable.
+- **No deletes.** Nothing is deleted through the API, and results stay readable. A job can be closed and reopened.
 - Another organisation's objects answer `404 NOT_FOUND`.
 
 ## Retrying

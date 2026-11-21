@@ -28,7 +28,7 @@ Every failure has the same shape. Match on `error.code`, never on the message. F
 | 403 | `FORBIDDEN` | A TEST key used a number that is not on its list. | With a TEST key use the numbers Record listed. |
 | 403 | `HTTPS_REQUIRED` | Plain `http://` is refused on the live host. | Call the `https://` address. |
 | 404 | `NOT_FOUND` | No such object for this key’s organisation, project and mode. | Check the id. TEST and LIVE data are separate. |
-| 409 | `CONFLICT` | Wrong state or the id is taken: archived, already started, duplicate `external_id` / `job_id`, still preparing. | Read the message; wait for `Retry-After`, or use a new id. |
+| 409 | `CONFLICT` | Wrong state or the id is taken: closed, archived, already started, duplicate `external_id` / `job_id`, still preparing. | Read the message; wait for `Retry-After`, or use a new id. |
 | 409 | `IDEMPOTENCY_IN_PROGRESS` | The first call with this `Idempotency-Key` is still running. | Wait `Retry-After` (1 s) and retry with the same key. |
 | 413 | `PAYLOAD_TOO_LARGE` | The body is bigger than 256 KB. | Send fewer items per call (for example under 1,000 candidates). |
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | The body was not sent as JSON. | Send `Content-Type: application/json` (UTF-8). |
