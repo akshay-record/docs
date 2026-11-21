@@ -7,7 +7,7 @@ Limits use a token bucket per key and endpoint class, plus a whole-key bucket. E
 
 | Endpoints | Class | Per second (burst) | Per minute | Per day (IST) |
 |---|---|---|---|---|
-| Create and archive an enrichment | `enrichmentWrites` | 5 (10) | 60 | 2,000 |
+| Create an enrichment | `enrichmentWrites` | 5 (10) | 60 | 2,000 |
 | Create, pause and resume a campaign | `campaignWrites` | 2 (5) | 30 | 500 |
 | Every read | `reads` | 20 (40) | 1,200 | none |
 | All calls of a key | `wholeKey` | 150 (300) | 6,000 | none |

@@ -13,16 +13,9 @@ Read candidates while a campaign runs, and results once they finish. Both carry 
   Answers are **self-reported and not verified**. No verification link is ever returned.
 </Note>
 
-## Two ways to get results
+## How to get results
 
-| | Poll | Webhook |
-|---|---|---|
-| You call | [`GET /results`](#list-results) | Nothing. Record calls your URL. |
-| When you hear | When you ask | Usually within a few seconds of a candidate finishing |
-| Setup | Your key id and secret | An HTTPS endpoint, registered once ([Webhooks](/enrichment-api/guides/webhooks)) |
-| Use it for | Catching up, reports, a safety net | Putting results into your ATS as they happen |
-
-Both return the same record, so one parser serves both. Many integrations use the webhook and poll `/results` now and then to catch up.
+Read them with [`GET /results`](#list-results). A result is written once, when a candidate finishes or declines, and never changes, so it is final the moment it appears. Poll as often as suits you (reads have their own [rate limit](/enrichment-api/reference/limits)), page with `cursor` until `has_more` is false, and skip a `result_id` you already stored. Many integrations poll every minute or two, and again after starting a campaign.
 
 ## Candidate or result?
 
@@ -61,15 +54,15 @@ Every candidate of an enrichment and where each stands, most recently finished f
         "phone_number": "+919876543210",
         "status": "completed",
         "language": "english",
-        "campaign_id": "EC_261110103045123M4P8T2K6Q9R",
+        "campaign_id": "EC_261121095438377TFUX07WN2XT42V",
         "is_completed": true,
         "completed_channel": "whatsapp",
         "answered_count": 2,
         "question_count": 2,
         "delivery_error": null,
         "answers": {
-          "EQ_261110101530001A": ["Yes"],
-          "EQ_261110101530002B": ["Forklift operator, 4 years, Chennai"]
+          "eqq_cc9800817588972e": ["Yes"],
+          "eqq_7a31f0c2d95b84e6": ["Forklift operator, 4 years, Chennai"]
         }
       }
     ],
@@ -115,20 +108,20 @@ The final result of each candidate who finished or declined, newest first.
   "data": {
     "items": [
       {
-        "result_id": "ERS_261110110210123X5T9",
-        "enrichment_id": "WF_EN_261110101530123K7M2P9Q4X7R5T8",
+        "result_id": "ERS_261121100210123X5T9K2M7Q4R8WV",
+        "enrichment_id": "WF_EN_261121094822026AEDRUB86TQVSML",
         "candidate_id": "6f1d2c3e-8a4b-4c57-9d10-2b7e5a9c1f33",
         "external_id": "cand-1001",
         "name": "Ravi Kumar",
         "phone_number": "+919876543210",
-        "campaign_id": "EC_261110103045123M4P8T2K6Q9R",
+        "campaign_id": "EC_261121095438377TFUX07WN2XT42V",
         "status": "completed",
         "completed_channel": "whatsapp",
         "completed_at": "2026-11-10T11:02:10.000Z",
         "summary": { "answered_count": 2, "required_count": 2, "qualified_count": 1 },
         "answers": [
-          { "question_id": "EQ_261110101530001A", "order": 0, "question_text": "Are you open to a new job right now?", "type": "yes_no", "value": true, "qualified": true, "channel": "whatsapp" },
-          { "question_id": "EQ_261110101530002B", "order": 1, "question_text": "Tell us about the work you do and where you want to work.", "type": "voice", "value": "Forklift operator, 4 years, Chennai", "qualified": null, "channel": "voice" }
+          { "question_id": "eqq_cc9800817588972e", "order": 0, "question_text": "Are you open to a new job right now?", "type": "yes_no", "value": true, "qualified": true, "channel": "whatsapp" },
+          { "question_id": "eqq_7a31f0c2d95b84e6", "order": 1, "question_text": "Tell us about the work you do and where you want to work.", "type": "voice", "value": "Forklift operator, 4 years, Chennai", "qualified": null, "channel": "voice" }
         ]
       }
     ],
@@ -145,4 +138,4 @@ The final result of each candidate who finished or declined, newest first.
 | `answers[].value` | `true` or `false` for `yes_no`; a text summary for `voice`. |
 | `answers[].qualified` | `yes_no` only: whether the answer matched the question's `preferred_answer`. |
 
-Prefer to be told when a result exists? Receive each one as an [`enrichment.result` webhook](/enrichment-api/guides/webhooks), or poll this endpoint.
+Poll this endpoint for new results: they are final as soon as they appear.

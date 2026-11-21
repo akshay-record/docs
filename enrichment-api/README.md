@@ -5,7 +5,7 @@ Pages for the **Enrichment API** (`/api/v1/partner/enrichments…` in `unified-p
 | Path | Contents |
 |---|---|
 | `index.mdx`, `quickstart.mdx`, `authentication.mdx` | Get started |
-| `guides/` | Enrichments, campaigns, candidates and results, plus a Webhooks page for `enrichment.result` (which links to the Blue Collar webhooks guide for signing). Each ends with every endpoint of its step |
+| `guides/` | Enrichments, campaigns, candidates and results. Each ends with every endpoint of its step |
 | `reference/` | Statuses and limits |
 | `api-reference/openapi.json` | Generated. Do not edit by hand |
 | `scripts/` | Builds `openapi.json` from the backend's Enrichment spec |

@@ -60,7 +60,7 @@ You need a **TEST key id and secret** with the `enrichment:write` and `enrichmen
     ```
     Each result carries your `external_id`, the full phone number and every answer.
 
-    Rather be told when a result exists? Register a webhook with `event_types: ["enrichment.result"]` instead: see [Webhooks](/enrichment-api/guides/webhooks).
+    A result never changes once it appears, so poll this call until you have the ones you need.
   </Step>
 </Steps>
 

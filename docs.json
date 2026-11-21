@@ -420,7 +420,6 @@
               "enrichment-api/guides/enrichments",
               "enrichment-api/guides/campaigns",
               "enrichment-api/guides/candidates-and-results",
-              "enrichment-api/guides/webhooks",
               "enrichment-api/guides/credits"
             ]
           },
@@ -450,7 +449,6 @@
               "POST /enrichments",
               "GET /enrichments",
               "GET /enrichments/{enrichment_id}",
-              "DELETE /enrichments/{enrichment_id}",
               "GET /enrichments/{enrichment_id}/overview"
             ]
           },
@@ -486,29 +484,6 @@
             "pages": [
               "GET /enrichment-credits",
               "GET /enrichment-credits/usage"
-            ]
-          },
-          {
-            "group": "Webhooks",
-            "openapi": "enrichment-api/api-reference/openapi.json",
-            "pages": [
-              "POST /webhooks/endpoints",
-              "GET /webhooks/endpoints",
-              "GET /webhooks/endpoints/{endpoint_id}",
-              "PATCH /webhooks/endpoints/{endpoint_id}",
-              "DELETE /webhooks/endpoints/{endpoint_id}",
-              "POST /webhooks/endpoints/{endpoint_id}/test",
-              "POST /webhooks/endpoints/{endpoint_id}/backfill",
-              "GET /webhooks/endpoints/{endpoint_id}/deliveries",
-              "POST /webhooks/deliveries/{delivery_id}/retry"
-            ]
-          },
-          {
-            "group": "Events",
-            "openapi": "enrichment-api/api-reference/openapi.json",
-            "pages": [
-              "POST /events/pull",
-              "GET /events/{event_id}"
             ]
           }
         ]
