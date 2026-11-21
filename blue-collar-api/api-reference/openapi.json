@@ -1336,14 +1336,14 @@
         }
       }
     },
-    "/skills/extract": {
+    "/skills/suggest": {
       "post": {
-        "operationId": "extractSkills",
+        "operationId": "suggestSkills",
         "tags": [
           "Skills"
         ],
-        "summary": "Extract skills from a job",
-        "description": "Suggest skills from a job title and description. Nothing is saved.\n\n**Scope:** `skills:read` · **Idempotency-Key:** optional",
+        "summary": "Suggest skills for a job",
+        "description": "Suggest skills for a job, the same way the Record playground does: an AI model reads the title and description and picks up to 5 skills of this taxonomy. Nothing is saved. If the AI service is unavailable, `source` is `keyword` and the skills named in the text are returned.\n\n**Scope:** `skills:read` · **Idempotency-Key:** optional",
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -1366,12 +1366,14 @@
                   "title": {
                     "type": "string",
                     "minLength": 1,
-                    "maxLength": 200
+                    "maxLength": 200,
+                    "description": "The job title, for example Forklift Operator"
                   },
                   "description": {
                     "type": "string",
                     "maxLength": 5000,
-                    "default": ""
+                    "default": "",
+                    "description": "The job description; optional, but it improves the suggestions"
                   },
                   "collar": {
                     "type": "string",
@@ -1412,6 +1414,14 @@
                     "data": {
                       "type": "object",
                       "properties": {
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "ai",
+                            "keyword"
+                          ],
+                          "description": "ai: picked by the model; keyword: skills named in the text (used when the model could not answer)"
+                        },
                         "items": {
                           "type": "array",
                           "items": {
@@ -1481,6 +1491,7 @@
                 "example": {
                   "success": true,
                   "data": {
+                    "source": "ai",
                     "items": [
                       {
                         "skill": {
@@ -1563,17 +1574,17 @@
           {
             "lang": "bash",
             "label": "cURL",
-            "source": "pcall POST \"/api/v1/partner/skills/extract\" '{\n  \"title\": \"Forklift Truck Operator\",\n  \"description\": \"Must hold Forklift Certification. Order Picking and Loading And Unloading of trucks.\"\n}'"
+            "source": "pcall POST \"/api/v1/partner/skills/suggest\" '{\n  \"title\": \"Forklift Truck Operator\",\n  \"description\": \"Must hold Forklift Certification. Order Picking and Loading And Unloading of trucks.\"\n}'"
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const res = await call(\"POST\", \"/api/v1/partner/skills/extract\", {\n  \"title\": \"Forklift Truck Operator\",\n  \"description\": \"Must hold Forklift Certification. Order Picking and Loading And Unloading of trucks.\"\n});\nconst { data } = await res.json();"
+            "source": "const res = await call(\"POST\", \"/api/v1/partner/skills/suggest\", {\n  \"title\": \"Forklift Truck Operator\",\n  \"description\": \"Must hold Forklift Certification. Order Picking and Loading And Unloading of trucks.\"\n});\nconst { data } = await res.json();"
           },
           {
             "lang": "python",
             "label": "Python",
-            "source": "res = call(\"POST\", \"/api/v1/partner/skills/extract\", {\n    \"title\": \"Forklift Truck Operator\",\n    \"description\": \"Must hold Forklift Certification. Order Picking and Loading And Unloading of trucks.\"\n})\ndata = res.json()[\"data\"]"
+            "source": "res = call(\"POST\", \"/api/v1/partner/skills/suggest\", {\n    \"title\": \"Forklift Truck Operator\",\n    \"description\": \"Must hold Forklift Certification. Order Picking and Loading And Unloading of trucks.\"\n})\ndata = res.json()[\"data\"]"
           }
         ],
         "x-mint": {
