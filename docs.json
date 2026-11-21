@@ -327,7 +327,9 @@
               "PUT /mandates/{mandate_id}",
               "PUT /mandates/{mandate_id}/methods",
               "PUT /mandates/{mandate_id}/skills",
-              "PUT /mandates/{mandate_id}/enrichment-questions"
+              "PUT /mandates/{mandate_id}/enrichment-questions",
+              "POST /mandates/{mandate_id}/close",
+              "POST /mandates/{mandate_id}/reopen"
             ]
           },
           {
