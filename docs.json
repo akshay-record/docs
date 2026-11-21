@@ -404,7 +404,6 @@
       },
       {
         "tab": "Enrichment API Guides",
-        "hidden": true,
         "groups": [
           {
             "group": "Get started",
@@ -434,7 +433,6 @@
       },
       {
         "tab": "Enrichment API Reference",
-        "hidden": true,
         "groups": [
           {
             "group": "Overview",
