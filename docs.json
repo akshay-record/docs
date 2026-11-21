@@ -341,7 +341,7 @@
               "GET /skills/{skill_id}",
               "POST /skills/lookup",
               "POST /skills/match",
-              "POST /skills/extract",
+              "POST /skills/suggest",
               "POST /skill-requests",
               "GET /skill-requests",
               "GET /skill-requests/{request_id}"
